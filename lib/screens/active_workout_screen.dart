@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../models/gym_models.dart';
 import '../services/database_service.dart';
+import '../utils/timer_config.dart';
 
 class ActiveWorkoutScreen extends StatefulWidget {
   final Routine routine;
@@ -34,6 +35,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
 
   // State for the session
   final List<ExerciseSet> _completedSets = [];
+  late DateTime _startTime;
 
   // Cache for exercise objects
   List<Exercise> _exercises = [];
@@ -41,6 +43,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
   @override
   void initState() {
     super.initState();
+    _startTime = DateTime.now();
     _startStopwatch();
     _loadExercisesAndHistory();
   }
@@ -97,11 +100,11 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
   }
 
   // --- Rest Timer Logic ---
-  void _startRestTimer() {
+  void _startRestTimer([int? duration]) {
     _restTimer?.cancel();
     setState(() {
       _isResting = true;
-      _restSecondsRemaining = 90; // Default rest
+      _restSecondsRemaining = duration ?? 90; // Use smart duration or default
     });
 
     _restTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -124,6 +127,12 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
     _restTimer?.cancel();
     setState(() {
       _isResting = false;
+    });
+  }
+
+  void _add30Seconds() {
+    setState(() {
+      _restSecondsRemaining += 30;
     });
   }
 
@@ -164,7 +173,9 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
       }
     }
 
-    _startRestTimer();
+    // Smart Timer Logic
+    final restTime = TimerConfig.getRestTime(exercise.name);
+    _startRestTimer(restTime);
   }
 
   @override
@@ -406,6 +417,23 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
                         ),
                         const SizedBox(width: 16),
                         TextButton(
+                          onPressed: _add30Seconds,
+                          style: TextButton.styleFrom(
+                            backgroundColor: Colors.black.withValues(
+                              alpha: 0.1,
+                            ),
+                            foregroundColor: Colors.black,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                          child: const Text(
+                            "+30s",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        TextButton(
                           onPressed: _skipRest,
                           style: TextButton.styleFrom(
                             backgroundColor: Colors.black.withValues(
@@ -517,7 +545,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
       id: const Uuid().v4(),
       routineName: widget.routine.name,
       date: DateTime.now(),
-      durationInSeconds: _stopwatch.elapsed.inSeconds,
+      durationInSeconds: DateTime.now().difference(_startTime).inSeconds,
       sets: _completedSets,
     );
 
