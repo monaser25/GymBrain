@@ -428,7 +428,7 @@ class _SummaryCard extends StatelessWidget {
               color: Colors.grey[400],
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              uppercase: true.toString() == 'false' ? null : null,
+
               letterSpacing: 0.5,
             ),
           ),

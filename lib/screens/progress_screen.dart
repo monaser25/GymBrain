@@ -226,12 +226,13 @@ class _ProgressScreenState extends State<ProgressScreen> {
                               getTooltipItems: (touchedSpots) {
                                 return touchedSpots.map((spot) {
                                   String label;
-                                  if (spot.barIndex == 0)
+                                  if (spot.barIndex == 0) {
                                     label = "Weight";
-                                  else if (spot.barIndex == 1)
+                                  } else if (spot.barIndex == 1) {
                                     label = "SMM";
-                                  else
+                                  } else {
                                     label = "PBF";
+                                  }
 
                                   return LineTooltipItem(
                                     "$label: ${spot.y}\n",
