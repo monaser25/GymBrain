@@ -78,6 +78,14 @@ class GymDatabase {
     await _inBodyBox.add(record);
   }
 
+  Future<void> updateInBodyRecord(dynamic key, InBodyRecord record) async {
+    await _inBodyBox.put(key, record);
+  }
+
+  Future<void> deleteInBodyRecord(dynamic key) async {
+    await _inBodyBox.delete(key);
+  }
+
   InBodyRecord? getLatestInBody() {
     if (_inBodyBox.isEmpty) return null;
     final records = _inBodyBox.values.toList();
