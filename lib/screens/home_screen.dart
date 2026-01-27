@@ -6,6 +6,7 @@ import '../services/database_service.dart';
 import 'package:intl/intl.dart';
 import 'routine_editor_screen.dart';
 import 'active_workout_screen.dart';
+import 'progress_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -13,7 +14,6 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final db = GymDatabase();
-    final theme = Theme.of(context);
 
     // Fetch summary data
     final latestInBody = db.getLatestInBody();
@@ -22,23 +22,59 @@ class HomeScreen extends StatelessWidget {
         : null;
 
     return Scaffold(
-      resizeToAvoidBottomInset:
-          false, // Prevent background resize/overflow when dialog keyboard opens
-      appBar: AppBar(
-        title: const Text('Gym Brain'),
-        centerTitle: false,
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-      ),
+      backgroundColor: Colors.black, // Explicit black
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(20.0), // increased padding slightly
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // 1. Summary Section
+                // 1. New Header
+                Row(
+                  children: [
+                    const CircleAvatar(
+                      radius: 28,
+                      backgroundColor: Color(0xFF2C2C2E),
+                      child: Icon(Icons.person, color: Colors.white, size: 30),
+                    ),
+                    const SizedBox(width: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          "Welcome Back,",
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          "Gym Rat", // Placeholder name
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.settings, color: Colors.white),
+                      onPressed: () {
+                        // Placeholder for settings
+                      },
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 32),
+
+                // 2. Updated Top Cards
                 Row(
                   children: [
                     Expanded(
@@ -48,50 +84,82 @@ class HomeScreen extends StatelessWidget {
                             ? DateFormat('MMM d').format(latestSessionDate)
                             : '--',
                         icon: Icons.history,
-                        color: Colors.blueAccent,
+                        color: const Color(0xFF39FF14), // Neon Green
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 16),
                     Expanded(
-                      child: _SummaryCard(
-                        title: 'Current Weight',
-                        value: latestInBody != null
-                            ? '${latestInBody.weight} kg'
-                            : '--',
-                        icon: Icons.monitor_weight,
-                        color: Colors.purpleAccent,
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ProgressScreen(),
+                            ),
+                          );
+                        },
+                        child: _SummaryCard(
+                          title: 'Current Weight',
+                          value: latestInBody != null
+                              ? '${latestInBody.weight} kg'
+                              : '--',
+                          icon: Icons.monitor_weight_outlined,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ],
                 ),
 
-                const SizedBox(height: 32),
+                const SizedBox(height: 40),
 
-                // 2. Center Action Button
+                // 3. Glowing Start Button
                 Center(
-                  child: SizedBox(
-                    width: 200,
-                    height: 200,
+                  child: Container(
+                    width: 220,
+                    height: 220,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(
+                            0xFF39FF14,
+                          ).withValues(alpha: 0.3), // Neon Glow
+                          blurRadius: 40,
+                          spreadRadius: 5,
+                        ),
+                      ],
+                    ),
                     child: ElevatedButton(
                       onPressed: () => _showRoutineSelectorSheet(context),
                       style: ElevatedButton.styleFrom(
                         shape: const CircleBorder(),
-                        backgroundColor: theme.primaryColor,
-                        foregroundColor: Colors.black, // Text color
-                        elevation: 10,
-                        shadowColor: theme.primaryColor.withValues(alpha: 0.5),
+                        backgroundColor: Colors.black, // Dark center
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(
+                          color: Color(0xFF39FF14),
+                          width: 2,
+                        ),
+                        elevation: 0,
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: const [
-                          Icon(Icons.play_arrow_rounded, size: 48),
+                          Icon(
+                            Icons.play_arrow_rounded,
+                            size: 60,
+                            color: Color(0xFF39FF14),
+                          ),
                           SizedBox(height: 8),
                           Text(
-                            "START",
+                            "START\nWORKOUT",
+                            textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 24,
+                              fontSize: 20,
                               fontWeight: FontWeight.w900,
-                              letterSpacing: 1.2,
+                              letterSpacing: 1.5,
+                              color: Colors.white,
+                              height: 1.1,
                             ),
                           ),
                         ],
@@ -100,39 +168,48 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 32),
+                const SizedBox(height: 48),
 
-                // 3. Routines Header
+                // 4. Detail Header
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
+                    const Text(
                       "My Routines",
-                      style: theme.textTheme.headlineSmall?.copyWith(
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     IconButton(
                       onPressed: () => _showAddRoutineDialog(context),
-                      icon: Icon(Icons.add_circle, color: theme.primaryColor),
+                      icon: const Icon(
+                        Icons.add_circle_outline,
+                        color: Color(0xFF39FF14),
+                        size: 28,
+                      ),
                       tooltip: "Add Routine",
                     ),
                   ],
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
 
-                // 4. Routines List
+                // 5. Routines List
                 ValueListenableBuilder<Box<Routine>>(
                   valueListenable: db.routineListenable,
                   builder: (context, box, _) {
                     final routines = box.values.toList();
                     if (routines.isEmpty) {
                       return Center(
-                        child: Text(
-                          "No routines yet.\nCreate one to get started!",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.grey[600]),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Text(
+                            "No routines found.\nCreate one to get started!",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
                         ),
                       );
                     }
@@ -142,44 +219,41 @@ class HomeScreen extends StatelessWidget {
                       itemCount: routines.length,
                       itemBuilder: (context, index) {
                         final routine = routines[index];
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1C1C1E),
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                          color: theme.cardColor,
                           child: ListTile(
                             contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            leading: Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: Colors.grey[800],
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Icon(
-                                Icons.fitness_center,
-                                color: Colors.white,
-                              ),
+                              horizontal: 20,
+                              vertical: 12,
                             ),
                             title: Text(
                               routine.name,
                               style: const TextStyle(
+                                color: Colors.white,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                                fontSize: 18,
                               ),
                             ),
                             subtitle: Text(
                               "${routine.exerciseIds.length} Exercises",
-                              style: TextStyle(color: Colors.grey[400]),
+                              style: TextStyle(
+                                color: Colors.grey[500],
+                                fontSize: 13,
+                              ),
                             ),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
-                                  icon: const Icon(Icons.edit, size: 20),
+                                  icon: const Icon(
+                                    Icons.edit_outlined,
+                                    size: 22,
+                                    color: Color(0xFF39FF14),
+                                  ),
                                   onPressed: () {
                                     Navigator.push(
                                       context,
@@ -194,8 +268,8 @@ class HomeScreen extends StatelessWidget {
                                 IconButton(
                                   icon: const Icon(
                                     Icons.delete_outline,
-                                    size: 20,
-                                    color: Colors.redAccent,
+                                    size: 22,
+                                    color: Colors.grey,
                                   ),
                                   onPressed: () =>
                                       _confirmDeleteRoutine(context, routine),
@@ -221,7 +295,7 @@ class HomeScreen extends StatelessWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: Colors.grey[900],
+          backgroundColor: const Color(0xFF1C1C1E),
           title: const Text(
             "Delete Routine?",
             style: TextStyle(color: Colors.white),
@@ -258,7 +332,7 @@ class HomeScreen extends StatelessWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: Colors.grey[900],
+          backgroundColor: const Color(0xFF1C1C1E),
           title: const Text(
             "New Routine",
             style: TextStyle(color: Colors.white),
@@ -268,13 +342,17 @@ class HomeScreen extends StatelessWidget {
               controller: nameController,
               style: const TextStyle(color: Colors.white),
               decoration: const InputDecoration(
+                filled: true,
+                fillColor: Color(0xFF2C2C2E),
                 hintText: "e.g., Push Day",
                 hintStyle: TextStyle(color: Colors.grey),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                  borderSide: BorderSide.none,
                 ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xFF39FF14)),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
                 ),
               ),
               autofocus: true,
@@ -303,7 +381,10 @@ class HomeScreen extends StatelessWidget {
                 backgroundColor: const Color(0xFF39FF14),
                 foregroundColor: Colors.black,
               ),
-              child: const Text("Create"),
+              child: const Text(
+                "Create",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         );
@@ -318,19 +399,28 @@ class HomeScreen extends StatelessWidget {
       builder: (context) {
         return Container(
           decoration: const BoxDecoration(
-            color: Color(0xFF1E1E1E),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            color: Color(0xFF1C1C1E),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              const SizedBox(height: 8),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[700],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
               const Padding(
-                padding: EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(24.0),
                 child: Text(
                   "Select Routine",
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 20,
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -354,15 +444,20 @@ class HomeScreen extends StatelessWidget {
                       shrinkWrap: true,
                       itemCount: routines.length,
                       separatorBuilder: (_, __) =>
-                          const Divider(color: Colors.white10),
+                          const Divider(color: Colors.white10, height: 1),
                       itemBuilder: (context, index) {
                         final routine = routines[index];
                         return ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
                           title: Text(
                             routine.name,
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
+                              fontSize: 18,
                             ),
                           ),
                           subtitle: Text(
@@ -415,35 +510,37 @@ class _SummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        color: const Color(0xFF1C1C1E),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(icon, size: 18, color: color),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: TextStyle(
-                  color: Colors.grey[400],
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 20, color: color),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            style: TextStyle(
+              color: Colors.grey[400],
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 4),
           Text(
             value,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 20,
+              fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
           ),

@@ -15,7 +15,7 @@ class ActiveWorkoutScreen extends StatefulWidget {
 
 class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
   final _db = GymDatabase();
-  Stopwatch _stopwatch = Stopwatch();
+  final Stopwatch _stopwatch = Stopwatch();
   Timer? _stopwatchTimer;
   String _elapsedString = "00:00";
 
@@ -123,7 +123,6 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
@@ -135,20 +134,49 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
         }
       },
       child: Scaffold(
+        backgroundColor: Colors.black, // Dark Mode Background
         resizeToAvoidBottomInset: true,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () async {
+              if (await _showExitConfirmation()) {
+                if (context.mounted) Navigator.pop(context);
+              }
+            },
+          ),
+          title: Row(
             children: [
-              Text(widget.routine.name, style: const TextStyle(fontSize: 16)),
-              Text(
-                _elapsedString,
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).primaryColor,
+              Expanded(
+                child: Text(
+                  widget.routine.name,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              // Timer Pill
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF39FF14), // Neon Green
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  _elapsedString,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
                 ),
               ),
             ],
@@ -158,7 +186,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
           children: [
             Expanded(
               child: ListView.builder(
-                padding: const EdgeInsets.only(bottom: 100),
+                padding: const EdgeInsets.only(bottom: 120),
                 itemCount: _exercises.length,
                 itemBuilder: (context, index) {
                   final exercise = _exercises[index];
@@ -189,22 +217,23 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
                 if (_isResting)
                   Container(
                     width: double.infinity,
-                    color: Theme.of(context).primaryColor,
+                    color: const Color(0xFF39FF14),
                     padding: const EdgeInsets.symmetric(
-                      vertical: 8,
-                      horizontal: 16,
+                      vertical: 10,
+                      horizontal: 20,
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.timer, color: Colors.black),
+                        const Icon(Icons.timer, color: Colors.black, size: 20),
                         const SizedBox(width: 8),
                         Text(
                           "Rest: ${_restSecondsRemaining}s",
                           style: const TextStyle(
                             color: Colors.black,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w900,
                             fontSize: 18,
+                            letterSpacing: 1.0,
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -215,6 +244,9 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
                               alpha: 0.1,
                             ),
                             foregroundColor: Colors.black,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
                           ),
                           child: const Text(
                             "SKIP",
@@ -239,7 +271,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
     return await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            backgroundColor: Colors.grey[900],
+            backgroundColor: const Color(0xFF1C1C1E),
             title: const Text(
               "Exit Workout?",
               style: TextStyle(color: Colors.white),
@@ -251,7 +283,10 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text("Cancel"),
+                child: const Text(
+                  "Cancel",
+                  style: TextStyle(color: Colors.grey),
+                ),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context, true),
@@ -269,7 +304,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
   Widget _buildFinishButton() {
     return Container(
       padding: const EdgeInsets.all(16),
-      color: Theme.of(context).scaffoldBackgroundColor,
+      color: Colors.black,
       child: SafeArea(
         // Ensure it respects bottom notch
         top: false,
@@ -282,12 +317,17 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
               backgroundColor: Colors.redAccent,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
               ),
+              elevation: 0,
             ),
             child: const Text(
               "FINISH WORKOUT",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.0,
+              ),
             ),
           ),
         ),
@@ -341,183 +381,241 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
   final _weightController = TextEditingController();
   final _repsController = TextEditingController();
   String _selectedRpe = 'Good';
-  bool _isKg = false; // Local state for unit toggle, default LB
+  bool _isKg = false; // Default LB
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: Theme.of(context).cardColor,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1C1C1E),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: IntrinsicHeight(
+        child: Row(
           children: [
-            // Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    widget.exercise.name,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.info_outline, color: Colors.grey),
-                  onPressed: () => _showInfoDialog(context),
-                ),
-              ],
-            ),
-
-            // Ghost Text from Cache
-            if (widget.isLoadingHistory)
-              const Text(
-                "Loading history...",
-                style: TextStyle(color: Colors.grey, fontSize: 12),
-              )
-            else if (widget.lastPerformance != null)
-              Text(
-                "Last: ${widget.lastPerformance!.weight}${widget.lastPerformance!.unit /*?? 'kg'*/} x ${widget.lastPerformance!.reps} (${widget.lastPerformance!.rpe})",
-                style: TextStyle(
-                  color: Colors.grey[400],
-                  fontSize: 13,
-                  fontStyle: FontStyle.italic,
-                ),
-              )
-            else
-              const Text(
-                "No history",
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 13,
-                  fontStyle: FontStyle.italic,
+            // Neon Strip
+            Container(
+              width: 4,
+              decoration: const BoxDecoration(
+                color: Color(0xFF39FF14),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  bottomLeft: Radius.circular(16),
                 ),
               ),
-
-            const SizedBox(height: 16),
-
-            // Inputs
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                // Weight Input
-                Expanded(
-                  flex: 3,
-                  child: TextField(
-                    controller: _weightController,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    decoration: InputDecoration(
-                      labelText: "Weight",
-                      suffixText: _isKg ? "kg" : "lb",
-                      suffixStyle: const TextStyle(
-                        color: Color(0xFF39FF14),
-                        fontWeight: FontWeight.bold,
-                      ),
-                      hintText: "0",
-                      labelStyle: const TextStyle(color: Colors.grey),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey[800]!),
-                      ),
-                      focusedBorder: const UnderlineInputBorder(
-                        borderSide: BorderSide(color: Color(0xFF39FF14)),
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Unit Toggle
-                Padding(
-                  padding: const EdgeInsets.only(
-                    bottom: 4.0,
-                    left: 8.0,
-                    right: 8.0,
-                  ),
-                  child: InkWell(
-                    onTap: () {
-                      setState(() {
-                        _isKg = !_isKg;
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[800],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        _isKg ? "KG" : "LB",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Reps Input
-                Expanded(
-                  flex: 2,
-                  child: TextField(
-                    controller: _repsController,
-                    keyboardType: TextInputType.number,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    decoration: InputDecoration(
-                      labelText: "Reps",
-                      hintText: "0",
-                      labelStyle: const TextStyle(color: Colors.grey),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey[800]!),
-                      ),
-                      focusedBorder: const UnderlineInputBorder(
-                        borderSide: BorderSide(color: Color(0xFF39FF14)),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
             ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            widget.exercise.name,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(
+                            Icons.info_outline,
+                            color: Colors.grey,
+                            size: 20,
+                          ),
+                          onPressed: () => _showInfoDialog(context),
+                        ),
+                      ],
+                    ),
 
-            const SizedBox(height: 16),
+                    // Ghost Text
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: widget.isLoadingHistory
+                          ? const Text(
+                              "Loading history...",
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 12,
+                              ),
+                            )
+                          : (widget.lastPerformance != null
+                                ? Text(
+                                    "Last: ${widget.lastPerformance!.weight}${widget.lastPerformance!.unit} x ${widget.lastPerformance!.reps} (${widget.lastPerformance!.rpe})",
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 13,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  )
+                                : TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 13,
+                                    fontStyle: FontStyle.italic,
+                                  ).toText("No history")),
+                    ),
 
-            // RPE & Complete Button
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "RPE",
-                        style: TextStyle(color: Colors.grey, fontSize: 12),
-                      ),
-                      const SizedBox(height: 4),
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
+                    // Inputs
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Weight Input
+                        Expanded(
+                          flex: 3,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "WEIGHT",
+                                style: TextStyle(
+                                  color: Colors.grey[500],
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF2C2C2E),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextField(
+                                        controller: _weightController,
+                                        keyboardType:
+                                            const TextInputType.numberWithOptions(
+                                              decimal: true,
+                                            ),
+                                        style: const TextStyle(
+                                          fontSize: 28,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                        decoration: const InputDecoration(
+                                          hintText: "0",
+                                          hintStyle: TextStyle(
+                                            color: Colors.grey,
+                                          ),
+                                          border: InputBorder.none,
+                                          isDense: true,
+                                        ),
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onTap: () =>
+                                          setState(() => _isKg = !_isKg),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black,
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          _isKg ? "KG" : "LB",
+                                          style: const TextStyle(
+                                            color: Color(0xFF39FF14),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 10,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(width: 16),
+
+                        // Reps Input
+                        Expanded(
+                          flex: 2,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "REPS",
+                                style: TextStyle(
+                                  color: Colors.grey[500],
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF2C2C2E),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: TextField(
+                                  controller: _repsController,
+                                  keyboardType: TextInputType.number,
+                                  style: const TextStyle(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                  decoration: const InputDecoration(
+                                    hintText: "0",
+                                    hintStyle: TextStyle(color: Colors.grey),
+                                    border: InputBorder.none,
+                                    isDense: true,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // RPE
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "RPE (EFFORT)",
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: ['Easy', 'Good', 'Hard'].map((rpe) {
                             final isSelected = _selectedRpe == rpe;
-                            // Colors for RPE
                             Color color;
                             switch (rpe) {
                               case 'Easy':
@@ -530,97 +628,130 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
                                 color = Colors.orangeAccent;
                             }
 
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 4.0),
-                              child: ChoiceChip(
-                                label: Text(rpe),
-                                selected: isSelected,
-                                onSelected: (selected) {
-                                  if (selected)
-                                    setState(() => _selectedRpe = rpe);
-                                },
-                                selectedColor: color,
-                                backgroundColor: Colors.grey[800],
-                                labelStyle: TextStyle(
-                                  color: isSelected
-                                      ? Colors.black
-                                      : Colors.white,
-                                  fontWeight: FontWeight.bold,
+                            return Expanded(
+                              child: GestureDetector(
+                                onTap: () => setState(() => _selectedRpe = rpe),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  margin: const EdgeInsets.only(right: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? color
+                                        : Colors.transparent,
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? color
+                                          : Colors.grey[800]!,
+                                      width: 1.5,
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    rpe,
+                                    style: TextStyle(
+                                      color: isSelected
+                                          ? Colors.black
+                                          : Colors.grey,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
                                 ),
                               ),
                             );
                           }).toList(),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: _submitSet,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      ],
                     ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                  ),
-                  child: const Text(
-                    "COMPLETE\nSET",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
 
-            // Today's Sets History
-            if (widget.todaysSets.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              const Divider(color: Colors.white24),
-              ...widget.todaysSets.asMap().entries.map((entry) {
-                final idx = entry.key + 1;
-                final set = entry.value;
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2.0),
-                  child: Row(
-                    children: [
-                      Text(
-                        "Set $idx: ",
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontWeight: FontWeight.bold,
+                    const SizedBox(height: 24),
+
+                    // COMPLETE BUTTON
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton(
+                        onPressed: _submitSet,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF39FF14),
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: const Text(
+                          "COMPLETE SET",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 16,
+                          ),
                         ),
                       ),
-                      Text(
-                        "${set.weight}${set.unit} x ${set.reps}",
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                      const SizedBox(width: 8),
-                      // RPE Dot
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _getRpeColor(set.rpe),
-                        ),
-                      ),
-                      const Spacer(),
-                      const Icon(
-                        Icons.check_circle_outline,
-                        size: 16,
-                        color: Color(0xFF39FF14),
-                      ),
+                    ),
+
+                    // History Log - Compact
+                    if (widget.todaysSets.isNotEmpty) ...[
+                      const SizedBox(height: 20),
+                      Divider(color: Colors.grey[800], height: 1),
+                      const SizedBox(height: 12),
+                      ...widget.todaysSets.asMap().entries.map((entry) {
+                        final idx = entry.key + 1;
+                        final set = entry.value;
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4.0),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.grey[800],
+                                ),
+                                child: Text(
+                                  "$idx",
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                "${set.weight}${set.unit} x ${set.reps}",
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                width: 6,
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: _getRpeColor(set.rpe),
+                                ),
+                              ),
+                              const Spacer(),
+                              const Icon(
+                                Icons.check,
+                                size: 16,
+                                color: Color(0xFF39FF14),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
                     ],
-                  ),
-                );
-              }).toList(),
-            ],
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -649,13 +780,13 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
         reps: reps,
         rpe: _selectedRpe,
         isCompleted: true,
-        unit: _isKg ? 'kg' : 'lb', // Use local state
+        unit: _isKg ? 'kg' : 'lb',
       );
 
       widget.onSetCompleted(set);
-
       _repsController.clear();
-      // Keep weight and keyboard open for flow
+      // Keep keyboard? User might want to rest.
+      FocusScope.of(context).unfocus();
     }
   }
 
@@ -664,7 +795,7 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: Colors.grey[900],
+          backgroundColor: const Color(0xFF1C1C1E),
           title: Text(
             widget.exercise.name,
             style: const TextStyle(color: Colors.white),
@@ -688,11 +819,18 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Close"),
+              child: const Text(
+                "Close",
+                style: TextStyle(color: Color(0xFF39FF14)),
+              ),
             ),
           ],
         );
       },
     );
   }
+}
+
+extension TextHelper on TextStyle {
+  Text toText(String content) => Text(content, style: this);
 }

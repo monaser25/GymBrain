@@ -39,7 +39,6 @@ class MyApp extends StatelessWidget {
           primary: Color(0xFF39FF14),
           secondary: Colors.purpleAccent,
           surface: Color(0xFF1E1E1E),
-          background: Colors.black,
         ),
         fontFamily:
             'Roboto', // Default, but explicit feels nicer if we change later
