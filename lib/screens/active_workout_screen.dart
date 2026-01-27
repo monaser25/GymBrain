@@ -19,6 +19,10 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
   Timer? _stopwatchTimer;
   String _elapsedString = "00:00";
 
+  // Focus Mode State
+  int _focusedIndex = 0;
+  final ScrollController _scrollController = ScrollController();
+
   // Ghost Data Cache
   Map<String, ExerciseSet?> _historyCache = {};
   bool _isLoadingHistory = true;
@@ -78,6 +82,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
     _stopwatchTimer?.cancel();
     _restTimer?.cancel();
     _stopwatch.stop();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -120,6 +125,45 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
     setState(() {
       _isResting = false;
     });
+  }
+
+  void _scrollToIndex(int index) {
+    // Small delay to allow UI to rebuild if size changed
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          index * 150.0, // Approximation, but workable
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+  }
+
+  void _onSetCompleted(ExerciseSet set, int index) {
+    setState(() {
+      _completedSets.add(set);
+    });
+
+    // Check if we should advance to next exercise
+    // Logic: If user has done 3 sets (or whatever logic), advance.
+    // For now, let's keep it manual or based on a "Finish Exercise" button?
+    // The prompt says "Check if this was the last set".
+    // Since we don't have a rigid "Target Sets" property yet, let's look at completed sets count
+    // If user hits 3 sets, we propose moving on.
+    final setsForThis = _completedSets
+        .where((s) => s.exerciseName == set.exerciseName)
+        .length;
+
+    if (setsForThis >= 3) {
+      // Hardcoded 3 sets target for Focus Mode demo
+      if (_focusedIndex < _exercises.length - 1) {
+        setState(() => _focusedIndex++);
+        _scrollToIndex(_focusedIndex);
+      }
+    }
+
+    _startRestTimer();
   }
 
   @override
@@ -186,24 +230,115 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
           children: [
             Expanded(
               child: ListView.builder(
+                controller: _scrollController,
                 padding: const EdgeInsets.only(bottom: 120),
                 itemCount: _exercises.length,
                 itemBuilder: (context, index) {
                   final exercise = _exercises[index];
-                  return _ExerciseInputCard(
-                    key: ValueKey(exercise.id),
-                    exercise: exercise,
-                    lastPerformance: _historyCache[exercise.id],
-                    isLoadingHistory: _isLoadingHistory,
-                    onSetCompleted: (set) {
-                      setState(() {
-                        _completedSets.add(set);
-                      });
-                      _startRestTimer();
-                    },
-                    todaysSets: _completedSets
-                        .where((s) => s.exerciseName == exercise.name)
-                        .toList(),
+                  final todaysSets = _completedSets
+                      .where((s) => s.exerciseName == exercise.name)
+                      .toList();
+
+                  // Condition A: Active (Focused)
+                  if (index == _focusedIndex) {
+                    return _ExerciseInputCard(
+                      key: ValueKey(exercise.id),
+                      exercise: exercise,
+                      lastPerformance: _historyCache[exercise.id],
+                      isLoadingHistory: _isLoadingHistory,
+                      todaysSets: todaysSets,
+                      isFocused: true,
+                      onSetCompleted: (set) => _onSetCompleted(set, index),
+                    );
+                  }
+
+                  // Condition B: Up Next
+                  if (index > _focusedIndex) {
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() => _focusedIndex = index);
+                        _scrollToIndex(index);
+                      },
+                      child: Container(
+                        height: 80,
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1C1C1E).withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.white10),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                exercise.name,
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                Text(
+                                  "3 Sets",
+                                  style: TextStyle(
+                                    color: Colors.grey[700],
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Icon(
+                                  Icons.lock_outline,
+                                  color: Colors.grey[700],
+                                  size: 18,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
+                  // Condition C: Completed
+                  return Container(
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white10),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            exercise.name,
+                            style: TextStyle(
+                              color: Colors.grey[500],
+                              decoration: TextDecoration.lineThrough,
+                            ),
+                          ),
+                        ),
+                        const Icon(
+                          Icons.check_circle,
+                          color: Color(0xFF39FF14),
+                          size: 20,
+                        ),
+                      ],
+                    ),
                   );
                 },
               ),
@@ -257,8 +392,11 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
                     ),
                   ),
 
-                // Finish Button
-                _buildFinishButton(),
+                // Finish Button (Only visible if near end or explicitly scrolled? User requested visibility logic)
+                // Let's show it always at bottom for safety, but maybe highlight it when last exercise is done.
+                if (_focusedIndex >= _exercises.length - 1 ||
+                    _completedSets.isNotEmpty)
+                  _buildFinishButton(),
               ],
             ),
           ],
@@ -352,6 +490,9 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
 
     await _db.saveSession(session);
 
+    // Slight delay to ensure saving
+    await Future.delayed(const Duration(milliseconds: 300));
+
     if (!mounted) return;
     Navigator.pop(context);
   }
@@ -363,6 +504,7 @@ class _ExerciseInputCard extends StatefulWidget {
   final bool isLoadingHistory;
   final Function(ExerciseSet) onSetCompleted;
   final List<ExerciseSet> todaysSets;
+  final bool isFocused;
 
   const _ExerciseInputCard({
     super.key,
@@ -371,6 +513,7 @@ class _ExerciseInputCard extends StatefulWidget {
     required this.isLoadingHistory,
     required this.onSetCompleted,
     required this.todaysSets,
+    this.isFocused = false,
   });
 
   @override
@@ -390,6 +533,9 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
       decoration: BoxDecoration(
         color: const Color(0xFF1C1C1E),
         borderRadius: BorderRadius.circular(16),
+        border: widget.isFocused
+            ? Border.all(color: const Color(0xFF39FF14), width: 1.5)
+            : null,
       ),
       child: IntrinsicHeight(
         child: Row(
@@ -416,13 +562,27 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
-                          child: Text(
-                            widget.exercise.name,
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.exercise.name,
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                "Set ${widget.todaysSets.length + 1}",
+                                style: const TextStyle(
+                                  color: Color(0xFF39FF14),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         IconButton(
@@ -438,7 +598,7 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
 
                     // Ghost Text
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 16.0),
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
                       child: widget.isLoadingHistory
                           ? const Text(
                               "Loading history...",
@@ -784,8 +944,9 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
       );
 
       widget.onSetCompleted(set);
-      _repsController.clear();
-      // Keep keyboard? User might want to rest.
+
+      // Don't clear controller, user might do same weight
+      // _repsController.clear();
       FocusScope.of(context).unfocus();
     }
   }
