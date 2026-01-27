@@ -22,8 +22,10 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = [
-    const _DashboardView(),
+  late final List<Widget> _pages = [
+    _DashboardView(
+      onSwitchTab: (index) => setState(() => _currentIndex = index),
+    ),
     const RoutinesScreen(),
     const ProgressScreen(),
     const SettingsScreen(),
@@ -97,7 +99,8 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class _DashboardView extends StatelessWidget {
-  const _DashboardView();
+  final Function(int) onSwitchTab;
+  const _DashboardView({required this.onSwitchTab});
 
   @override
   Widget build(BuildContext context) {
@@ -189,12 +192,7 @@ class _DashboardView extends StatelessWidget {
                       Expanded(
                         child: GestureDetector(
                           onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const ProgressScreen(),
-                              ),
-                            );
+                            onSwitchTab(2); // Switch to Stats (Index 2)
                           },
                           child: _SummaryCard(
                             title: 'Current Weight',
@@ -283,15 +281,7 @@ class _DashboardView extends StatelessWidget {
                       ),
                       TextButton(
                         onPressed: () {
-                          // Navigate to Workout Tab via local state logic or just direct push
-                          // Since the user wants to see routines, let's just push RoutinesScreen
-                          // or ideally switch tabs. But pushing is easier for now.
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const RoutinesScreen(),
-                            ),
-                          );
+                          onSwitchTab(1); // Switch to Workout (Index 1)
                         },
                         child: const Text(
                           "See All",

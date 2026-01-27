@@ -68,12 +68,8 @@ class _ProgressScreenState extends State<ProgressScreen>
           "Progress",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
         actions: [
           if (_tabController.index == 0)
             IconButton(
