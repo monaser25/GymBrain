@@ -63,10 +63,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final dateFormat = DateFormat('EEE, MMM d');
     final timeFormat = DateFormat('h:mm a');
 
-    // Calculate Volume
+    // Calculate Volume (Normalized to KG)
     double totalVolume = 0;
     for (var set in session.sets) {
-      totalVolume += (set.weight * set.reps);
+      double weightInKg = set.weight;
+      // If stored as LB, convert to KG
+      if (set.unit == 'lb') {
+        weightInKg = set.weight * 0.453592;
+      }
+      totalVolume += (weightInKg * set.reps);
     }
 
     // Format Duration
@@ -121,7 +126,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildStatItem("DURATION", durationString),
-              _buildStatItem("VOLUME", "${totalVolume.toStringAsFixed(0)} kg"),
+              _buildStatItem("VOLUME", "${totalVolume.toStringAsFixed(1)} kg"),
               _buildStatItem("SETS", "${session.sets.length}"),
             ],
           ),
