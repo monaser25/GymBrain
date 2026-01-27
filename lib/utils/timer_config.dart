@@ -5,7 +5,9 @@ class TimerConfig {
     // Heavy Compounds -> 3 Mins
     if (name.contains('squat') ||
         name.contains('deadlift') ||
-        name.contains('bench press')) {
+        name.contains('bench press') ||
+        name.contains('dumbbell press') ||
+        name.contains('shoulder press')) {
       return 180;
     }
 

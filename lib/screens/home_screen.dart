@@ -9,6 +9,7 @@ import 'active_workout_screen.dart';
 import 'progress_screen.dart';
 import 'routines_screen.dart';
 import 'settings_screen.dart';
+import 'history_screen.dart';
 // Note: RoutineEditorScreen import might be needed if we link directly,
 // but RoutinesScreen handles that.
 
@@ -180,12 +181,26 @@ class _DashboardView extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: _SummaryCard(
-                          title: 'Last Workout',
-                          value: lastWorkoutTitle,
-                          subtitle: lastWorkoutTime,
-                          icon: Icons.history,
-                          color: const Color(0xFF39FF14), // Neon Green
+                        child: GestureDetector(
+                          onTap: () {
+                            // Use full path or need import. I'll add import in next step or assume user's compilation.
+                            // I will add the import at top of file in a separate call if needed, but I can't do two ranges.
+                            // I will assume the user wants me to fix navigation.
+                            // I'll use a dynamic route or just the class name and fix import later.
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const HistoryScreen(),
+                              ),
+                            );
+                          },
+                          child: _SummaryCard(
+                            title: 'Last Workout',
+                            value: lastWorkoutTitle,
+                            subtitle: lastWorkoutTime,
+                            icon: Icons.history,
+                            color: const Color(0xFF39FF14), // Neon Green
+                          ),
                         ),
                       ),
                       const SizedBox(width: 16),
