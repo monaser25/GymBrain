@@ -151,12 +151,13 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
     // The prompt says "Check if this was the last set".
     // Since we don't have a rigid "Target Sets" property yet, let's look at completed sets count
     // If user hits 3 sets, we propose moving on.
+    final exercise = _exercises[index];
     final setsForThis = _completedSets
         .where((s) => s.exerciseName == set.exerciseName)
         .length;
 
-    if (setsForThis >= 3) {
-      // Hardcoded 3 sets target for Focus Mode demo
+    // Use dynamic targetSets
+    if (setsForThis >= exercise.targetSets) {
       if (_focusedIndex < _exercises.length - 1) {
         setState(() => _focusedIndex++);
         _scrollToIndex(_focusedIndex);
@@ -238,6 +239,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
                   final todaysSets = _completedSets
                       .where((s) => s.exerciseName == exercise.name)
                       .toList();
+                  final isTargetMet = todaysSets.length >= exercise.targetSets;
 
                   // Condition A: Active (Focused)
                   if (index == _focusedIndex) {
@@ -248,6 +250,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
                       isLoadingHistory: _isLoadingHistory,
                       todaysSets: todaysSets,
                       isFocused: true,
+                      isTargetMet: isTargetMet,
                       onSetCompleted: (set) => _onSetCompleted(set, index),
                     );
                   }
@@ -286,7 +289,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
                             Row(
                               children: [
                                 Text(
-                                  "3 Sets",
+                                  "${exercise.targetSets} Sets",
                                   style: TextStyle(
                                     color: Colors.grey[700],
                                     fontSize: 12,
@@ -307,37 +310,53 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
                   }
 
                   // Condition C: Completed
-                  return Container(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 4,
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white10),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            exercise.name,
-                            style: TextStyle(
-                              color: Colors.grey[500],
-                              decoration: TextDecoration.lineThrough,
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() => _focusedIndex = index);
+                      _scrollToIndex(index);
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white10),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              exercise.name,
+                              style: TextStyle(
+                                color: Colors.grey[500],
+                                decoration: TextDecoration.lineThrough,
+                              ),
                             ),
                           ),
-                        ),
-                        const Icon(
-                          Icons.check_circle,
-                          color: Color(0xFF39FF14),
-                          size: 20,
-                        ),
-                      ],
+                          if (isTargetMet)
+                            const Icon(
+                              Icons.check_circle,
+                              color: Color(0xFF39FF14),
+                              size: 20,
+                            )
+                          else
+                            const Text(
+                              "Incomplete",
+                              style: TextStyle(
+                                color: Colors.orange,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
                   );
                 },
@@ -505,6 +524,7 @@ class _ExerciseInputCard extends StatefulWidget {
   final Function(ExerciseSet) onSetCompleted;
   final List<ExerciseSet> todaysSets;
   final bool isFocused;
+  final bool isTargetMet;
 
   const _ExerciseInputCard({
     super.key,
@@ -514,6 +534,7 @@ class _ExerciseInputCard extends StatefulWidget {
     required this.onSetCompleted,
     required this.todaysSets,
     this.isFocused = false,
+    this.isTargetMet = false,
   });
 
   @override
@@ -575,9 +596,13 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                "Set ${widget.todaysSets.length + 1}",
-                                style: const TextStyle(
-                                  color: Color(0xFF39FF14),
+                                widget.isTargetMet
+                                    ? "Target Completed (${widget.todaysSets.length}/${widget.exercise.targetSets})"
+                                    : "Set ${widget.todaysSets.length + 1} of ${widget.exercise.targetSets}",
+                                style: TextStyle(
+                                  color: widget.isTargetMet
+                                      ? Colors.greenAccent
+                                      : const Color(0xFF39FF14),
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                 ),

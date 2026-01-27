@@ -16,11 +16,15 @@ class Exercise extends HiveObject {
   @HiveField(3)
   final String? imagePath;
 
+  @HiveField(4)
+  final int targetSets;
+
   Exercise({
     required this.id,
     required this.name,
     this.setupNote,
     this.imagePath,
+    this.targetSets = 3,
   });
 }
 
