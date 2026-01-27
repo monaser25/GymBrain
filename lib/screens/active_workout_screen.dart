@@ -251,114 +251,128 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
                       todaysSets: todaysSets,
                       isFocused: true,
                       isTargetMet: isTargetMet,
+                      onCollapse: () {
+                        setState(() {
+                          _focusedIndex = -1;
+                        });
+                      },
                       onSetCompleted: (set) => _onSetCompleted(set, index),
                     );
                   }
 
-                  // Condition B: Up Next
-                  if (index > _focusedIndex) {
+                  // Condition B & C: Untargeted (Collapsed) Card
+                  if (index != _focusedIndex) {
+                    final isStarted = todaysSets.isNotEmpty;
+                    final isComplete = todaysSets.length >= exercise.targetSets;
+
                     return GestureDetector(
                       onTap: () {
                         setState(() => _focusedIndex = index);
                         _scrollToIndex(index);
                       },
                       child: Container(
-                        height: 80,
                         margin: const EdgeInsets.symmetric(
                           horizontal: 16,
-                          vertical: 8,
+                          vertical: 6,
                         ),
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1C1C1E).withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(16),
+                          color: _focusedIndex == -1
+                              ? const Color(0xFF1C1C1E)
+                              : (index > _focusedIndex
+                                    ? const Color(
+                                        0xFF1C1C1E,
+                                      ).withValues(alpha: 0.5)
+                                    : Colors.black),
+                          borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: Colors.white10),
                         ),
                         child: Row(
                           children: [
                             Expanded(
-                              child: Text(
-                                exercise.name,
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    exercise.name,
+                                    style: TextStyle(
+                                      color: isComplete
+                                          ? Colors.grey[500]
+                                          : Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      decoration: isComplete
+                                          ? TextDecoration.lineThrough
+                                          : null,
+                                    ),
+                                  ),
+                                  if (isStarted || isComplete) ...[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      "Completed: ${todaysSets.length} / ${exercise.targetSets}",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: isComplete
+                                            ? const Color(0xFF39FF14)
+                                            : Colors.yellow,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ] else ...[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      "${exercise.targetSets} Sets",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
                             ),
-                            Row(
-                              children: [
-                                Text(
-                                  "${exercise.targetSets} Sets",
-                                  style: TextStyle(
-                                    color: Colors.grey[700],
-                                    fontSize: 12,
-                                  ),
+                            if (isComplete)
+                              const Icon(
+                                Icons.check_circle,
+                                color: Color(0xFF39FF14),
+                                size: 24,
+                              )
+                            else if (index > _focusedIndex &&
+                                _focusedIndex != -1)
+                              // Lock icon only if we are in focused mode and it's ahead
+                              Icon(
+                                Icons.lock_outline,
+                                color: Colors.grey[700],
+                                size: 18,
+                              )
+                            else if (isStarted)
+                              // In progress indicator
+                              const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.yellow,
                                 ),
-                                const SizedBox(width: 8),
-                                Icon(
-                                  Icons.lock_outline,
-                                  color: Colors.grey[700],
-                                  size: 18,
-                                ),
-                              ],
-                            ),
+                              )
+                            else
+                              // Chevron or nothing
+                              Icon(
+                                Icons.chevron_right,
+                                color: Colors.grey[700],
+                                size: 18,
+                              ),
                           ],
                         ),
                       ),
                     );
                   }
-
-                  // Condition C: Completed
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() => _focusedIndex = index);
-                      _scrollToIndex(index);
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 4,
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white10),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              exercise.name,
-                              style: TextStyle(
-                                color: Colors.grey[500],
-                                decoration: TextDecoration.lineThrough,
-                              ),
-                            ),
-                          ),
-                          if (isTargetMet)
-                            const Icon(
-                              Icons.check_circle,
-                              color: Color(0xFF39FF14),
-                              size: 20,
-                            )
-                          else
-                            const Text(
-                              "Incomplete",
-                              style: TextStyle(
-                                color: Colors.orange,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  );
+                  // Should be unreachable if logic is correct, but for safety:
+                  return const SizedBox.shrink();
                 },
               ),
             ),
@@ -525,6 +539,7 @@ class _ExerciseInputCard extends StatefulWidget {
   final List<ExerciseSet> todaysSets;
   final bool isFocused;
   final bool isTargetMet;
+  final VoidCallback onCollapse;
 
   const _ExerciseInputCard({
     super.key,
@@ -533,6 +548,7 @@ class _ExerciseInputCard extends StatefulWidget {
     required this.isLoadingHistory,
     required this.onSetCompleted,
     required this.todaysSets,
+    required this.onCollapse,
     this.isFocused = false,
     this.isTargetMet = false,
   });
@@ -579,46 +595,51 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Header
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                    GestureDetector(
+                      // Tap header to collapse
+                      onTap: widget.onCollapse, // Call the onCollapse callback
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  widget.exercise.name,
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                _buildSetProgressText(),
+                              ],
+                            ),
+                          ),
+                          Row(
                             children: [
-                              Text(
-                                widget.exercise.name,
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.info_outline,
+                                  color: Colors.grey,
+                                  size: 20,
                                 ),
+                                onPressed: () => _showInfoDialog(context),
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                widget.isTargetMet
-                                    ? "Target Completed (${widget.todaysSets.length}/${widget.exercise.targetSets})"
-                                    : "Set ${widget.todaysSets.length + 1} of ${widget.exercise.targetSets}",
-                                style: TextStyle(
-                                  color: widget.isTargetMet
-                                      ? Colors.greenAccent
-                                      : const Color(0xFF39FF14),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.keyboard_arrow_up, // Collapse Icon
+                                  color: Colors.grey,
+                                  size: 24,
                                 ),
+                                onPressed: widget.onCollapse,
                               ),
                             ],
                           ),
-                        ),
-                        IconButton(
-                          icon: const Icon(
-                            Icons.info_outline,
-                            color: Colors.grey,
-                            size: 20,
-                          ),
-                          onPressed: () => _showInfoDialog(context),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
 
                     // Ghost Text
@@ -952,6 +973,34 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
       default:
         return Colors.orangeAccent;
     }
+  }
+
+  Widget _buildSetProgressText() {
+    final int currentSet = widget.todaysSets.length + 1;
+    final int target = widget.exercise.targetSets;
+
+    // Logic for Bonus Sets
+    if (widget.todaysSets.length >= target) {
+      // We are in bonus territory or just finished
+      final int bonusSetNum = widget.todaysSets.length - target + 1;
+      return Text(
+        "Bonus Set $bonusSetNum (Target: $target)",
+        style: const TextStyle(
+          color: Colors.greenAccent, // Keep it green
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+      );
+    }
+
+    return Text(
+      "Set $currentSet of $target",
+      style: const TextStyle(
+        color: Color(0xFF39FF14),
+        fontSize: 12,
+        fontWeight: FontWeight.bold,
+      ),
+    );
   }
 
   void _submitSet() {
