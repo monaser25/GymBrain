@@ -13,13 +13,38 @@ class ProgressScreen extends StatefulWidget {
 
 enum ChartRange { oneMonth, threeMonths, all }
 
-class _ProgressScreenState extends State<ProgressScreen> {
+class _ProgressScreenState extends State<ProgressScreen>
+    with SingleTickerProviderStateMixin {
   final _db = GymDatabase();
   ChartRange _selectedRange = ChartRange.all;
+  late TabController _tabController;
+
+  // For Exercise Tab
+  String? _selectedExerciseId;
+  List<Map<String, dynamic>> _exerciseHistory = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  void _loadExerciseHistory(String exerciseId) {
+    setState(() {
+      _selectedExerciseId = exerciseId;
+      _exerciseHistory = _db.getExerciseHistory(exerciseId);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Get data
+    // Get data for Body Stats
     final records = _db.getAllInBodyRecords();
 
     // Sort oldest first for the chart
@@ -50,371 +75,566 @@ class _ProgressScreenState extends State<ProgressScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add, color: Color(0xFF39FF14)),
-            onPressed: () => _showAddDialog(context),
-          ),
+          if (_tabController.index == 0)
+            IconButton(
+              icon: const Icon(Icons.add, color: Color(0xFF39FF14)),
+              onPressed: () => _showAddDialog(context),
+            ),
         ],
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: const Color(0xFF39FF14),
+          labelColor: const Color(0xFF39FF14),
+          unselectedLabelColor: Colors.grey,
+          onTap: (index) => setState(() {}),
+          tabs: const [
+            Tab(text: "Body Stats"),
+            Tab(text: "Exercise Progress"),
+          ],
+        ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            children: [
-              // 1. Stats Row
-              Row(
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          // TAB 1: BODY STATS (Original Content)
+          SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
                 children: [
-                  Expanded(
-                    child: _StatCard(
-                      label: "WEIGHT",
-                      value: current?.weight.toString() ?? "--",
-                      unit: "kg",
-                      change: _calculateChange(
-                        current?.weight,
-                        previous?.weight,
-                      ),
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _StatCard(
-                      label: "SMM",
-                      value: current?.smm.toString() ?? "--",
-                      unit: "kg",
-                      change: _calculateChange(current?.smm, previous?.smm),
-                      color: const Color(0xFF39FF14),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _StatCard(
-                      label: "PBF",
-                      value: current?.pbf.toString() ?? "--",
-                      unit: "%",
-                      change: _calculateChange(current?.pbf, previous?.pbf),
-                      color: Colors.orangeAccent,
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 32),
-
-              // 2. Filter Buttons
-              Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1C1C1E),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.all(4),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _FilterButton(
-                      text: "1M",
-                      isSelected: _selectedRange == ChartRange.oneMonth,
-                      onTap: () =>
-                          setState(() => _selectedRange = ChartRange.oneMonth),
-                    ),
-                    _FilterButton(
-                      text: "3M",
-                      isSelected: _selectedRange == ChartRange.threeMonths,
-                      onTap: () => setState(
-                        () => _selectedRange = ChartRange.threeMonths,
-                      ),
-                    ),
-                    _FilterButton(
-                      text: "ALL",
-                      isSelected: _selectedRange == ChartRange.all,
-                      onTap: () =>
-                          setState(() => _selectedRange = ChartRange.all),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // 3. Chart Section
-              Container(
-                height: 300,
-                padding: const EdgeInsets.only(right: 16, top: 24, bottom: 12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1C1C1E),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: chartData.isEmpty
-                    ? const Center(
-                        child: Text(
-                          "Add data to see chart",
-                          style: TextStyle(color: Colors.grey),
+                  // 1. Stats Row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _StatCard(
+                          label: "WEIGHT",
+                          value: current?.weight.toString() ?? "--",
+                          unit: "kg",
+                          change: _calculateChange(
+                            current?.weight,
+                            previous?.weight,
+                          ),
+                          color: Colors.white,
                         ),
-                      )
-                    : LineChart(
-                        LineChartData(
-                          gridData: const FlGridData(show: false),
-                          titlesData: FlTitlesData(
-                            rightTitles: const AxisTitles(
-                              sideTitles: SideTitles(showTitles: false),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _StatCard(
+                          label: "SMM",
+                          value: current?.smm.toString() ?? "--",
+                          unit: "kg",
+                          change: _calculateChange(current?.smm, previous?.smm),
+                          color: const Color(0xFF39FF14),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _StatCard(
+                          label: "PBF",
+                          value: current?.pbf.toString() ?? "--",
+                          unit: "%",
+                          change: _calculateChange(current?.pbf, previous?.pbf),
+                          color: Colors.orangeAccent,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // 2. Filter Buttons
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1C1C1E),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.all(4),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _FilterButton(
+                          text: "1M",
+                          isSelected: _selectedRange == ChartRange.oneMonth,
+                          onTap: () => setState(
+                            () => _selectedRange = ChartRange.oneMonth,
+                          ),
+                        ),
+                        _FilterButton(
+                          text: "3M",
+                          isSelected: _selectedRange == ChartRange.threeMonths,
+                          onTap: () => setState(
+                            () => _selectedRange = ChartRange.threeMonths,
+                          ),
+                        ),
+                        _FilterButton(
+                          text: "ALL",
+                          isSelected: _selectedRange == ChartRange.all,
+                          onTap: () =>
+                              setState(() => _selectedRange = ChartRange.all),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // 3. Chart Section
+                  Container(
+                    height: 300,
+                    padding: const EdgeInsets.only(
+                      right: 16,
+                      top: 24,
+                      bottom: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1C1C1E),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: chartData.isEmpty
+                        ? const Center(
+                            child: Text(
+                              "Add data to see chart",
+                              style: TextStyle(color: Colors.grey),
                             ),
-                            topTitles: const AxisTitles(
-                              sideTitles: SideTitles(showTitles: false),
-                            ),
-                            bottomTitles: const AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: false,
-                              ), // Clean look, maybe add date labels later
-                            ),
-                            leftTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: true,
-                                interval: 10,
-                                reservedSize: 30,
-                                getTitlesWidget: (value, meta) {
-                                  return Text(
-                                    value.toInt().toString(),
-                                    style: const TextStyle(
-                                      color: Colors.grey,
-                                      fontSize: 10,
-                                    ),
-                                  );
-                                },
+                          )
+                        : LineChart(
+                            LineChartData(
+                              gridData: const FlGridData(show: false),
+                              titlesData: FlTitlesData(
+                                rightTitles: const AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false),
+                                ),
+                                topTitles: const AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false),
+                                ),
+                                bottomTitles: const AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false),
+                                ),
+                                leftTitles: AxisTitles(
+                                  sideTitles: SideTitles(
+                                    showTitles: true,
+                                    interval: 10,
+                                    reservedSize: 30,
+                                    getTitlesWidget: (value, meta) {
+                                      return Text(
+                                        value.toInt().toString(),
+                                        style: const TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 10,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                              borderData: FlBorderData(show: false),
+                              minX: 0,
+                              maxX: (chartData.length - 1).toDouble(),
+                              minY: 0,
+                              lineBarsData: [
+                                // Weight
+                                LineChartBarData(
+                                  spots: chartData.asMap().entries.map((e) {
+                                    return FlSpot(
+                                      e.key.toDouble(),
+                                      e.value.weight,
+                                    );
+                                  }).toList(),
+                                  isCurved: true,
+                                  color: Colors.white,
+                                  barWidth: 2,
+                                  dotData: const FlDotData(show: false),
+                                ),
+                                // SMM
+                                LineChartBarData(
+                                  spots: chartData.asMap().entries.map((e) {
+                                    return FlSpot(
+                                      e.key.toDouble(),
+                                      e.value.smm,
+                                    );
+                                  }).toList(),
+                                  isCurved: true,
+                                  color: const Color(0xFF39FF14),
+                                  barWidth: 2,
+                                  dotData: const FlDotData(show: false),
+                                ),
+                                // PBF
+                                LineChartBarData(
+                                  spots: chartData.asMap().entries.map((e) {
+                                    return FlSpot(
+                                      e.key.toDouble(),
+                                      e.value.pbf,
+                                    );
+                                  }).toList(),
+                                  isCurved: true,
+                                  color: Colors.orangeAccent,
+                                  barWidth: 2,
+                                  dotData: const FlDotData(show: false),
+                                ),
+                              ],
+                              lineTouchData: LineTouchData(
+                                touchTooltipData: LineTouchTooltipData(
+                                  getTooltipItems: (touchedSpots) {
+                                    return touchedSpots.map((spot) {
+                                      String label;
+                                      if (spot.barIndex == 0) {
+                                        label = "Weight";
+                                      } else if (spot.barIndex == 1) {
+                                        label = "SMM";
+                                      } else {
+                                        label = "PBF";
+                                      }
+
+                                      return LineTooltipItem(
+                                        "$label: ${spot.y}\n",
+                                        const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      );
+                                    }).toList();
+                                  },
+                                  tooltipPadding: const EdgeInsets.all(8),
+                                  fitInsideHorizontally: true,
+                                  fitInsideVertically: true,
+                                ),
                               ),
                             ),
                           ),
-                          borderData: FlBorderData(show: false),
-                          minX: 0,
-                          maxX: (chartData.length - 1).toDouble(),
-                          minY:
-                              0, // Start from 0 to see perspective, or autoscaling
-                          // Let's settle for auto-range but with some padding
-                          lineBarsData: [
-                            // Weight
-                            LineChartBarData(
-                              spots: chartData.asMap().entries.map((e) {
-                                return FlSpot(e.key.toDouble(), e.value.weight);
-                              }).toList(),
-                              isCurved: true,
-                              color: Colors.white,
-                              barWidth: 2,
-                              dotData: const FlDotData(show: false),
-                            ),
-                            // SMM
-                            LineChartBarData(
-                              spots: chartData.asMap().entries.map((e) {
-                                return FlSpot(e.key.toDouble(), e.value.smm);
-                              }).toList(),
-                              isCurved: true,
-                              color: const Color(0xFF39FF14),
-                              barWidth: 2,
-                              dotData: const FlDotData(show: false),
-                            ),
-                            // PBF
-                            LineChartBarData(
-                              spots: chartData.asMap().entries.map((e) {
-                                return FlSpot(e.key.toDouble(), e.value.pbf);
-                              }).toList(),
-                              isCurved: true,
-                              color: Colors.orangeAccent,
-                              barWidth: 2,
-                              dotData: const FlDotData(show: false),
-                            ),
-                          ],
-                          lineTouchData: LineTouchData(
-                            touchTooltipData: LineTouchTooltipData(
-                              getTooltipItems: (touchedSpots) {
-                                return touchedSpots.map((spot) {
-                                  String label;
-                                  if (spot.barIndex == 0) {
-                                    label = "Weight";
-                                  } else if (spot.barIndex == 1) {
-                                    label = "SMM";
-                                  } else {
-                                    label = "PBF";
-                                  }
+                  ),
 
-                                  return LineTooltipItem(
-                                    "$label: ${spot.y}\n",
-                                    const TextStyle(
+                  const SizedBox(height: 32),
+
+                  // 4. History List Header
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "History",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 5. History List
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: recentRecords.length,
+                    itemBuilder: (context, index) {
+                      final record = recentRecords[index];
+                      // Hive keys are usually dynamic, but often int for auto-increment
+                      final key = record.key;
+
+                      return Dismissible(
+                        key: ValueKey(key ?? record.date.toString()),
+                        direction: DismissDirection.endToStart,
+                        background: Container(
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          color: Colors.redAccent,
+                          child: const Icon(Icons.delete, color: Colors.white),
+                        ),
+                        confirmDismiss: (direction) async {
+                          return await showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              backgroundColor: const Color(0xFF1C1C1E),
+                              title: const Text(
+                                "Delete Record?",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
+                                  child: const Text(
+                                    "Cancel",
+                                    style: TextStyle(color: Colors.grey),
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: const Text(
+                                    "Delete",
+                                    style: TextStyle(color: Colors.redAccent),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        onDismissed: (direction) {
+                          _db.deleteInBodyRecord(key);
+                          setState(() {
+                            // UI update handled by re-fetching in build, but setState triggers it
+                          });
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1C1C1E),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    DateFormat(
+                                      'MMM d, yyyy',
+                                    ).format(record.date),
+                                    style: const TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,
                                     ),
-                                  );
-                                }).toList();
-                              },
-                              tooltipPadding: const EdgeInsets.all(8),
-                              // tooltipBgColor: const Color(0xFF2C2C2E), // Deprecated/Removed in newer versions?
-                              fitInsideHorizontally: true,
-                              fitInsideVertically: true,
-                            ),
-                          ),
-                        ),
-                      ),
-              ),
-
-              const SizedBox(height: 32),
-
-              // 4. History List Header
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "History",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // 5. History List
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: recentRecords.length,
-                itemBuilder: (context, index) {
-                  final record = recentRecords[index];
-                  // Hive keys are usually dynamic, but often int for auto-increment
-                  final key = record.key;
-
-                  return Dismissible(
-                    key: ValueKey(key ?? record.date.toString()),
-                    direction: DismissDirection.endToStart,
-                    background: Container(
-                      alignment: Alignment.centerRight,
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      color: Colors.redAccent,
-                      child: const Icon(Icons.delete, color: Colors.white),
-                    ),
-                    confirmDismiss: (direction) async {
-                      return await showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          backgroundColor: const Color(0xFF1C1C1E),
-                          title: const Text(
-                            "Delete Record?",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, false),
-                              child: const Text(
-                                "Cancel",
-                                style: TextStyle(color: Colors.grey),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Container(
+                                        width: 8,
+                                        height: 8,
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFF39FF14),
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        "${record.smm} ",
+                                        style: TextStyle(
+                                          color: Colors.grey[500],
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        width: 8,
+                                        height: 8,
+                                        decoration: const BoxDecoration(
+                                          color: Colors.orangeAccent,
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        "${record.pbf}%",
+                                        style: TextStyle(
+                                          color: Colors.grey[500],
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                            ),
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, true),
-                              child: const Text(
-                                "Delete",
-                                style: TextStyle(color: Colors.redAccent),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                    onDismissed: (direction) {
-                      _db.deleteInBodyRecord(key);
-                      setState(() {
-                        // UI update handled by re-fetching in build, but setState triggers it
-                      });
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1C1C1E),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                DateFormat('MMM d, yyyy').format(record.date),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
                               Row(
                                 children: [
-                                  Container(
-                                    width: 8,
-                                    height: 8,
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFF39FF14),
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
                                   Text(
-                                    "${record.smm} ",
-                                    style: TextStyle(
-                                      color: Colors.grey[500],
-                                      fontSize: 12,
+                                    "${record.weight} kg",
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    width: 8,
-                                    height: 8,
-                                    decoration: const BoxDecoration(
-                                      color: Colors.orangeAccent,
-                                      shape: BoxShape.circle,
+                                  const SizedBox(width: 16),
+                                  InkWell(
+                                    onTap: () => _showAddDialog(
+                                      context,
+                                      existingRecord: record,
                                     ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    "${record.pbf}%",
-                                    style: TextStyle(
-                                      color: Colors.grey[500],
-                                      fontSize: 12,
+                                    child: const Icon(
+                                      Icons.edit,
+                                      color: Colors.grey,
+                                      size: 20,
                                     ),
                                   ),
                                 ],
                               ),
                             ],
                           ),
-                          Row(
-                            children: [
-                              Text(
-                                "${record.weight} kg",
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              InkWell(
-                                onTap: () => _showAddDialog(
-                                  context,
-                                  existingRecord: record,
-                                ),
-                                child: const Icon(
-                                  Icons.edit,
-                                  color: Colors.grey,
-                                  size: 20,
-                                ),
-                              ),
-                            ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // TAB 2: EXERCISE PROGRESS
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1C1C1E),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _selectedExerciseId,
+                      hint: const Text(
+                        "Select Exercise",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                      isExpanded: true,
+                      dropdownColor: const Color(0xFF1C1C1E),
+                      style: const TextStyle(color: Colors.white),
+                      icon: const Icon(
+                        Icons.arrow_drop_down,
+                        color: Color(0xFF39FF14),
+                      ),
+                      items: _db.getExercises().map((e) {
+                        return DropdownMenuItem(
+                          value: e.id,
+                          child: Text(e.name),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        if (val != null) _loadExerciseHistory(val);
+                      },
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+
+                if (_selectedExerciseId != null && _exerciseHistory.isNotEmpty)
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Max Weight Trend",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
-                        ],
+                        ),
+                        const SizedBox(height: 16),
+                        Container(
+                          height: 300,
+                          padding: const EdgeInsets.only(
+                            right: 16,
+                            top: 24,
+                            bottom: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1C1C1E),
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          child: LineChart(
+                            LineChartData(
+                              gridData: const FlGridData(show: false),
+                              titlesData: FlTitlesData(
+                                rightTitles: const AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false),
+                                ),
+                                topTitles: const AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false),
+                                ),
+                                bottomTitles: const AxisTitles(
+                                  sideTitles: SideTitles(showTitles: false),
+                                ),
+                                leftTitles: AxisTitles(
+                                  sideTitles: SideTitles(
+                                    showTitles: true,
+                                    interval: 5,
+                                    reservedSize: 30,
+                                    getTitlesWidget: (value, meta) {
+                                      return Text(
+                                        value.toInt().toString(),
+                                        style: const TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 10,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                              borderData: FlBorderData(show: false),
+                              lineBarsData: [
+                                LineChartBarData(
+                                  spots: _exerciseHistory.asMap().entries.map((
+                                    e,
+                                  ) {
+                                    return FlSpot(
+                                      e.key.toDouble(),
+                                      e.value['weight'],
+                                    );
+                                  }).toList(),
+                                  isCurved: true,
+                                  color: const Color(0xFF39FF14),
+                                  barWidth: 3,
+                                  dotData: const FlDotData(show: true),
+                                ),
+                              ],
+                              lineTouchData: LineTouchData(
+                                touchTooltipData: LineTouchTooltipData(
+                                  tooltipPadding: const EdgeInsets.all(8),
+                                  getTooltipItems: (spots) {
+                                    return spots.map((spot) {
+                                      // find original date
+                                      final date =
+                                          _exerciseHistory[spot.x
+                                                  .toInt()]['date']
+                                              as DateTime;
+                                      final dateStr = DateFormat(
+                                        'MM/dd',
+                                      ).format(date);
+                                      return LineTooltipItem(
+                                        "${spot.y} kg\n$dateStr",
+                                        const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      );
+                                    }).toList();
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else if (_selectedExerciseId != null)
+                  const Expanded(
+                    child: Center(
+                      child: Text(
+                        "No history for this exercise yet.",
+                        style: TextStyle(color: Colors.grey),
                       ),
                     ),
-                  );
-                },
-              ),
-            ],
+                  )
+                else
+                  const Expanded(
+                    child: Center(
+                      child: Text(
+                        "Select an exercise above to see progress.",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -450,9 +670,6 @@ class _ProgressScreenState extends State<ProgressScreen> {
     final smmCtrl = TextEditingController(text: existingRecord?.smm.toString());
     final pbfCtrl = TextEditingController(text: existingRecord?.pbf.toString());
     DateTime selectedDate = existingRecord?.date ?? DateTime.now();
-
-    // Ensure we are working with correct context for Futures
-    // State variable capture for async
 
     showDialog(
       context: context,
@@ -544,7 +761,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
                   if (w != null && s != null && p != null) {
                     final newRecord = InBodyRecord(
-                      date: selectedDate, // Use user selected date
+                      date: selectedDate,
                       weight: w,
                       smm: s,
                       pbf: p,

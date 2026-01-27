@@ -3,7 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import '../models/gym_models.dart';
 
-class GymDatabase {
+class GymDatabase extends ChangeNotifier {
   static final GymDatabase _instance = GymDatabase._internal();
 
   factory GymDatabase() {
@@ -35,6 +35,7 @@ class GymDatabase {
   // Exercises
   Future<void> saveExercise(Exercise exercise) async {
     await _exerciseBox.put(exercise.id, exercise);
+    notifyListeners();
   }
 
   List<Exercise> getExercises() {
@@ -48,10 +49,12 @@ class GymDatabase {
   // Routines
   Future<void> saveRoutine(Routine routine) async {
     await _routineBox.put(routine.id, routine);
+    notifyListeners();
   }
 
   Future<void> deleteRoutine(String id) async {
     await _routineBox.delete(id);
+    notifyListeners();
   }
 
   List<Routine> getRoutines() {
@@ -65,6 +68,7 @@ class GymDatabase {
   // Sessions
   Future<void> saveSession(WorkoutSession session) async {
     await _sessionBox.put(session.id, session);
+    notifyListeners();
   }
 
   List<WorkoutSession> getSessions() {
@@ -76,14 +80,17 @@ class GymDatabase {
   // InBody
   Future<void> addInBodyRecord(InBodyRecord record) async {
     await _inBodyBox.add(record);
+    notifyListeners();
   }
 
   Future<void> updateInBodyRecord(dynamic key, InBodyRecord record) async {
     await _inBodyBox.put(key, record);
+    notifyListeners();
   }
 
   Future<void> deleteInBodyRecord(dynamic key) async {
     await _inBodyBox.delete(key);
+    notifyListeners();
   }
 
   InBodyRecord? getLatestInBody() {
@@ -113,5 +120,34 @@ class GymDatabase {
       }
     }
     return null;
+  }
+
+  // Exercise History for Charts
+  List<Map<String, dynamic>> getExerciseHistory(String exerciseId) {
+    final exercise = getExercise(exerciseId);
+    if (exercise == null) return [];
+
+    final history = <Map<String, dynamic>>[];
+    final sessions = getSessions().reversed.toList(); // Oldest first for charts
+
+    for (final session in sessions) {
+      // Find the best set (Max Weight) for this session
+      double maxWeight = 0;
+      bool found = false;
+
+      for (final set in session.sets) {
+        if (set.exerciseName == exercise.name) {
+          if (set.weight > maxWeight) {
+            maxWeight = set.weight;
+            found = true;
+          }
+        }
+      }
+
+      if (found) {
+        history.add({'date': session.date, 'weight': maxWeight});
+      }
+    }
+    return history;
   }
 }
