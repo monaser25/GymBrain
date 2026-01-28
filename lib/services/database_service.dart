@@ -200,4 +200,76 @@ class GymDatabase extends ChangeNotifier {
     }
     return history;
   }
+
+  // Phase 3: Robust Name-Based History
+  List<String> getExerciseNamesFromHistory() {
+    final Set<String> names = {};
+    for (final session in getSessions()) {
+      for (final set in session.sets) {
+        names.add(set.exerciseName);
+      }
+    }
+    return names.toList()..sort();
+  }
+
+  List<Map<String, dynamic>> getHistoryForExerciseName(String exerciseName) {
+    final history = <Map<String, dynamic>>[];
+    final sessions = getSessions().reversed.toList(); // Oldest first for charts
+
+    for (final session in sessions) {
+      double maxWeight = 0;
+      double totalVolume = 0;
+      bool found = false;
+
+      for (final set in session.sets) {
+        if (set.exerciseName == exerciseName) {
+          found = true;
+          // Max Weight
+          if (set.weight > maxWeight) {
+            maxWeight = set.weight;
+          }
+          // Volume = Weight * Reps
+          totalVolume += (set.weight * set.reps);
+        }
+      }
+
+      if (found) {
+        history.add({
+          'date': session.date,
+          'weight': maxWeight,
+          'volume': totalVolume,
+        });
+      }
+    }
+    return history;
+  }
+
+  // Routine History Logic
+  List<String> getRoutineNamesFromHistory() {
+    final Set<String> names = {};
+    for (final session in getSessions()) {
+      names.add(session.routineName);
+    }
+    return names.toList()..sort();
+  }
+
+  List<Map<String, dynamic>> getHistoryForRoutine(String routineName) {
+    final history = <Map<String, dynamic>>[];
+    final sessions = getSessions().reversed.toList();
+
+    for (final session in sessions) {
+      if (session.routineName == routineName) {
+        double totalVolume = 0;
+        for (final set in session.sets) {
+          totalVolume += (set.weight * set.reps);
+        }
+        history.add({
+          'date': session.date,
+          'volume': totalVolume,
+          'weight': 0.0,
+        });
+      }
+    }
+    return history;
+  }
 }
