@@ -1,5 +1,5 @@
 class TimerConfig {
-  static int getRestTime(String exerciseName) {
+  static int? getRestTime(String exerciseName) {
     final name = exerciseName.toLowerCase();
 
     // 1. Power / Strength (Heavy Compound) -> 3 Mins (180s)
@@ -37,7 +37,7 @@ class TimerConfig {
       return 60;
     }
 
-    // Default -> 90s
-    return 90;
+    // Default -> Null (Use App Setting)
+    return null;
   }
 }

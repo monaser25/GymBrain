@@ -51,15 +51,29 @@ class NotificationService {
     if (androidImplementation != null) {
       await androidImplementation.requestNotificationsPermission();
 
-      const AndroidNotificationChannel channel = AndroidNotificationChannel(
-        'gym_timer',
-        'Timer',
-        description: 'Notifications for workout rest timers',
-        importance: Importance.max,
-        playSound: true,
-      );
+      // Channel 1: Sound Enabled
+      const AndroidNotificationChannel soundChannel =
+          AndroidNotificationChannel(
+            'gym_brain_sound', // ID
+            'Timer (Sound)', // Name
+            description: 'Workout timer notifications with sound',
+            importance: Importance.max,
+            playSound: true,
+          );
 
-      await androidImplementation.createNotificationChannel(channel);
+      // Channel 2: Silent (Vibrate Only)
+      const AndroidNotificationChannel silentChannel =
+          AndroidNotificationChannel(
+            'gym_brain_silent', // ID
+            'Timer (Silent)', // Name
+            description: 'Silent workout timer notifications',
+            importance: Importance.high,
+            playSound: false,
+            enableVibration: true,
+          );
+
+      await androidImplementation.createNotificationChannel(soundChannel);
+      await androidImplementation.createNotificationChannel(silentChannel);
     }
   }
 
@@ -68,10 +82,10 @@ class NotificationService {
     required String title,
     required String body,
     required int seconds,
+    required bool playSound, // New Parameter
   }) async {
-    // Attempting to use zonedSchedule.
-    // If 'uiLocalNotificationDateInterpretation' is not defined (as per error), we omit it.
-    // Use named 'scheduledDate' and 'notificationDetails'.
+    final String channelId = playSound ? 'gym_brain_sound' : 'gym_brain_silent';
+
     await flutterLocalNotificationsPlugin.zonedSchedule(
       id: id,
       title: title,
@@ -81,24 +95,19 @@ class NotificationService {
       ).add(Duration(seconds: seconds)),
       notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
-          'rest_timer_channel',
-          'Rest Timer',
-          channelDescription: 'Notifications for workout rest timers',
-          importance: Importance.max,
+          channelId,
+          playSound ? 'Timer (Sound)' : 'Timer (Silent)',
+          channelDescription: 'Workout timer notifications',
+          importance: playSound ? Importance.max : Importance.high,
           priority: Priority.high,
           ticker: 'ticker',
+          playSound: playSound,
+          // Vibration pattern for both (optional, but good for silent)
           vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
         ),
-        iOS: const DarwinNotificationDetails(),
+        iOS: DarwinNotificationDetails(presentSound: playSound),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      // Removed uiLocalNotificationDateInterpretation: ...
-      // If it is required, the build will fail, but the linter said it's "Undefined".
-      // If it is required but undefined, we have a bigger version mismatch problem.
-      // But usually "Undefined named parameter" means "You passed X but I don't accept X".
-      // If the function REQUIRES it, it would be a positional arg in old versions, or a required named arg.
-      // If it is a required named arg, but I can't name it... that's a paradox unless the name is different.
-      // Trying without it explicitly.
     );
   }
 

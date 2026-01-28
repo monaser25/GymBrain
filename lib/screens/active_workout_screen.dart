@@ -7,6 +7,8 @@ import '../services/notification_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:vibration/vibration.dart';
+import 'package:flutter/services.dart';
 import '../utils/timer_config.dart';
 
 class ActiveWorkoutScreen extends StatefulWidget {
@@ -182,7 +184,8 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
     _restTimer?.cancel();
     setState(() {
       _isResting = true;
-      _restSecondsRemaining = duration ?? 90; // Use smart duration or default
+      _restSecondsRemaining =
+          duration ?? _db.defaultRestSeconds; // Use User Setting
     });
 
     _scheduleNotification(_restSecondsRemaining);
@@ -198,6 +201,11 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
         } else {
           _isResting = false;
           timer.cancel();
+          // Sound & Vibration Feedback
+          if (_db.enableSound) {
+            Vibration.vibrate();
+            SystemSound.play(SystemSoundType.click);
+          }
         }
       });
     });
@@ -267,37 +275,23 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
   }
 
   Future<void> _scheduleNotification(int seconds) async {
+    if (!_db.enableNotifications) return;
+
     print("🔍 ATTEMPTING TO NOTIFY in $seconds seconds...");
+    final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
     // Determine the current exercise name for the dynamic body
     String currentExerciseName = "your next set";
     if (_focusedIndex >= 0 && _focusedIndex < _exercises.length) {
       currentExerciseName = _exercises[_focusedIndex].name;
     }
 
-    final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-
     try {
-      tz.initializeTimeZones(); // Just in case
-
-      await flutterLocalNotificationsPlugin.zonedSchedule(
+      await NotificationService().scheduleNotification(
         id: 0,
         title: "Rest Finished! 🔔",
         body: "Time to crush your next set of $currentExerciseName!",
-        scheduledDate: tz.TZDateTime.now(
-          tz.local,
-        ).add(Duration(seconds: seconds)),
-        notificationDetails: const NotificationDetails(
-          android: AndroidNotificationDetails(
-            'gym_timer',
-            'Timer',
-            channelDescription: 'Notifications for workout rest timers',
-            importance: Importance.max,
-            priority: Priority.high,
-            ticker: 'ticker',
-            icon: '@mipmap/ic_launcher',
-          ),
-        ),
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        seconds: seconds,
+        playSound: _db.enableSound,
       );
       print("✅ Scheduled using exactAllowWhileIdle mode");
     } catch (e) {

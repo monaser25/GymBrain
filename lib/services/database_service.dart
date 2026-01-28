@@ -32,10 +32,27 @@ class GymDatabase extends ChangeNotifier {
     _sessionBox = await Hive.openBox<WorkoutSession>('sessions');
     _inBodyBox = await Hive.openBox<InBodyRecord>('inbody');
     _activeSessionBox = await Hive.openBox('active_session');
+    _settingsBox = await Hive.openBox('settings');
   }
 
   // Active Session Persistence
   late Box _activeSessionBox;
+  late Box _settingsBox;
+
+  // Settings
+  int get defaultRestSeconds =>
+      _settingsBox.get('default_rest_seconds', defaultValue: 90);
+  Future<void> setDefaultRestSeconds(int seconds) async =>
+      _settingsBox.put('default_rest_seconds', seconds);
+
+  bool get enableSound => _settingsBox.get('enable_sound', defaultValue: true);
+  Future<void> setEnableSound(bool enable) async =>
+      _settingsBox.put('enable_sound', enable);
+
+  bool get enableNotifications =>
+      _settingsBox.get('enable_notifications', defaultValue: true);
+  Future<void> setEnableNotifications(bool enable) async =>
+      _settingsBox.put('enable_notifications', enable);
 
   Future<void> saveActiveSession(
     String routineId,
