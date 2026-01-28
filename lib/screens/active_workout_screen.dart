@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../models/gym_models.dart';
 import '../services/database_service.dart';
+import '../services/notification_service.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 import '../utils/timer_config.dart';
 
 class ActiveWorkoutScreen extends StatefulWidget {
@@ -14,7 +18,8 @@ class ActiveWorkoutScreen extends StatefulWidget {
   State<ActiveWorkoutScreen> createState() => _ActiveWorkoutScreenState();
 }
 
-class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
+class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
+    with WidgetsBindingObserver {
   final _db = GymDatabase();
   final Stopwatch _stopwatch = Stopwatch();
   Timer? _stopwatchTimer;
@@ -36,6 +41,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
   // State for the session
   final List<ExerciseSet> _completedSets = [];
   late DateTime _startTime;
+  DateTime? _timerEndTime;
 
   // Cache for exercise objects
   List<Exercise> _exercises = [];
@@ -43,17 +49,85 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _requestAndroidExactAlarmPermission();
     _startTime = DateTime.now();
     _startStopwatch();
     _loadExercisesAndHistory();
+    _checkActiveSession();
+  }
+
+  Future<void> _requestAndroidExactAlarmPermission() async {
+    final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+    final androidImplementation = flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    if (androidImplementation != null) {
+      await androidImplementation.requestExactAlarmsPermission();
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      if (_isResting) {
+        _timerEndTime = DateTime.now().add(
+          Duration(seconds: _restSecondsRemaining),
+        );
+      }
+    } else if (state == AppLifecycleState.resumed) {
+      if (_isResting && _timerEndTime != null) {
+        final remaining = _timerEndTime!.difference(DateTime.now()).inSeconds;
+        if (remaining > 0) {
+          setState(() {
+            _restSecondsRemaining = remaining;
+          });
+          // Also cancel notification since user is back
+          // We can't easily track the specific ID unless we store it.
+          // For now, let's cancelAll or just rely on the fact user is here.
+          NotificationService().cancelAll();
+        } else {
+          _skipRest();
+        }
+      }
+    }
+  }
+
+  Future<void> _checkActiveSession() async {
+    final active = _db.getActiveSession();
+    if (active != null && active['routineId'] == widget.routine.id) {
+      setState(() {
+        if (active['startTime'] != null) {
+          _startTime = active['startTime'];
+          // Adjust stopwatch to match persisted start time
+          _stopwatch.reset(); // Stop and reset
+          // We can't set elapsed manually easily on Stopwatch.
+          // Instead, we should rely on Start Time diff for the display string.
+          // But _stopwatch is used for final duration.
+          // Let's just assume we rely on DateTime diff for final duration (we already fixed that).
+          // For the display loop:
+        }
+        if (active['completedSets'] != null) {
+          _completedSets.clear();
+          _completedSets.addAll(active['completedSets']);
+        }
+        if (active['focusedIndex'] != null) {
+          _focusedIndex = active['focusedIndex'];
+          _scrollToIndex(_focusedIndex);
+        }
+      });
+    }
   }
 
   void _startStopwatch() {
-    _stopwatch.start();
+    // If restoring, _startTime is old. DateTime.now().difference(_startTime) is real elapsed.
+    // If new, _startTime is now.
     _stopwatchTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) {
         setState(() {
-          _elapsedString = _formatDuration(_stopwatch.elapsed);
+          final elapsed = DateTime.now().difference(_startTime);
+          _elapsedString = _formatDuration(elapsed);
         });
       }
     });
@@ -82,9 +156,13 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _stopwatchTimer?.cancel();
     _restTimer?.cancel();
     _stopwatch.stop();
+    NotificationService().cancelNotification(
+      0,
+    ); // Cancel timer notification on dispose
     _scrollController.dispose();
     super.dispose();
   }
@@ -107,6 +185,8 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
       _restSecondsRemaining = duration ?? 90; // Use smart duration or default
     });
 
+    _scheduleNotification(_restSecondsRemaining);
+
     _restTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
         timer.cancel();
@@ -125,6 +205,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
 
   void _skipRest() {
     _restTimer?.cancel();
+    NotificationService().cancelNotification(0);
     setState(() {
       _isResting = false;
     });
@@ -134,6 +215,9 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
     setState(() {
       _restSecondsRemaining += 30;
     });
+    // Reschedule
+    NotificationService().cancelNotification(0);
+    _scheduleNotification(_restSecondsRemaining);
   }
 
   void _scrollToIndex(int index) {
@@ -154,6 +238,8 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
       _completedSets.add(set);
     });
 
+    _saveProgress();
+
     // Check if we should advance to next exercise
     // Logic: If user has done 3 sets (or whatever logic), advance.
     // For now, let's keep it manual or based on a "Finish Exercise" button?
@@ -170,16 +256,96 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
       if (_focusedIndex < _exercises.length - 1) {
         setState(() => _focusedIndex++);
         _scrollToIndex(_focusedIndex);
+        _saveProgress(); // Update focused index persistence
       }
     }
 
+    // Smart Timer Logic
     // Smart Timer Logic
     final restTime = TimerConfig.getRestTime(exercise.name);
     _startRestTimer(restTime);
   }
 
+  Future<void> _scheduleNotification(int seconds) async {
+    print("🔍 ATTEMPTING TO NOTIFY in $seconds seconds...");
+    // Determine the current exercise name for the dynamic body
+    String currentExerciseName = "your next set";
+    if (_focusedIndex >= 0 && _focusedIndex < _exercises.length) {
+      currentExerciseName = _exercises[_focusedIndex].name;
+    }
+
+    final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+    try {
+      tz.initializeTimeZones(); // Just in case
+
+      await flutterLocalNotificationsPlugin.zonedSchedule(
+        id: 0,
+        title: "Rest Finished! 🔔",
+        body: "Time to crush your next set of $currentExerciseName!",
+        scheduledDate: tz.TZDateTime.now(
+          tz.local,
+        ).add(Duration(seconds: seconds)),
+        notificationDetails: const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'gym_timer',
+            'Timer',
+            channelDescription: 'Notifications for workout rest timers',
+            importance: Importance.max,
+            priority: Priority.high,
+            ticker: 'ticker',
+            icon: '@mipmap/ic_launcher',
+          ),
+        ),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      );
+      print("✅ Scheduled using exactAllowWhileIdle mode");
+    } catch (e) {
+      print("❌ ERROR in Scheduling: $e");
+      print("⚠️ Scheduling failed, used Fallback Delay");
+
+      // Fallback: Simple Delay
+      Future.delayed(Duration(seconds: seconds), () async {
+        if (!mounted || !_isResting) return;
+
+        print("⚠️ Triggering Fallback Notification NOW");
+        const AndroidNotificationDetails androidNotificationDetails =
+            AndroidNotificationDetails(
+              'gym_timer',
+              'Timer',
+              channelDescription: 'Notifications for workout rest timers',
+              importance: Importance.max,
+              priority: Priority.high,
+              ticker: 'ticker',
+              icon: '@mipmap/ic_launcher',
+            );
+        const NotificationDetails notificationDetails = NotificationDetails(
+          android: androidNotificationDetails,
+        );
+
+        await flutterLocalNotificationsPlugin.show(
+          id: 0,
+          title: "Rest Finished! 🔔",
+          body: "Time to crush your next set of $currentExerciseName!",
+          notificationDetails: notificationDetails,
+        );
+      });
+    }
+  }
+
+  void _saveProgress() {
+    _db.saveActiveSession(
+      widget.routine.id,
+      _startTime,
+      _completedSets,
+      focusedIndex: _focusedIndex,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final bool isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
@@ -455,8 +621,9 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
 
                 // Finish Button (Only visible if near end or explicitly scrolled? User requested visibility logic)
                 // Let's show it always at bottom for safety, but maybe highlight it when last exercise is done.
-                if (_focusedIndex >= _exercises.length - 1 ||
-                    _completedSets.isNotEmpty)
+                if (!isKeyboardVisible &&
+                    (_focusedIndex >= _exercises.length - 1 ||
+                        _completedSets.isNotEmpty))
                   _buildFinishButton(),
               ],
             ),
@@ -511,7 +678,44 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
           width: double.infinity,
           height: 56,
           child: ElevatedButton(
-            onPressed: _finishWorkout,
+            onPressed: () async {
+              final shouldFinish =
+                  await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      backgroundColor: const Color(0xFF1C1C1E),
+                      title: const Text(
+                        "Finish Workout?",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      content: const Text(
+                        "Are you ready to complete this session?",
+                        style: TextStyle(color: Colors.white70),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text(
+                            "Cancel",
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: const Text(
+                            "Finish",
+                            style: TextStyle(color: Colors.redAccent),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ) ??
+                  false;
+
+              if (shouldFinish) {
+                _finishWorkout();
+              }
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.redAccent,
               foregroundColor: Colors.white,
@@ -550,6 +754,8 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen> {
     );
 
     await _db.saveSession(session);
+    await _db.clearActiveSession();
+    NotificationService().cancelAll();
 
     // Slight delay to ensure saving
     await Future.delayed(const Duration(milliseconds: 300));

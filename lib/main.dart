@@ -2,13 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'screens/home_screen.dart';
 import 'services/database_service.dart';
+import 'services/notification_service.dart';
 import 'package:provider/provider.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Database
   await GymDatabase().init();
+  tz.initializeTimeZones(); // Initialize time zones
+  await NotificationService().init();
 
   // Set system UI overlay style for better aesthetics
   SystemChrome.setSystemUIOverlayStyle(

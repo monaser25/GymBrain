@@ -29,7 +29,57 @@ class GymDatabase extends ChangeNotifier {
     _exerciseBox = await Hive.openBox<Exercise>('exercises');
     _routineBox = await Hive.openBox<Routine>('routines');
     _sessionBox = await Hive.openBox<WorkoutSession>('sessions');
+    _sessionBox = await Hive.openBox<WorkoutSession>('sessions');
     _inBodyBox = await Hive.openBox<InBodyRecord>('inbody');
+    _activeSessionBox = await Hive.openBox('active_session');
+  }
+
+  // Active Session Persistence
+  late Box _activeSessionBox;
+
+  Future<void> saveActiveSession(
+    String routineId,
+    DateTime startTime,
+    List<ExerciseSet> completedSets, {
+    int? focusedIndex,
+  }) async {
+    await _activeSessionBox.put('routineId', routineId);
+    await _activeSessionBox.put('startTime', startTime.millisecondsSinceEpoch);
+    // Hive can store Lists of HiveObjects if adapter is registered
+    await _activeSessionBox.put('completedSets', completedSets);
+    if (focusedIndex != null) {
+      await _activeSessionBox.put('focusedIndex', focusedIndex);
+    }
+  }
+
+  Map<String, dynamic>? getActiveSession() {
+    if (_activeSessionBox.isEmpty) return null;
+    final routineId = _activeSessionBox.get('routineId') as String?;
+    if (routineId == null) return null;
+
+    final startTimeMs = _activeSessionBox.get('startTime') as int?;
+    final startTime = startTimeMs != null
+        ? DateTime.fromMillisecondsSinceEpoch(startTimeMs)
+        : null;
+
+    final setsDynamic = _activeSessionBox.get('completedSets');
+    List<ExerciseSet> completedSets = [];
+    if (setsDynamic is List) {
+      completedSets = setsDynamic.cast<ExerciseSet>().toList();
+    }
+
+    final focusedIndex = _activeSessionBox.get('focusedIndex') as int? ?? 0;
+
+    return {
+      'routineId': routineId,
+      'startTime': startTime,
+      'completedSets': completedSets,
+      'focusedIndex': focusedIndex,
+    };
+  }
+
+  Future<void> clearActiveSession() async {
+    await _activeSessionBox.clear();
   }
 
   // Exercises
