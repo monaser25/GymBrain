@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import '../models/gym_models.dart';
 import '../services/database_service.dart';
 import 'routine_editor_screen.dart';
+import 'exercise_library_screen.dart';
 
 class RoutinesScreen extends StatelessWidget {
   const RoutinesScreen({super.key});
@@ -23,6 +24,14 @@ class RoutinesScreen extends StatelessWidget {
           IconButton(
             onPressed: () => _showAddRoutineDialog(context),
             icon: const Icon(Icons.add, color: Color(0xFF39FF14)),
+          ),
+          IconButton(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ExerciseLibraryScreen()),
+            ),
+            icon: const Icon(Icons.inventory_2, color: Colors.white),
+            tooltip: 'Exercise Library',
           ),
         ],
       ),

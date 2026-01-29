@@ -113,6 +113,26 @@ class GymDatabase extends ChangeNotifier {
     return _exerciseBox.get(id);
   }
 
+  String? findExerciseIdByName(String name) {
+    try {
+      final exercise = _exerciseBox.values.firstWhere(
+        (e) => e.name.toLowerCase() == name.toLowerCase(),
+      );
+      return exercise.id;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Phase 4: Library Logic
+  List<String> getUniqueExerciseNames() {
+    final names = <String>{};
+    for (var ex in _exerciseBox.values) {
+      names.add(ex.name);
+    }
+    return names.toList()..sort();
+  }
+
   // Routines
   Future<void> saveRoutine(Routine routine) async {
     await _routineBox.put(routine.id, routine);
@@ -131,6 +151,8 @@ class GymDatabase extends ChangeNotifier {
   // Listenables
   ValueListenable<Box<Routine>> get routineListenable =>
       _routineBox.listenable();
+  ValueListenable<Box<Exercise>> get exerciseListenable =>
+      _exerciseBox.listenable();
 
   // Sessions
   Future<void> saveSession(WorkoutSession session) async {

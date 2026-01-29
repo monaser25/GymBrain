@@ -33,12 +33,21 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
             backgroundColor: Colors.transparent,
             elevation: 0,
           ),
-          body: _buildExerciseList(routine),
+          // Listen to Exercise Box to update UI when exercise name/details change
+          body: ValueListenableBuilder<Box<Exercise>>(
+            valueListenable: _db.exerciseListenable,
+            builder: (context, exerciseBox, _) {
+              return _buildExerciseList(routine);
+            },
+          ),
           floatingActionButton: FloatingActionButton.extended(
-            onPressed: () => _showExerciseDialog(context, routine),
+            onPressed: () => _showExerciseDialog(
+              context,
+              routine,
+            ).then((_) => setState(() {})),
             label: const Text("Add Exercise"),
             icon: const Icon(Icons.add),
-            backgroundColor: Theme.of(context).primaryColor,
+            backgroundColor: const Color(0xFF39FF14),
             foregroundColor: Colors.black,
           ),
         );
@@ -75,7 +84,7 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
         return Card(
           key: ValueKey(exercise.id),
           margin: const EdgeInsets.symmetric(vertical: 6),
-          color: Theme.of(context).cardColor,
+          color: const Color(0xFF1C1C1E),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -98,7 +107,11 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
             ),
             title: Text(
               exercise.name,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: Colors.white,
+              ),
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -154,11 +167,16 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
     await routine.save();
   }
 
-  void _showExerciseDialog(
+  // --- ADD / EDIT DIALOG (With Library) ---
+  Future<void> _showExerciseDialog(
     BuildContext context,
     Routine routine, {
     Exercise? existingExercise,
-  }) {
+  }) async {
+    final isEditing = existingExercise != null;
+    final libraryNames = _db.getUniqueExerciseNames();
+
+    // Controllers
     final nameController = TextEditingController(
       text: existingExercise?.name ?? "",
     );
@@ -168,127 +186,260 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
     final targetSetsController = TextEditingController(
       text: existingExercise?.targetSets.toString() ?? "3",
     );
-    final isEditing = existingExercise != null;
 
-    showDialog(
+    // Selected from Library
+    String? selectedLibraryName;
+
+    return showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.grey[900],
-          title: Text(
-            isEditing ? "Edit Exercise" : "New Exercise",
-            style: const TextStyle(color: Colors.white),
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: nameController,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(
-                    labelText: "Exercise Name",
-                    hintText: "e.g. Incline Bench Press",
-                    labelStyle: TextStyle(color: Colors.grey),
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
-                    ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Color(0xFF39FF14)),
+        // Use StatefulBuilder here so we can rebuild the Checkmarks in Library Tab
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return DefaultTabController(
+              length: isEditing ? 1 : 2,
+              child: AlertDialog(
+                backgroundColor: const Color(0xFF1C1C1E),
+                title: isEditing
+                    ? const Text(
+                        "Edit Exercise",
+                        style: TextStyle(color: Colors.white),
+                      )
+                    : const TabBar(
+                        indicatorColor: Color(0xFF39FF14),
+                        labelColor: Color(0xFF39FF14),
+                        unselectedLabelColor: Colors.grey,
+                        tabs: [
+                          Tab(text: "New"),
+                          Tab(text: "Library"),
+                        ],
+                      ),
+                content: SizedBox(
+                  width: double.maxFinite,
+                  height: 300,
+                  child: TabBarView(
+                    physics: isEditing
+                        ? const NeverScrollableScrollPhysics()
+                        : null,
+                    children: [
+                      // TAB 1: NEW / EDIT FORM
+                      SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TextField(
+                              controller: nameController,
+                              style: const TextStyle(color: Colors.white),
+                              decoration: const InputDecoration(
+                                labelText: "Exercise Name",
+                                hintText: "e.g. Incline Bench Press",
+                                labelStyle: TextStyle(color: Colors.grey),
+                                enabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.grey),
+                                ),
+                                focusedBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: Color(0xFF39FF14),
+                                  ),
+                                ),
+                              ),
+                              autofocus: !isEditing,
+                            ),
+                            const SizedBox(height: 12),
+                            TextField(
+                              controller: targetSetsController,
+                              style: const TextStyle(color: Colors.white),
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                labelText: "Target Sets",
+                                hintText: "3",
+                                labelStyle: TextStyle(color: Colors.grey),
+                                enabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.grey),
+                                ),
+                                focusedBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: Color(0xFF39FF14),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            TextField(
+                              controller: setupController,
+                              style: const TextStyle(color: Colors.white),
+                              decoration: const InputDecoration(
+                                labelText: "Setup Note (Optional)",
+                                hintText: "e.g. Seat 4, Pin 3",
+                                labelStyle: TextStyle(color: Colors.grey),
+                                enabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.grey),
+                                ),
+                                focusedBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: Color(0xFF39FF14),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // TAB 2: LIBRARY
+                      if (!isEditing)
+                        libraryNames.isEmpty
+                            ? const Center(
+                                child: Text(
+                                  "Library is empty.",
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                              )
+                            : ListView.separated(
+                                shrinkWrap: true,
+                                itemCount: libraryNames.length,
+                                separatorBuilder: (_, __) => const Divider(
+                                  height: 1,
+                                  color: Colors.white10,
+                                ),
+                                itemBuilder: (context, index) {
+                                  final name = libraryNames[index];
+                                  final isSelected =
+                                      selectedLibraryName == name;
+                                  return ListTile(
+                                    title: Text(
+                                      name,
+                                      style: TextStyle(
+                                        color: isSelected
+                                            ? const Color(0xFF39FF14)
+                                            : Colors.white,
+                                        fontWeight: isSelected
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                      ),
+                                    ),
+                                    trailing: isSelected
+                                        ? const Icon(
+                                            Icons.check,
+                                            color: Color(0xFF39FF14),
+                                          )
+                                        : null,
+                                    onTap: () {
+                                      setDialogState(() {
+                                        selectedLibraryName = name;
+                                      });
+                                    },
+                                  );
+                                },
+                              )
+                      else
+                        const SizedBox(),
+                    ],
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text(
+                      "Cancel",
+                      style: TextStyle(color: Colors.grey),
                     ),
                   ),
-                  autofocus: true,
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: targetSetsController,
-                  style: const TextStyle(color: Colors.white),
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: "Target Sets",
-                    hintText: "3",
-                    labelStyle: TextStyle(color: Colors.grey),
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
+                  ElevatedButton(
+                    onPressed: () async {
+                      // Determine Mode
+                      final tabIndex = DefaultTabController.of(context).index;
+                      final isLibraryTab = !isEditing && tabIndex == 1;
+
+                      String finalName = "";
+                      int finalTargetSets = 3;
+                      String? finalSetup;
+
+                      if (isLibraryTab) {
+                        if (selectedLibraryName == null) return;
+                        finalName = selectedLibraryName!;
+                        finalTargetSets = 3;
+                        finalSetup = null;
+                      } else {
+                        if (nameController.text.trim().isEmpty) return;
+                        finalName = nameController.text.trim();
+                        finalTargetSets =
+                            int.tryParse(targetSetsController.text) ?? 3;
+                        finalSetup = setupController.text.trim().isNotEmpty
+                            ? setupController.text.trim()
+                            : null;
+                      }
+
+                      if (isEditing && existingExercise != null) {
+                        // EDIT MODE
+                        final updatedExercise = Exercise(
+                          id: existingExercise.id,
+                          name: finalName,
+                          targetSets: finalTargetSets,
+                          setupNote: finalSetup,
+                          imagePath: existingExercise.imagePath,
+                        );
+                        await _db.saveExercise(updatedExercise);
+                      } else {
+                        // ADD MODE - Check Duplicate
+                        final existingId = _db.findExerciseIdByName(finalName);
+
+                        if (existingId != null) {
+                          // LINK EXISTING
+                          if (!routine.exerciseIds.contains(existingId)) {
+                            routine.exerciseIds.add(existingId);
+                            await routine.save();
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    "Linked existing '$finalName' to this routine!",
+                                  ),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            }
+                          } else {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    "'$finalName' is already in this routine!",
+                                  ),
+                                  backgroundColor: Colors.orange,
+                                ),
+                              );
+                            }
+                          }
+                        } else {
+                          // CREATE NEW
+                          final newExercise = Exercise(
+                            id: const Uuid().v4(),
+                            name: finalName,
+                            targetSets: finalTargetSets,
+                            setupNote: finalSetup,
+                          );
+                          await _db.saveExercise(newExercise);
+                          routine.exerciseIds.add(newExercise.id);
+                          await routine.save();
+                        }
+                      }
+
+                      // Force UI Refresh
+                      setState(() {});
+
+                      if (context.mounted) Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF39FF14),
+                      foregroundColor: Colors.black,
                     ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Color(0xFF39FF14)),
-                    ),
+                    child: Text(isEditing ? "Save" : "Add"),
                   ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: setupController,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(
-                    labelText: "Setup Note (Optional)",
-                    hintText: "e.g. Seat 4, Pin 3",
-                    labelStyle: TextStyle(color: Colors.grey),
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey),
-                    ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Color(0xFF39FF14)),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (nameController.text.isNotEmpty) {
-                  final targetSets =
-                      int.tryParse(targetSetsController.text) ?? 3;
-                  final setupNote = setupController.text.isNotEmpty
-                      ? setupController.text
-                      : null;
-
-                  if (isEditing) {
-                    // Update existing (this might need database helper if not hive object directly modified)
-                    // But Exercise extends HiveObject, so we can save it directly?
-                    // Wait, GymDatabase puts them in box.
-                    // Let's create a copy or modify fields?
-                    // Hive objects are mutable.
-
-                    // We need to modify the objects properties, but they are final in model?
-                    // The model has final fields. Standard practice is to overwrite in box.
-                    final updatedExercise = Exercise(
-                      id: existingExercise.id,
-                      name: nameController.text,
-                      targetSets: targetSets,
-                      setupNote: setupNote,
-                      imagePath: existingExercise.imagePath,
-                    );
-                    await _db.saveExercise(updatedExercise);
-                  } else {
-                    // Create New
-                    final newExercise = Exercise(
-                      id: const Uuid().v4(),
-                      name: nameController.text,
-                      targetSets: targetSets,
-                      setupNote: setupNote,
-                    );
-                    await _db.saveExercise(newExercise);
-                    routine.exerciseIds.add(newExercise.id);
-                    await routine.save();
-                  }
-
-                  if (context.mounted) Navigator.pop(context);
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF39FF14),
-                foregroundColor: Colors.black,
+                ],
               ),
-              child: Text(isEditing ? "Save" : "Add"),
-            ),
-          ],
+            );
+          },
         );
       },
     );
