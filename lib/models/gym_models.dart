@@ -82,13 +82,19 @@ class ExerciseSet extends HiveObject {
   final int reps;
 
   @HiveField(3)
-  final String rpe; // 'Easy', 'Good', 'Hard'
+  final String rpe; // 'Easy', 'Good', 'Hard' (legacy)
 
   @HiveField(4)
   final bool isCompleted;
 
-  @HiveField(5) // New field
+  @HiveField(5)
   final String unit; // 'kg' or 'lb'
+
+  @HiveField(6) // Numeric RPE for Gym Brain Intelligence
+  final int rpeValue; // Range 1-10
+
+  @HiveField(7) // Spotter/Assisted flag
+  final bool isAssisted;
 
   ExerciseSet({
     required this.exerciseName,
@@ -97,6 +103,8 @@ class ExerciseSet extends HiveObject {
     required this.rpe,
     required this.isCompleted,
     this.unit = 'kg',
+    this.rpeValue = 8, // Default to 8 (good effort)
+    this.isAssisted = false,
   });
 
   Map<String, dynamic> toJson() => {
@@ -106,6 +114,8 @@ class ExerciseSet extends HiveObject {
     'rpe': rpe,
     'isCompleted': isCompleted,
     'unit': unit,
+    'rpeValue': rpeValue,
+    'isAssisted': isAssisted,
   };
 
   factory ExerciseSet.fromJson(Map<String, dynamic> json) => ExerciseSet(
@@ -115,6 +125,8 @@ class ExerciseSet extends HiveObject {
     rpe: json['rpe'] as String,
     isCompleted: json['isCompleted'] as bool,
     unit: json['unit'] as String? ?? 'kg',
+    rpeValue: json['rpeValue'] as int? ?? 8,
+    isAssisted: json['isAssisted'] as bool? ?? false,
   );
 }
 

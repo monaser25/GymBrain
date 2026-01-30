@@ -780,7 +780,8 @@ class _ExerciseInputCard extends StatefulWidget {
 class _ExerciseInputCardState extends State<_ExerciseInputCard> {
   final _weightController = TextEditingController();
   final _repsController = TextEditingController();
-  String _selectedRpe = 'Good';
+  int _rpeValue = 8; // 1-10 scale
+  bool _isAssisted = false;
   bool _isKg = false; // Default LB
 
   @override
@@ -1024,12 +1025,12 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
 
                     const SizedBox(height: 24),
 
-                    // RPE
+                    // RPE SELECTOR (1-10 Numeric)
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "RPE (EFFORT)",
+                          "RPE (EFFORT 1-10)",
                           style: TextStyle(
                             color: Colors.grey[500],
                             fontSize: 10,
@@ -1038,31 +1039,22 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: ['Easy', 'Good', 'Hard'].map((rpe) {
-                            final isSelected = _selectedRpe == rpe;
-                            Color color;
-                            switch (rpe) {
-                              case 'Easy':
-                                color = Colors.greenAccent;
-                                break;
-                              case 'Hard':
-                                color = Colors.redAccent;
-                                break;
-                              default:
-                                color = Colors.orangeAccent;
-                            }
+                        SizedBox(
+                          height: 44,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: 10,
+                            itemBuilder: (context, index) {
+                              final rpe = index + 1;
+                              final isSelected = _rpeValue == rpe;
+                              final color = _getRpeValueColor(rpe);
 
-                            return Expanded(
-                              child: GestureDetector(
-                                onTap: () => setState(() => _selectedRpe = rpe),
+                              return GestureDetector(
+                                onTap: () => setState(() => _rpeValue = rpe),
                                 child: AnimatedContainer(
                                   duration: const Duration(milliseconds: 200),
-                                  margin: const EdgeInsets.only(right: 8),
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 12,
-                                  ),
+                                  width: 38,
+                                  margin: const EdgeInsets.only(right: 6),
                                   decoration: BoxDecoration(
                                     color: isSelected
                                         ? color
@@ -1077,21 +1069,92 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
                                   ),
                                   alignment: Alignment.center,
                                   child: Text(
-                                    rpe,
+                                    '$rpe',
                                     style: TextStyle(
                                       color: isSelected
                                           ? Colors.black
                                           : Colors.grey,
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 12,
+                                      fontSize: 14,
                                     ),
                                   ),
                                 ),
-                              ),
-                            );
-                          }).toList(),
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          _getRpeDescription(_rpeValue),
+                          style: TextStyle(
+                            color: _getRpeValueColor(_rpeValue),
+                            fontSize: 11,
+                            fontStyle: FontStyle.italic,
+                          ),
                         ),
                       ],
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // ASSISTED TOGGLE
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2C2C2E),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.people_outline,
+                            color: _isAssisted
+                                ? Colors.orange
+                                : Colors.grey[600],
+                            size: 20,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  "Spotter Assisted?",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                Text(
+                                  "Mark if someone helped you",
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Transform.scale(
+                            scale: 0.85,
+                            child: Switch(
+                              value: _isAssisted,
+                              onChanged: (val) =>
+                                  setState(() => _isAssisted = val),
+                              activeThumbColor: Colors.orange,
+                              activeTrackColor: Colors.orange.withValues(
+                                alpha: 0.3,
+                              ),
+                              inactiveThumbColor: Colors.grey[600],
+                              inactiveTrackColor: Colors.grey[800],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
 
                     const SizedBox(height: 24),
@@ -1195,6 +1258,73 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
     }
   }
 
+  // Color for numeric RPE (1-10)
+  Color _getRpeValueColor(int rpe) {
+    if (rpe <= 6) return Colors.greenAccent;
+    if (rpe <= 8) return Colors.orangeAccent;
+    return Colors.redAccent;
+  }
+
+  // Description for numeric RPE
+  String _getRpeDescription(int rpe) {
+    switch (rpe) {
+      case 1:
+        return "Very easy - could do 9+ more reps";
+      case 2:
+        return "Easy - could do 8+ more reps";
+      case 3:
+        return "Light - could do 7+ more reps";
+      case 4:
+        return "Light-moderate - could do 6+ more reps";
+      case 5:
+        return "Moderate - could do 5+ more reps";
+      case 6:
+        return "Moderate - could do 4+ more reps";
+      case 7:
+        return "Somewhat hard - could do 3 more reps";
+      case 8:
+        return "Hard - could do 2 more reps";
+      case 9:
+        return "Very hard - could do 1 more rep";
+      case 10:
+        return "Max effort - couldn't do more";
+      default:
+        return "Rate your effort";
+    }
+  }
+
+  // 🧠 THE GYM BRAIN ALGORITHM
+  String _generateRecommendation({
+    required int reps,
+    required double weight,
+    required int targetReps,
+    required int rpe,
+    required bool isAssisted,
+  }) {
+    // Case 1: Assisted
+    if (isAssisted) {
+      return "⚠️ Spotter helped. Repeat same weight next time to master form.";
+    }
+
+    // Case 2: Too Easy
+    if (rpe <= 7 && reps >= targetReps) {
+      return "🚀 Easy win! Increase weight by 2.5kg - 5kg next session.";
+    }
+
+    // Case 3: Perfect Zone
+    if (rpe == 8 || rpe == 9) {
+      return "✅ Sweet spot! Keep this weight and aim for perfect reps.";
+    }
+
+    // Case 4: Failure/Max Effort
+    if (rpe == 10 || reps < targetReps) {
+      return "🔥 Max effort. Keep weight same or deload if form suffered.";
+    }
+
+    // Fallback
+    return "💪 Good set! Keep pushing.";
+  }
+
   Widget _buildSetProgressText() {
     final int currentSet = widget.todaysSets.length + 1;
     final int target = widget.exercise.targetSets;
@@ -1228,21 +1358,74 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
     final reps = int.tryParse(_repsController.text);
 
     if (weight != null && reps != null) {
+      // Map rpeValue to string for legacy compatibility
+      String legacyRpe;
+      if (_rpeValue <= 6) {
+        legacyRpe = 'Easy';
+      } else if (_rpeValue <= 8) {
+        legacyRpe = 'Good';
+      } else {
+        legacyRpe = 'Hard';
+      }
+
       final set = ExerciseSet(
         exerciseName: widget.exercise.name,
         weight: weight,
         reps: reps,
-        rpe: _selectedRpe,
+        rpe: legacyRpe,
+        rpeValue: _rpeValue,
+        isAssisted: _isAssisted,
         isCompleted: true,
         unit: _isKg ? 'kg' : 'lb',
       );
 
       widget.onSetCompleted(set);
 
-      // Don't clear controller, user might do same weight
-      // _repsController.clear();
+      // Generate and show Gym Brain recommendation
+      final recommendation = _generateRecommendation(
+        reps: reps,
+        weight: weight,
+        targetReps: 8, // Default target, could be customized per exercise
+        rpe: _rpeValue,
+        isAssisted: _isAssisted,
+      );
+
+      // Show recommendation as SnackBar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.psychology, color: Colors.white, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  recommendation,
+                  style: const TextStyle(fontSize: 13),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: _getSnackBarColor(),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          duration: const Duration(seconds: 4),
+        ),
+      );
+
+      // Reset assisted toggle after each set
+      setState(() => _isAssisted = false);
+
       FocusScope.of(context).unfocus();
     }
+  }
+
+  Color _getSnackBarColor() {
+    if (_isAssisted) return Colors.orange[700]!;
+    if (_rpeValue <= 7) return Colors.green[700]!;
+    if (_rpeValue <= 9) return const Color(0xFF39FF14).withValues(alpha: 0.8);
+    return Colors.red[700]!;
   }
 
   void _showInfoDialog(BuildContext context) {
