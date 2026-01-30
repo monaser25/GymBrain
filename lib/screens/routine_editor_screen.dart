@@ -41,10 +41,12 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
             },
           ),
           floatingActionButton: FloatingActionButton.extended(
-            onPressed: () => _showExerciseDialog(
-              context,
-              routine,
-            ).then((_) => setState(() {})),
+            onPressed: () =>
+                _showExerciseDialog(context, routine).then((result) {
+                  if (result == true) {
+                    setState(() {});
+                  }
+                }),
             label: const Text("Add Exercise"),
             icon: const Icon(Icons.add),
             backgroundColor: const Color(0xFF39FF14),
@@ -93,11 +95,16 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
               horizontal: 16,
               vertical: 8,
             ),
-            onTap: () => _showExerciseDialog(
-              context,
-              routine,
-              existingExercise: exercise,
-            ),
+            onTap: () =>
+                _showExerciseDialog(
+                  context,
+                  routine,
+                  existingExercise: exercise,
+                ).then((result) {
+                  // Refresh if edited (though listenable builder handles it mostly,
+                  // explicit setState helps if list order or deep properties changed affecting list)
+                  if (result == true) setState(() {});
+                }),
             leading: CircleAvatar(
               backgroundColor: Colors.grey[800],
               child: Text(
@@ -167,8 +174,8 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
     await routine.save();
   }
 
-  // --- ADD / EDIT DIALOG (With Library) ---
-  Future<void> _showExerciseDialog(
+  // --- ADD / EDIT DIALOG (Refactored for State/Scope) ---
+  Future<bool?> _showExerciseDialog(
     BuildContext context,
     Routine routine, {
     Exercise? existingExercise,
@@ -187,256 +194,340 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
       text: existingExercise?.targetSets.toString() ?? "3",
     );
 
-    // Selected from Library
+    // State Variables (local to closure, but we need them in setState)
+    // We will update these inside the StatefulBuilder
+    int selectedTabIndex = 0;
     String? selectedLibraryName;
 
-    return showDialog(
+    return showDialog<bool>(
       context: context,
       builder: (context) {
-        // Use StatefulBuilder here so we can rebuild the Checkmarks in Library Tab
         return StatefulBuilder(
           builder: (context, setDialogState) {
-            return DefaultTabController(
-              length: isEditing ? 1 : 2,
-              child: AlertDialog(
-                backgroundColor: const Color(0xFF1C1C1E),
-                title: isEditing
-                    ? const Text(
-                        "Edit Exercise",
-                        style: TextStyle(color: Colors.white),
-                      )
-                    : const TabBar(
-                        indicatorColor: Color(0xFF39FF14),
-                        labelColor: Color(0xFF39FF14),
-                        unselectedLabelColor: Colors.grey,
-                        tabs: [
-                          Tab(text: "New"),
-                          Tab(text: "Library"),
-                        ],
-                      ),
-                content: SizedBox(
-                  width: double.maxFinite,
-                  height: 300,
-                  child: TabBarView(
-                    physics: isEditing
-                        ? const NeverScrollableScrollPhysics()
-                        : null,
-                    children: [
-                      // TAB 1: NEW / EDIT FORM
-                      SingleChildScrollView(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
+            return AlertDialog(
+              backgroundColor: const Color(0xFF1C1C1E),
+              title: isEditing
+                  ? const Text(
+                      "Edit Exercise",
+                      style: TextStyle(color: Colors.white),
+                    )
+                  : Column(
+                      children: [
+                        Row(
                           children: [
-                            TextField(
-                              controller: nameController,
-                              style: const TextStyle(color: Colors.white),
-                              decoration: const InputDecoration(
-                                labelText: "Exercise Name",
-                                hintText: "e.g. Incline Bench Press",
-                                labelStyle: TextStyle(color: Colors.grey),
-                                enabledBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.grey),
-                                ),
-                                focusedBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(
-                                    color: Color(0xFF39FF14),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () =>
+                                    setDialogState(() => selectedTabIndex = 0),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 8,
                                   ),
-                                ),
-                              ),
-                              autofocus: !isEditing,
-                            ),
-                            const SizedBox(height: 12),
-                            TextField(
-                              controller: targetSetsController,
-                              style: const TextStyle(color: Colors.white),
-                              keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(
-                                labelText: "Target Sets",
-                                hintText: "3",
-                                labelStyle: TextStyle(color: Colors.grey),
-                                enabledBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.grey),
-                                ),
-                                focusedBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(
-                                    color: Color(0xFF39FF14),
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: selectedTabIndex == 0
+                                            ? const Color(0xFF39FF14)
+                                            : Colors.transparent,
+                                        width: 2,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    "New",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: selectedTabIndex == 0
+                                          ? const Color(0xFF39FF14)
+                                          : Colors.grey,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 12),
-                            TextField(
-                              controller: setupController,
-                              style: const TextStyle(color: Colors.white),
-                              decoration: const InputDecoration(
-                                labelText: "Setup Note (Optional)",
-                                hintText: "e.g. Seat 4, Pin 3",
-                                labelStyle: TextStyle(color: Colors.grey),
-                                enabledBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.grey),
-                                ),
-                                focusedBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(
-                                    color: Color(0xFF39FF14),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () =>
+                                    setDialogState(() => selectedTabIndex = 1),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 8,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: selectedTabIndex == 1
+                                            ? const Color(0xFF39FF14)
+                                            : Colors.transparent,
+                                        width: 2,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    "Library",
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: selectedTabIndex == 1
+                                          ? const Color(0xFF39FF14)
+                                          : Colors.grey,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ],
                         ),
-                      ),
-
-                      // TAB 2: LIBRARY
-                      if (!isEditing)
-                        libraryNames.isEmpty
-                            ? const Center(
-                                child: Text(
-                                  "Library is empty.",
-                                  style: TextStyle(color: Colors.grey),
-                                ),
-                              )
-                            : ListView.separated(
-                                shrinkWrap: true,
-                                itemCount: libraryNames.length,
-                                separatorBuilder: (_, __) => const Divider(
-                                  height: 1,
-                                  color: Colors.white10,
-                                ),
-                                itemBuilder: (context, index) {
-                                  final name = libraryNames[index];
-                                  final isSelected =
-                                      selectedLibraryName == name;
-                                  return ListTile(
-                                    title: Text(
-                                      name,
-                                      style: TextStyle(
-                                        color: isSelected
-                                            ? const Color(0xFF39FF14)
-                                            : Colors.white,
-                                        fontWeight: isSelected
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
+                      ],
+                    ),
+              content: SizedBox(
+                width: double.maxFinite,
+                height: 400,
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: selectedTabIndex == 0
+                          ? SingleChildScrollView(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  TextField(
+                                    controller: nameController,
+                                    style: const TextStyle(color: Colors.white),
+                                    decoration: const InputDecoration(
+                                      labelText: "Exercise Name",
+                                      hintText: "e.g. Incline Bench Press",
+                                      labelStyle: TextStyle(color: Colors.grey),
+                                      enabledBorder: UnderlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                      focusedBorder: UnderlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: Color(0xFF39FF14),
+                                        ),
                                       ),
                                     ),
-                                    trailing: isSelected
-                                        ? const Icon(
-                                            Icons.check,
-                                            color: Color(0xFF39FF14),
-                                          )
-                                        : null,
-                                    onTap: () {
-                                      setDialogState(() {
-                                        selectedLibraryName = name;
-                                      });
+                                    autofocus: !isEditing,
+                                  ),
+                                  const SizedBox(height: 12),
+                                  TextField(
+                                    controller: targetSetsController,
+                                    style: const TextStyle(color: Colors.white),
+                                    keyboardType: TextInputType.number,
+                                    decoration: const InputDecoration(
+                                      labelText: "Target Sets",
+                                      hintText: "3",
+                                      labelStyle: TextStyle(color: Colors.grey),
+                                      enabledBorder: UnderlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                      focusedBorder: UnderlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: Color(0xFF39FF14),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  TextField(
+                                    controller: setupController,
+                                    style: const TextStyle(color: Colors.white),
+                                    decoration: const InputDecoration(
+                                      labelText: "Setup Note (Optional)",
+                                      hintText: "e.g. Seat 4, Pin 3",
+                                      labelStyle: TextStyle(color: Colors.grey),
+                                      enabledBorder: UnderlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                      focusedBorder: UnderlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: Color(0xFF39FF14),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : (libraryNames.isEmpty
+                                ? const Center(
+                                    child: Text(
+                                      "Library is empty.",
+                                      style: TextStyle(color: Colors.grey),
+                                    ),
+                                  )
+                                : ListView.separated(
+                                    itemCount: libraryNames.length,
+                                    separatorBuilder: (_, __) => const Divider(
+                                      height: 1,
+                                      color: Colors.white10,
+                                    ),
+                                    itemBuilder: (context, index) {
+                                      final name = libraryNames[index];
+                                      final isSelected =
+                                          selectedLibraryName == name;
+                                      return ListTile(
+                                        title: Text(
+                                          name,
+                                          style: TextStyle(
+                                            color: isSelected
+                                                ? const Color(0xFF39FF14)
+                                                : Colors.white,
+                                            fontWeight: isSelected
+                                                ? FontWeight.bold
+                                                : FontWeight.normal,
+                                          ),
+                                        ),
+                                        trailing: isSelected
+                                            ? const Icon(
+                                                Icons.check,
+                                                color: Color(0xFF39FF14),
+                                              )
+                                            : null,
+                                        onTap: () {
+                                          setDialogState(() {
+                                            selectedLibraryName = name;
+                                          });
+                                        },
+                                      );
                                     },
-                                  );
-                                },
-                              )
-                      else
-                        const SizedBox(),
-                    ],
-                  ),
+                                  )),
+                    ),
+                    const SizedBox(height: 16),
+                    // BUTTONS INSIDE THE BUILDER SCOPE
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text(
+                            "Cancel",
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: () async {
+                            print(
+                              "🔘 ADD BUTTON CLICKED! Tab Index: $selectedTabIndex",
+                            );
+
+                            String finalName = "";
+                            int finalTargetSets = 3;
+                            String? finalSetup;
+
+                            if (!isEditing && selectedTabIndex == 1) {
+                              // LIBRARY TAB
+                              print(
+                                "📚 Adding from Library: $selectedLibraryName",
+                              );
+                              if (selectedLibraryName == null) {
+                                print("❌ No exercise selected!");
+                                return;
+                              }
+                              finalName = selectedLibraryName!;
+                            } else {
+                              // NEW / EDIT TAB
+                              if (!isEditing)
+                                print(
+                                  "Testing New Value: '${nameController.text}'",
+                                );
+                              if (!isEditing &&
+                                  nameController.text.trim().isEmpty) {
+                                print("❌ Name is empty!");
+                                return; // Validation
+                              }
+
+                              finalName = nameController.text.trim();
+                              if (finalName.isEmpty)
+                                finalName =
+                                    "Exercise"; // Fallback? No, already checked.
+
+                              print("📝 Saving Exercise: $finalName");
+
+                              finalTargetSets =
+                                  int.tryParse(targetSetsController.text) ?? 3;
+                              finalSetup =
+                                  setupController.text.trim().isNotEmpty
+                                  ? setupController.text.trim()
+                                  : null;
+                            }
+
+                            if (isEditing && existingExercise != null) {
+                              // EDIT
+                              final updatedExercise = Exercise(
+                                id: existingExercise.id,
+                                name: finalName,
+                                targetSets: finalTargetSets,
+                                setupNote: finalSetup,
+                                imagePath: existingExercise.imagePath,
+                              );
+                              await _db.saveExercise(updatedExercise);
+                            } else {
+                              // ADD / LINK
+                              final existingId = _db.findExerciseIdByName(
+                                finalName,
+                              );
+                              if (existingId != null) {
+                                if (!routine.exerciseIds.contains(existingId)) {
+                                  routine.exerciseIds.add(existingId);
+                                  await routine.save();
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          "Linked existing '$finalName'!",
+                                        ),
+                                        backgroundColor: Colors.green,
+                                      ),
+                                    );
+                                  }
+                                } else {
+                                  // Already exists
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          "'$finalName' is already here!",
+                                        ),
+                                        backgroundColor: Colors.orange,
+                                      ),
+                                    );
+                                  }
+                                  // We can close or stay. Let's close.
+                                }
+                              } else {
+                                final newExercise = Exercise(
+                                  id: const Uuid().v4(),
+                                  name: finalName,
+                                  targetSets: finalTargetSets,
+                                  setupNote: finalSetup,
+                                );
+                                await _db.saveExercise(newExercise);
+                                routine.exerciseIds.add(newExercise.id);
+                                await routine.save();
+                              }
+                            }
+
+                            if (context.mounted) Navigator.pop(context, true);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF39FF14),
+                            foregroundColor: Colors.black,
+                          ),
+                          child: Text(isEditing ? "Save" : "Add"),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text(
-                      "Cancel",
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () async {
-                      // Determine Mode
-                      final tabIndex = DefaultTabController.of(context).index;
-                      final isLibraryTab = !isEditing && tabIndex == 1;
-
-                      String finalName = "";
-                      int finalTargetSets = 3;
-                      String? finalSetup;
-
-                      if (isLibraryTab) {
-                        if (selectedLibraryName == null) return;
-                        finalName = selectedLibraryName!;
-                        finalTargetSets = 3;
-                        finalSetup = null;
-                      } else {
-                        if (nameController.text.trim().isEmpty) return;
-                        finalName = nameController.text.trim();
-                        finalTargetSets =
-                            int.tryParse(targetSetsController.text) ?? 3;
-                        finalSetup = setupController.text.trim().isNotEmpty
-                            ? setupController.text.trim()
-                            : null;
-                      }
-
-                      if (isEditing && existingExercise != null) {
-                        // EDIT MODE
-                        final updatedExercise = Exercise(
-                          id: existingExercise.id,
-                          name: finalName,
-                          targetSets: finalTargetSets,
-                          setupNote: finalSetup,
-                          imagePath: existingExercise.imagePath,
-                        );
-                        await _db.saveExercise(updatedExercise);
-                      } else {
-                        // ADD MODE - Check Duplicate
-                        final existingId = _db.findExerciseIdByName(finalName);
-
-                        if (existingId != null) {
-                          // LINK EXISTING
-                          if (!routine.exerciseIds.contains(existingId)) {
-                            routine.exerciseIds.add(existingId);
-                            await routine.save();
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    "Linked existing '$finalName' to this routine!",
-                                  ),
-                                  backgroundColor: Colors.green,
-                                ),
-                              );
-                            }
-                          } else {
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    "'$finalName' is already in this routine!",
-                                  ),
-                                  backgroundColor: Colors.orange,
-                                ),
-                              );
-                            }
-                          }
-                        } else {
-                          // CREATE NEW
-                          final newExercise = Exercise(
-                            id: const Uuid().v4(),
-                            name: finalName,
-                            targetSets: finalTargetSets,
-                            setupNote: finalSetup,
-                          );
-                          await _db.saveExercise(newExercise);
-                          routine.exerciseIds.add(newExercise.id);
-                          await routine.save();
-                        }
-                      }
-
-                      // Force UI Refresh
-                      setState(() {});
-
-                      if (context.mounted) Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF39FF14),
-                      foregroundColor: Colors.black,
-                    ),
-                    child: Text(isEditing ? "Save" : "Add"),
-                  ),
-                ],
               ),
             );
           },
