@@ -26,6 +26,22 @@ class Exercise extends HiveObject {
     this.imagePath,
     this.targetSets = 3,
   });
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'setupNote': setupNote,
+    'imagePath': imagePath,
+    'targetSets': targetSets,
+  };
+
+  factory Exercise.fromJson(Map<String, dynamic> json) => Exercise(
+    id: json['id'] as String,
+    name: json['name'] as String,
+    setupNote: json['setupNote'] as String?,
+    imagePath: json['imagePath'] as String?,
+    targetSets: json['targetSets'] as int? ?? 3,
+  );
 }
 
 @HiveType(typeId: 1)
@@ -40,6 +56,18 @@ class Routine extends HiveObject {
   final List<String> exerciseIds;
 
   Routine({required this.id, required this.name, required this.exerciseIds});
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'exerciseIds': exerciseIds,
+  };
+
+  factory Routine.fromJson(Map<String, dynamic> json) => Routine(
+    id: json['id'] as String,
+    name: json['name'] as String,
+    exerciseIds: List<String>.from(json['exerciseIds'] as List),
+  );
 }
 
 @HiveType(typeId: 2)
@@ -70,6 +98,24 @@ class ExerciseSet extends HiveObject {
     required this.isCompleted,
     this.unit = 'kg',
   });
+
+  Map<String, dynamic> toJson() => {
+    'exerciseName': exerciseName,
+    'weight': weight,
+    'reps': reps,
+    'rpe': rpe,
+    'isCompleted': isCompleted,
+    'unit': unit,
+  };
+
+  factory ExerciseSet.fromJson(Map<String, dynamic> json) => ExerciseSet(
+    exerciseName: json['exerciseName'] as String,
+    weight: (json['weight'] as num).toDouble(),
+    reps: json['reps'] as int,
+    rpe: json['rpe'] as String,
+    isCompleted: json['isCompleted'] as bool,
+    unit: json['unit'] as String? ?? 'kg',
+  );
 }
 
 @HiveType(typeId: 3)
@@ -96,6 +142,24 @@ class WorkoutSession extends HiveObject {
     required this.durationInSeconds,
     required this.sets,
   });
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'routineName': routineName,
+    'date': date.toIso8601String(),
+    'durationInSeconds': durationInSeconds,
+    'sets': sets.map((s) => s.toJson()).toList(),
+  };
+
+  factory WorkoutSession.fromJson(Map<String, dynamic> json) => WorkoutSession(
+    id: json['id'] as String,
+    routineName: json['routineName'] as String,
+    date: DateTime.parse(json['date'] as String),
+    durationInSeconds: json['durationInSeconds'] as int,
+    sets: (json['sets'] as List)
+        .map((s) => ExerciseSet.fromJson(s as Map<String, dynamic>))
+        .toList(),
+  );
 }
 
 @HiveType(typeId: 4)
@@ -122,4 +186,20 @@ class InBodyRecord extends HiveObject {
     required this.pbf,
     this.imagePath,
   });
+
+  Map<String, dynamic> toJson() => {
+    'date': date.toIso8601String(),
+    'weight': weight,
+    'smm': smm,
+    'pbf': pbf,
+    'imagePath': imagePath,
+  };
+
+  factory InBodyRecord.fromJson(Map<String, dynamic> json) => InBodyRecord(
+    date: DateTime.parse(json['date'] as String),
+    weight: (json['weight'] as num).toDouble(),
+    smm: (json['smm'] as num).toDouble(),
+    pbf: (json['pbf'] as num).toDouble(),
+    imagePath: json['imagePath'] as String?,
+  );
 }
