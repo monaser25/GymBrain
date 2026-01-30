@@ -11,6 +11,7 @@ import 'routines_screen.dart';
 import 'settings_screen.dart';
 import 'history_screen.dart';
 import 'profile_screen.dart';
+import 'tools_screen.dart';
 // Note: RoutineEditorScreen import might be needed if we link directly,
 // but RoutinesScreen handles that.
 
@@ -37,6 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
+      drawer: _buildDrawer(context),
       body: IndexedStack(index: _currentIndex, children: _pages),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
@@ -98,6 +100,158 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  Widget _buildDrawer(BuildContext context) {
+    return Drawer(
+      backgroundColor: const Color(0xFF1C1C1E),
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Drawer Header
+            Container(
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: Colors.white.withValues(alpha: 0.1),
+                  ),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF39FF14).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.fitness_center,
+                      color: Color(0xFF39FF14),
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Gym Brain",
+                        style: TextStyle(
+                          color: Color(0xFF39FF14),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        "Tools & Utilities",
+                        style: TextStyle(color: Colors.grey, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // 1RM Calculator
+            _buildDrawerTile(
+              context: context,
+              icon: Icons.calculate_outlined,
+              label: "1RM Calculator",
+              emoji: "🔢",
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const ToolsScreen(initialTab: 0),
+                  ),
+                );
+              },
+            ),
+
+            // Plate Calculator
+            _buildDrawerTile(
+              context: context,
+              icon: Icons.donut_large_outlined,
+              label: "Plate Calculator",
+              emoji: "💿",
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const ToolsScreen(initialTab: 1),
+                  ),
+                );
+              },
+            ),
+
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: Divider(color: Colors.white10),
+            ),
+
+            // Settings
+            _buildDrawerTile(
+              context: context,
+              icon: Icons.settings_outlined,
+              label: "Settings",
+              emoji: "⚙️",
+              onTap: () {
+                Navigator.pop(context);
+                setState(() => _currentIndex = 3); // Switch to Settings tab
+              },
+            ),
+
+            const Spacer(),
+
+            // Footer
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Text(
+                "Version 1.0.0",
+                style: TextStyle(color: Colors.grey[700], fontSize: 12),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDrawerTile({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required String emoji,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: const Color(0xFF2C2C2E),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(emoji, style: const TextStyle(fontSize: 20)),
+      ),
+      title: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      trailing: Icon(Icons.chevron_right, color: Colors.grey[600], size: 20),
+      onTap: onTap,
+    );
+  }
 }
 
 class _DashboardView extends StatelessWidget {
@@ -141,26 +295,49 @@ class _DashboardView extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      Row(
                         children: [
-                          const Text(
-                            "Gym Brain",
-                            style: TextStyle(
-                              color: Colors.grey,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              letterSpacing: 1.0,
+                          // Menu Button for Drawer
+                          GestureDetector(
+                            onTap: () {
+                              Scaffold.of(context).openDrawer();
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1C1C1E),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.menu,
+                                color: Color(0xFF39FF14),
+                                size: 22,
+                              ),
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            dateString,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          const SizedBox(width: 14),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Gym Brain",
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: 1.0,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                dateString,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),

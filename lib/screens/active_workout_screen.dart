@@ -1293,7 +1293,7 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
     }
   }
 
-  // 🧠 THE GYM BRAIN ALGORITHM
+  // 🧠 THE GYM BRAIN ALGORITHM (Arabic)
   String _generateRecommendation({
     required int reps,
     required double weight,
@@ -1301,28 +1301,35 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
     required int rpe,
     required bool isAssisted,
   }) {
+    // Helper for number formatting (5.0 -> 5, 2.5 -> 2.5)
+    String formatWeight(double w) {
+      return w.toStringAsFixed(1).replaceAll('.0', '');
+    }
+
+    final weightStr = formatWeight(weight);
+
     // Case 1: Assisted
     if (isAssisted) {
-      return "⚠️ Spotter helped. Repeat same weight next time to master form.";
+      return "⚠️ المرة دي بمساعدة.. ثبت الوزن ($weightStr) المرة الجاية عشان تتقن الأداء.";
     }
 
     // Case 2: Too Easy
     if (rpe <= 7 && reps >= targetReps) {
-      return "🚀 Easy win! Increase weight by 2.5kg - 5kg next session.";
+      return "🚀 عاش يا وحش! التمرين سهل.. زود 2.5 - 5 كجم المرة الجاية.";
     }
 
     // Case 3: Perfect Zone
     if (rpe == 8 || rpe == 9) {
-      return "✅ Sweet spot! Keep this weight and aim for perfect reps.";
+      return "✅ الله ينور! الوزن ($weightStr) ممتاز.. حافظ عليه وركز في التكنيك.";
     }
 
     // Case 4: Failure/Max Effort
     if (rpe == 10 || reps < targetReps) {
-      return "🔥 Max effort. Keep weight same or deload if form suffered.";
+      return "🔥 أداء عالي! ريح كويس وثبت الوزن ($weightStr) لحد ما تجيبه مرتاح.";
     }
 
     // Fallback
-    return "💪 Good set! Keep pushing.";
+    return "💪 سيت كويس! كمّل كده.";
   }
 
   Widget _buildSetProgressText() {
@@ -1390,29 +1397,8 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
         isAssisted: _isAssisted,
       );
 
-      // Show recommendation as SnackBar
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(Icons.psychology, color: Colors.white, size: 20),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  recommendation,
-                  style: const TextStyle(fontSize: 13),
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: _getSnackBarColor(),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          duration: const Duration(seconds: 4),
-        ),
-      );
+      // Show recommendation as Arabic Bottom Sheet
+      _showPerformanceSheet(recommendation);
 
       // Reset assisted toggle after each set
       setState(() => _isAssisted = false);
@@ -1421,11 +1407,124 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
     }
   }
 
-  Color _getSnackBarColor() {
-    if (_isAssisted) return Colors.orange[700]!;
-    if (_rpeValue <= 7) return Colors.green[700]!;
-    if (_rpeValue <= 9) return const Color(0xFF39FF14).withValues(alpha: 0.8);
-    return Colors.red[700]!;
+  void _showPerformanceSheet(String recommendation) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+          decoration: BoxDecoration(
+            color: Colors.grey[900],
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle bar
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[700],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Header Row
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF39FF14).withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.psychology,
+                      color: Color(0xFF39FF14),
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    "تحليل الأداء",
+                    style: TextStyle(
+                      color: Color(0xFF39FF14),
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              // Recommendation Text (Arabic - RTL)
+              Directionality(
+                textDirection: TextDirection.rtl,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1C1C1E),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: _getSheetAccentColor().withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Text(
+                    recommendation,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      height: 1.6,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // Close Button
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(color: Colors.grey[700]!),
+                    ),
+                  ),
+                  child: const Text(
+                    "تمام 👍",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Color _getSheetAccentColor() {
+    if (_isAssisted) return Colors.orange;
+    if (_rpeValue <= 7) return Colors.greenAccent;
+    if (_rpeValue <= 9) return const Color(0xFF39FF14);
+    return Colors.redAccent;
   }
 
   void _showInfoDialog(BuildContext context) {
