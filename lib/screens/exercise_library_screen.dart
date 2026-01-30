@@ -267,7 +267,7 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
                   );
                   await _db.saveExercise(updatedExercise);
 
-                  if (mounted) {
+                  if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text("Renamed to '$newName'"),
@@ -323,8 +323,8 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
             ElevatedButton(
               onPressed: () async {
                 await _deleteExerciseCompletely(exercise);
-                if (context.mounted) Navigator.pop(context);
-                if (mounted) {
+                if (context.mounted) {
+                  Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text("'${exercise.name}' deleted permanently"),

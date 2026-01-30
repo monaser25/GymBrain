@@ -415,42 +415,27 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
                         const SizedBox(width: 8),
                         ElevatedButton(
                           onPressed: () async {
-                            print(
-                              "🔘 ADD BUTTON CLICKED! Tab Index: $selectedTabIndex",
-                            );
-
                             String finalName = "";
                             int finalTargetSets = 3;
                             String? finalSetup;
 
                             if (!isEditing && selectedTabIndex == 1) {
                               // LIBRARY TAB
-                              print(
-                                "📚 Adding from Library: $selectedLibraryName",
-                              );
                               if (selectedLibraryName == null) {
-                                print("❌ No exercise selected!");
                                 return;
                               }
                               finalName = selectedLibraryName!;
                             } else {
                               // NEW / EDIT TAB
-                              if (!isEditing)
-                                print(
-                                  "Testing New Value: '${nameController.text}'",
-                                );
                               if (!isEditing &&
                                   nameController.text.trim().isEmpty) {
-                                print("❌ Name is empty!");
                                 return; // Validation
                               }
 
                               finalName = nameController.text.trim();
-                              if (finalName.isEmpty)
-                                finalName =
-                                    "Exercise"; // Fallback? No, already checked.
-
-                              print("📝 Saving Exercise: $finalName");
+                              if (finalName.isEmpty) {
+                                finalName = "Exercise";
+                              }
 
                               finalTargetSets =
                                   int.tryParse(targetSetsController.text) ?? 3;
@@ -460,8 +445,8 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
                                   : null;
                             }
 
-                            if (isEditing && existingExercise != null) {
-                              // EDIT
+                            if (isEditing) {
+                              // EDIT - existingExercise is guaranteed non-null here
                               final updatedExercise = Exercise(
                                 id: existingExercise.id,
                                 name: finalName,
@@ -479,7 +464,7 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
                                 if (!routine.exerciseIds.contains(existingId)) {
                                   routine.exerciseIds.add(existingId);
                                   await routine.save();
-                                  if (mounted) {
+                                  if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(
@@ -491,7 +476,7 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
                                   }
                                 } else {
                                   // Already exists
-                                  if (mounted) {
+                                  if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(

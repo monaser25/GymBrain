@@ -189,7 +189,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   activeTrackColor: const Color(0xFF39FF14),
                   inactiveTrackColor: Colors.grey[800],
                   thumbColor: Colors.white,
-                  overlayColor: const Color(0xFF39FF14).withOpacity(0.2),
+                  overlayColor: const Color(0xFF39FF14).withValues(alpha: 0.2),
                   trackHeight: 4,
                 ),
                 child: Slider(
@@ -222,7 +222,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   style: TextStyle(color: Colors.grey[600]),
                 ),
                 value: _soundEnabled,
-                activeColor: const Color(0xFF39FF14),
+                activeThumbColor: const Color(0xFF39FF14),
                 contentPadding: EdgeInsets.zero,
                 onChanged: (val) {
                   setState(() => _soundEnabled = val);
@@ -246,7 +246,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   style: TextStyle(color: Colors.grey[600]),
                 ),
                 value: _notificationsEnabled,
-                activeColor: const Color(0xFF39FF14),
+                activeThumbColor: const Color(0xFF39FF14),
                 contentPadding: EdgeInsets.zero,
                 onChanged: (val) {
                   setState(() => _notificationsEnabled = val);
@@ -318,14 +318,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         decoration: BoxDecoration(
           color: const Color(0xFF1C1C1E),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.3), width: 1),
+          border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.15),
+                color: color.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: isLoading

@@ -59,7 +59,6 @@ class BackupService {
 
       return true;
     } catch (e) {
-      print('❌ Backup Error: $e');
       return false;
     }
   }
@@ -151,7 +150,6 @@ class BackupService {
 
       return RestoreResult(success: true, message: stats);
     } catch (e) {
-      print('❌ Restore Error: $e');
       return RestoreResult(
         success: false,
         message: 'Restore failed: ${e.toString()}',
@@ -162,8 +160,7 @@ class BackupService {
   bool _validateBackup(Map<String, dynamic> data) {
     // Check for required keys
     if (!data.containsKey('appName') || data['appName'] != 'GymBrain') {
-      // Allow missing appName for flexibility but warn
-      print('⚠️ Backup validation: Missing or invalid appName');
+      // Allow missing appName for flexibility
     }
 
     // At minimum, we need exercises or routines to be present

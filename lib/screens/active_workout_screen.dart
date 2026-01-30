@@ -5,8 +5,6 @@ import '../models/gym_models.dart';
 import '../services/database_service.dart';
 import '../services/notification_service.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:timezone/data/latest.dart' as tz;
-import 'package:timezone/timezone.dart' as tz;
 import 'package:vibration/vibration.dart';
 import 'package:flutter/services.dart';
 import '../utils/timer_config.dart';
@@ -277,7 +275,6 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
   Future<void> _scheduleNotification(int seconds) async {
     if (!_db.enableNotifications) return;
 
-    print("🔍 ATTEMPTING TO NOTIFY in $seconds seconds...");
     final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
     // Determine the current exercise name for the dynamic body
     String currentExerciseName = "your next set";
@@ -293,16 +290,11 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
         seconds: seconds,
         playSound: _db.enableSound,
       );
-      print("✅ Scheduled using exactAllowWhileIdle mode");
     } catch (e) {
-      print("❌ ERROR in Scheduling: $e");
-      print("⚠️ Scheduling failed, used Fallback Delay");
-
       // Fallback: Simple Delay
       Future.delayed(Duration(seconds: seconds), () async {
         if (!mounted || !_isResting) return;
 
-        print("⚠️ Triggering Fallback Notification NOW");
         const AndroidNotificationDetails androidNotificationDetails =
             AndroidNotificationDetails(
               'gym_timer',

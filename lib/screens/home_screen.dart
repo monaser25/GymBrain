@@ -10,6 +10,7 @@ import 'progress_screen.dart';
 import 'routines_screen.dart';
 import 'settings_screen.dart';
 import 'history_screen.dart';
+import 'profile_screen.dart';
 // Note: RoutineEditorScreen import might be needed if we link directly,
 // but RoutinesScreen handles that.
 
@@ -163,13 +164,23 @@ class _DashboardView extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const CircleAvatar(
-                        radius: 24,
-                        backgroundColor: Color(0xFF1C1C1E),
-                        child: Icon(
-                          Icons.person,
-                          color: Colors.white,
-                          size: 24,
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ProfileScreen(),
+                            ),
+                          );
+                        },
+                        child: const CircleAvatar(
+                          radius: 24,
+                          backgroundColor: Color(0xFF1C1C1E),
+                          child: Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: 24,
+                          ),
                         ),
                       ),
                     ],

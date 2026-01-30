@@ -39,6 +39,9 @@ class GymDatabase extends ChangeNotifier {
   late Box _activeSessionBox;
   late Box _settingsBox;
 
+  // Public getter for settings box (used by ProfileScreen)
+  Box get settingsBox => _settingsBox;
+
   // Settings
   int get defaultRestSeconds =>
       _settingsBox.get('default_rest_seconds', defaultValue: 90);
