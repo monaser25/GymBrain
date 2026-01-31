@@ -190,23 +190,6 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
 
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Divider(color: Colors.white10),
-            ),
-
-            // Settings
-            _buildDrawerTile(
-              context: context,
-              icon: Icons.settings_outlined,
-              label: "Settings",
-              emoji: "⚙️",
-              onTap: () {
-                Navigator.pop(context);
-                setState(() => _currentIndex = 3); // Switch to Settings tab
-              },
-            ),
-
             const Spacer(),
 
             // Footer

@@ -1397,8 +1397,10 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
         isAssisted: _isAssisted,
       );
 
-      // Show recommendation as Arabic Bottom Sheet
-      _showPerformanceSheet(recommendation);
+      // Show recommendation as Arabic Bottom Sheet (if enabled)
+      if (GymDatabase().enableAiFeedback) {
+        _showPerformanceSheet(recommendation);
+      }
 
       // Reset assisted toggle after each set
       setState(() => _isAssisted = false);

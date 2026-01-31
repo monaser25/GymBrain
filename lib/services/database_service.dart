@@ -57,6 +57,11 @@ class GymDatabase extends ChangeNotifier {
   Future<void> setEnableNotifications(bool enable) async =>
       _settingsBox.put('enable_notifications', enable);
 
+  bool get enableAiFeedback =>
+      _settingsBox.get('enable_ai_feedback', defaultValue: true);
+  Future<void> setEnableAiFeedback(bool enable) async =>
+      _settingsBox.put('enable_ai_feedback', enable);
+
   Future<void> saveActiveSession(
     String routineId,
     DateTime startTime,

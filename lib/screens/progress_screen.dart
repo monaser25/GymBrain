@@ -621,12 +621,15 @@ class _ProgressScreenState extends State<ProgressScreen>
                               ),
                               Row(
                                 children: [
-                                  Text(
-                                    "${record.weight} kg (Weight)",
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
+                                  Flexible(
+                                    child: Text(
+                                      "${record.weight} kg (Weight)",
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(width: 16),

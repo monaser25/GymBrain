@@ -16,6 +16,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late int _restSeconds;
   late bool _soundEnabled;
   late bool _notificationsEnabled;
+  late bool _aiFeedbackEnabled;
 
   bool _isBackingUp = false;
   bool _isRestoring = false;
@@ -26,6 +27,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _restSeconds = _db.defaultRestSeconds;
     _soundEnabled = _db.enableSound;
     _notificationsEnabled = _db.enableNotifications;
+    _aiFeedbackEnabled = _db.enableAiFeedback;
   }
 
   String _formatDuration(int seconds) {
@@ -139,10 +141,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
+        automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -251,6 +250,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onChanged: (val) {
                   setState(() => _notificationsEnabled = val);
                   _db.setEnableNotifications(val);
+                },
+              ),
+
+              const SizedBox(height: 12),
+
+              // AI Feedback Toggle
+              SwitchListTile(
+                title: const Text(
+                  "Show Smart Feedback",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                subtitle: Text(
+                  "Display performance tips after each set",
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
+                value: _aiFeedbackEnabled,
+                activeThumbColor: const Color(0xFF39FF14),
+                contentPadding: EdgeInsets.zero,
+                onChanged: (val) {
+                  setState(() => _aiFeedbackEnabled = val);
+                  _db.setEnableAiFeedback(val);
                 },
               ),
 
