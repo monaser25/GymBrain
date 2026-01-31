@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'screens/home_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'screens/splash_screen.dart';
 import 'services/database_service.dart';
 import 'services/notification_service.dart';
 import 'package:provider/provider.dart';
@@ -47,15 +48,17 @@ class MyApp extends StatelessWidget {
             secondary: Colors.purpleAccent,
             surface: Color(0xFF1E1E1E),
           ),
-          fontFamily:
-              'Roboto', // Default, but explicit feels nicer if we change later
+          // Cairo font for beautiful Arabic + English support
+          textTheme: GoogleFonts.cairoTextTheme(
+            ThemeData.dark().textTheme,
+          ).apply(bodyColor: Colors.white, displayColor: Colors.white),
           useMaterial3: true,
           appBarTheme: const AppBarTheme(
             backgroundColor: Colors.transparent,
             systemOverlayStyle: SystemUiOverlayStyle.light,
           ),
         ),
-        home: const HomeScreen(),
+        home: const SplashScreen(),
       ),
     );
   }

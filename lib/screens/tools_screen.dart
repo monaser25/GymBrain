@@ -835,58 +835,40 @@ class _ToolsScreenState extends State<ToolsScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header with Settings Button
-          Stack(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1C1C1E),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: const Color(0xFF39FF14).withValues(alpha: 0.2),
+          // Header
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1C1C1E),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFF39FF14).withValues(alpha: 0.2),
+              ),
+            ),
+            child: Column(
+              children: [
+                const Icon(
+                  Icons.donut_large,
+                  color: Color(0xFF39FF14),
+                  size: 40,
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  "Plate Calculator",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                child: Column(
-                  children: [
-                    const Icon(
-                      Icons.donut_large,
-                      color: Color(0xFF39FF14),
-                      size: 40,
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      "Plate Calculator",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "Find out which plates to load on each side",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey[500], fontSize: 13),
-                    ),
-                  ],
+                const SizedBox(height: 8),
+                Text(
+                  "Find out which plates to load on each side",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey[500], fontSize: 13),
                 ),
-              ),
-              // Settings Icon (top-right corner)
-              Positioned(
-                top: 8,
-                right: 8,
-                child: IconButton(
-                  icon: const Icon(
-                    Icons.tune,
-                    color: Color(0xFF39FF14),
-                    size: 24,
-                  ),
-                  tooltip: "Plate Inventory",
-                  onPressed: _showPlateInventoryDialog,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
 
           const SizedBox(height: 24),
@@ -990,12 +972,17 @@ class _ToolsScreenState extends State<ToolsScreen>
 
           const SizedBox(height: 20),
 
-          // Target Weight Input
+          // Target Weight Input with Settings Icon
           _buildInputField(
             controller: _targetWeightController,
             label: "TARGET WEIGHT",
             hint: _isMetric ? "100" : "225",
             suffix: _unitLabel,
+            actionIcon: IconButton(
+              icon: const Icon(Icons.tune, color: Color(0xFF39FF14), size: 22),
+              tooltip: "Plate Inventory",
+              onPressed: _showPlateInventoryDialog,
+            ),
           ),
 
           const SizedBox(height: 16),
@@ -1374,6 +1361,7 @@ class _ToolsScreenState extends State<ToolsScreen>
     required String suffix,
     VoidCallback? onSuffixTap,
     bool isInteger = false,
+    Widget? actionIcon,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1433,20 +1421,30 @@ class _ToolsScreenState extends State<ToolsScreen>
                           )
                         : null,
                   ),
-                  child: Text(
-                    suffix,
-                    style: TextStyle(
-                      color: const Color(0xFF39FF14),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                      decoration: onSuffixTap != null
-                          ? TextDecoration.underline
-                          : TextDecoration.none,
-                      decorationColor: const Color(0xFF39FF14),
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        suffix,
+                        style: const TextStyle(
+                          color: Color(0xFF39FF14),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                      if (onSuffixTap != null) ...[
+                        const SizedBox(width: 4),
+                        const Icon(
+                          Icons.arrow_drop_down,
+                          color: Color(0xFF39FF14),
+                          size: 16,
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ),
+              if (actionIcon != null) actionIcon,
             ],
           ),
         ),
