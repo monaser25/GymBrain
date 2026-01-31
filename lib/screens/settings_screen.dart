@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import '../models/gym_models.dart';
 import '../services/database_service.dart';
 import '../services/backup_service.dart';
+import 'onboarding_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -145,222 +148,324 @@ class _SettingsScreenState extends State<SettingsScreen> {
         elevation: 0,
         automaticallyImplyLeading: false,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      body: ListView(
+        padding: const EdgeInsets.all(20.0),
+        children: [
+          // GENERAL SECTION
+          const Text(
+            "⚙️ General",
+            style: TextStyle(
+              color: Color(0xFF39FF14),
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Default Weight Unit Toggle
+          SwitchListTile(
+            title: const Text(
+              "Default Weight Unit",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            subtitle: Text(
+              "Current: ${_defaultIsKg ? 'KG (Kilograms)' : 'LB (Pounds)'}",
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+            value: _defaultIsKg,
+            activeThumbColor: const Color(0xFF39FF14),
+            contentPadding: EdgeInsets.zero,
+            onChanged: (val) {
+              setState(() => _defaultIsKg = val);
+              _db.setDefaultIsKg(val);
+            },
+          ),
+
+          const SizedBox(height: 40),
+          const Divider(color: Colors.white10),
+          const SizedBox(height: 24),
+
+          // TIMER & FEEDBACK SECTION
+          const Text(
+            "⏱️ Timer & Feedback",
+            style: TextStyle(
+              color: Color(0xFF39FF14),
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Rest Duration Slider
+          Text(
+            "Default Rest Timer",
+            style: TextStyle(
+              color: Colors.grey[400],
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // GENERAL SECTION
-              const Text(
-                "⚙️ General",
-                style: TextStyle(
-                  color: Color(0xFF39FF14),
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Default Weight Unit Toggle
-              SwitchListTile(
-                title: const Text(
-                  "Default Weight Unit",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                subtitle: Text(
-                  "Current: ${_defaultIsKg ? 'KG (Kilograms)' : 'LB (Pounds)'}",
-                  style: TextStyle(color: Colors.grey[600]),
-                ),
-                value: _defaultIsKg,
-                activeThumbColor: const Color(0xFF39FF14),
-                contentPadding: EdgeInsets.zero,
-                onChanged: (val) {
-                  setState(() => _defaultIsKg = val);
-                  _db.setDefaultIsKg(val);
-                },
-              ),
-
-              const SizedBox(height: 40),
-              const Divider(color: Colors.white10),
-              const SizedBox(height: 24),
-
-              // TIMER & FEEDBACK SECTION
-              const Text(
-                "⏱️ Timer & Feedback",
-                style: TextStyle(
-                  color: Color(0xFF39FF14),
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Rest Duration Slider
               Text(
-                "Default Rest Timer",
-                style: TextStyle(
-                  color: Colors.grey[400],
-                  fontSize: 14,
+                _formatDuration(_restSeconds),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    _formatDuration(_restSeconds),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              SliderTheme(
-                data: SliderTheme.of(context).copyWith(
-                  activeTrackColor: const Color(0xFF39FF14),
-                  inactiveTrackColor: Colors.grey[800],
-                  thumbColor: Colors.white,
-                  overlayColor: const Color(0xFF39FF14).withValues(alpha: 0.2),
-                  trackHeight: 4,
-                ),
-                child: Slider(
-                  value: _restSeconds.toDouble(),
-                  min: 30,
-                  max: 300,
-                  divisions: (300 - 30) ~/ 15,
-                  onChanged: (val) {
-                    setState(() {
-                      _restSeconds = val.toInt();
-                    });
-                    _db.setDefaultRestSeconds(_restSeconds);
-                  },
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Sound Toggle
-              SwitchListTile(
-                title: const Text(
-                  "Timer Sound Effect",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                subtitle: Text(
-                  "Play a beep when the timer ends",
-                  style: TextStyle(color: Colors.grey[600]),
-                ),
-                value: _soundEnabled,
-                activeThumbColor: const Color(0xFF39FF14),
-                contentPadding: EdgeInsets.zero,
-                onChanged: (val) {
-                  setState(() => _soundEnabled = val);
-                  _db.setEnableSound(val);
-                },
-              ),
-
-              const SizedBox(height: 12),
-
-              // Notification Toggle
-              SwitchListTile(
-                title: const Text(
-                  "Background Alerts",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                subtitle: Text(
-                  "Send a notification if app is in background",
-                  style: TextStyle(color: Colors.grey[600]),
-                ),
-                value: _notificationsEnabled,
-                activeThumbColor: const Color(0xFF39FF14),
-                contentPadding: EdgeInsets.zero,
-                onChanged: (val) {
-                  setState(() => _notificationsEnabled = val);
-                  _db.setEnableNotifications(val);
-                },
-              ),
-
-              const SizedBox(height: 12),
-
-              // AI Feedback Toggle
-              SwitchListTile(
-                title: const Text(
-                  "Show Smart Feedback",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                subtitle: Text(
-                  "Display performance tips after each set",
-                  style: TextStyle(color: Colors.grey[600]),
-                ),
-                value: _aiFeedbackEnabled,
-                activeThumbColor: const Color(0xFF39FF14),
-                contentPadding: EdgeInsets.zero,
-                onChanged: (val) {
-                  setState(() => _aiFeedbackEnabled = val);
-                  _db.setEnableAiFeedback(val);
-                },
-              ),
-
-              const SizedBox(height: 40),
-              const Divider(color: Colors.white10),
-              const SizedBox(height: 24),
-
-              // DATA MANAGEMENT SECTION
-              const Text(
-                "💾 Data Management",
-                style: TextStyle(
-                  color: Color(0xFF39FF14),
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                "Backup your data to keep it safe or transfer to another device.",
-                style: TextStyle(color: Colors.grey[600], fontSize: 13),
-              ),
-              const SizedBox(height: 24),
-
-              // Export Backup Button
-              _buildActionButton(
-                icon: Icons.upload_file,
-                label: "Export Backup",
-                description: "Save all data as a JSON file",
-                isLoading: _isBackingUp,
-                color: const Color(0xFF39FF14),
-                onTap: _handleBackup,
-              ),
-
-              const SizedBox(height: 16),
-
-              // Restore Backup Button
-              _buildActionButton(
-                icon: Icons.download,
-                label: "Restore Backup",
-                description: "Import data from a backup file",
-                isLoading: _isRestoring,
-                color: Colors.orange,
-                onTap: _handleRestore,
               ),
             ],
           ),
-        ),
+          SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              activeTrackColor: const Color(0xFF39FF14),
+              inactiveTrackColor: Colors.grey[800],
+              thumbColor: Colors.white,
+              overlayColor: const Color(0xFF39FF14).withValues(alpha: 0.2),
+              trackHeight: 4,
+            ),
+            child: Slider(
+              value: _restSeconds.toDouble(),
+              min: 30,
+              max: 300,
+              divisions: (300 - 30) ~/ 15,
+              onChanged: (val) {
+                setState(() {
+                  _restSeconds = val.toInt();
+                });
+                _db.setDefaultRestSeconds(_restSeconds);
+              },
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // Sound Toggle
+          SwitchListTile(
+            title: const Text(
+              "Timer Sound Effect",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            subtitle: Text(
+              "Play a beep when the timer ends",
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+            value: _soundEnabled,
+            activeThumbColor: const Color(0xFF39FF14),
+            contentPadding: EdgeInsets.zero,
+            onChanged: (val) {
+              setState(() => _soundEnabled = val);
+              _db.setEnableSound(val);
+            },
+          ),
+
+          const SizedBox(height: 12),
+
+          // Notification Toggle
+          SwitchListTile(
+            title: const Text(
+              "Background Alerts",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            subtitle: Text(
+              "Send a notification if app is in background",
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+            value: _notificationsEnabled,
+            activeThumbColor: const Color(0xFF39FF14),
+            contentPadding: EdgeInsets.zero,
+            onChanged: (val) {
+              setState(() => _notificationsEnabled = val);
+              _db.setEnableNotifications(val);
+            },
+          ),
+
+          const SizedBox(height: 12),
+
+          // AI Feedback Toggle
+          SwitchListTile(
+            title: const Text(
+              "Show Smart Feedback",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            subtitle: Text(
+              "Display performance tips after each set",
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+            value: _aiFeedbackEnabled,
+            activeThumbColor: const Color(0xFF39FF14),
+            contentPadding: EdgeInsets.zero,
+            onChanged: (val) {
+              setState(() => _aiFeedbackEnabled = val);
+              _db.setEnableAiFeedback(val);
+            },
+          ),
+
+          const SizedBox(height: 40),
+          const Divider(color: Colors.white10),
+          const SizedBox(height: 24),
+
+          // DATA MANAGEMENT SECTION
+          const Text(
+            "💾 Data Management",
+            style: TextStyle(
+              color: Color(0xFF39FF14),
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "Backup your data to keep it safe or transfer to another device.",
+            style: TextStyle(color: Colors.grey[600], fontSize: 13),
+          ),
+          const SizedBox(height: 24),
+
+          // Export Backup Button
+          _buildActionButton(
+            icon: Icons.upload_file,
+            label: "Export Backup",
+            description: "Save all data as a JSON file",
+            isLoading: _isBackingUp,
+            color: const Color(0xFF39FF14),
+            onTap: _handleBackup,
+          ),
+
+          const SizedBox(height: 16),
+
+          // Restore Backup Button
+          _buildActionButton(
+            icon: Icons.download,
+            label: "Restore Backup",
+            description: "Import data from a backup file",
+            isLoading: _isRestoring,
+            color: Colors.orange,
+            onTap: _handleRestore,
+          ),
+
+          const SizedBox(height: 40),
+          Divider(color: Colors.red.withValues(alpha: 0.3)),
+          const SizedBox(height: 16),
+
+          // DANGER ZONE SECTION
+          const ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(
+              "🚨 Danger Zone",
+              style: TextStyle(
+                color: Colors.red,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.delete_forever,
+                color: Colors.red,
+                size: 24,
+              ),
+            ),
+            title: const Text(
+              "Factory Reset App",
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(
+              "Wipe all data and restart fresh",
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+            onTap: () => _showResetConfirmationDialog(context),
+          ),
+
+          const SizedBox(height: 40), // Bottom padding
+        ],
       ),
+    );
+  }
+
+  Future<void> _showResetConfirmationDialog(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1C1C1E),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                "Factory Reset?",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          "This will PERMANENTLY DELETE all data:\n\n"
+          "• All Exercises\n"
+          "• All Routines\n"
+          "• Entire Workout History\n"
+          "• InBody Records\n"
+          "• All Settings\n\n"
+          "This action CANNOT be undone!",
+          style: TextStyle(color: Colors.grey[400], height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text("Reset Everything"),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    // Clear all Hive boxes
+    await Hive.box<Exercise>('exercises').clear();
+    await Hive.box<Routine>('routines').clear();
+    await Hive.box<WorkoutSession>('sessions').clear();
+    await Hive.box<InBodyRecord>('inbody').clear();
+    await Hive.box('active_session').clear();
+    await Hive.box('settings').clear();
+
+    if (!mounted) return;
+
+    // Navigate to Onboarding and clear entire navigation stack
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const OnboardingScreen()),
+      (route) => false,
     );
   }
 
