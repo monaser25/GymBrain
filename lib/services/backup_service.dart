@@ -1,8 +1,7 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../models/gym_models.dart';
 
@@ -15,6 +14,7 @@ class BackupService {
   BackupService._internal();
 
   /// Creates a JSON backup of all app data and shares it
+  /// Uses Uint8List bytes for universal Mobile/Web compatibility
   Future<bool> createBackup() async {
     try {
       // Get all boxes
@@ -36,23 +36,33 @@ class BackupService {
         'settings': _serializeSettings(settingsBox),
       };
 
-      // Convert to JSON
-      final jsonString = const JsonEncoder.withIndent('  ').convert(backupData);
+      // 1. Generate JSON String (pretty printed)
+      final String jsonString = const JsonEncoder.withIndent(
+        '  ',
+      ).convert(backupData);
 
-      // Get temp directory and create file
-      final directory = await getTemporaryDirectory();
+      // 2. Convert to Bytes (Uint8List) - Universal approach
+      final Uint8List bytes = Uint8List.fromList(utf8.encode(jsonString));
+
+      // 3. Generate filename with timestamp
       final timestamp = DateTime.now()
           .toIso8601String()
           .replaceAll(':', '-')
           .split('.')
           .first;
-      final filePath = '${directory.path}/gym_brain_backup_$timestamp.json';
-      final file = File(filePath);
-      await file.writeAsString(jsonString);
+      final fileName = 'gym_brain_backup_$timestamp.json';
 
-      // Share the file
+      // 4. Create XFile directly from bytes (Works on Web & Mobile)
+      final xFile = XFile.fromData(
+        bytes,
+        mimeType: 'application/json',
+        name: fileName,
+        lastModified: DateTime.now(),
+      );
+
+      // 5. Share - On Web triggers download, on Mobile opens Share Sheet
       await Share.shareXFiles(
-        [XFile(filePath)],
+        [xFile],
         text: 'My Gym Brain Backup',
         subject: 'Gym Brain Backup - $timestamp',
       );
@@ -64,26 +74,30 @@ class BackupService {
   }
 
   /// Restores data from a JSON backup file
+  /// Uses bytes for universal Mobile/Web compatibility
   Future<RestoreResult> restoreBackup() async {
     try {
-      // Pick file
+      // Pick file - withData: true ensures we get bytes on all platforms
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['json'],
+        withData: true, // Critical for Web support
       );
 
       if (result == null || result.files.isEmpty) {
         return RestoreResult(success: false, message: 'No file selected');
       }
 
-      final filePath = result.files.single.path;
-      if (filePath == null) {
-        return RestoreResult(success: false, message: 'Invalid file path');
+      final fileBytes = result.files.single.bytes;
+      if (fileBytes == null) {
+        return RestoreResult(
+          success: false,
+          message: 'Could not read file data',
+        );
       }
 
-      // Read and parse JSON
-      final file = File(filePath);
-      final jsonString = await file.readAsString();
+      // Decode bytes to JSON string
+      final jsonString = utf8.decode(fileBytes);
       final Map<String, dynamic> backupData = jsonDecode(jsonString);
 
       // Validate backup structure
