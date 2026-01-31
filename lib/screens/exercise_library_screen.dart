@@ -309,10 +309,7 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
             ],
           ),
           content: Text(
-            "Deleting '${exercise.name}' will:\n\n"
-            "• Remove ALL workout history for this exercise\n"
-            "• Remove it from any Routines using it\n\n"
-            "This action CANNOT be undone!",
+            "What would you like to delete for '${exercise.name}'?",
             style: TextStyle(color: Colors.grey[400], height: 1.5),
           ),
           actions: [
@@ -320,6 +317,31 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
               onPressed: () => Navigator.pop(context),
               child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
             ),
+            // Option 1: Delete Exercise Only (Keep History)
+            OutlinedButton(
+              onPressed: () async {
+                await _deleteExerciseOnly(exercise);
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        "'${exercise.name}' removed (history kept)",
+                      ),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                }
+              },
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.orange),
+              ),
+              child: const Text(
+                "Remove from Library",
+                style: TextStyle(color: Colors.orange),
+              ),
+            ),
+            // Option 2: Delete Everything
             ElevatedButton(
               onPressed: () async {
                 await _deleteExerciseCompletely(exercise);
@@ -327,7 +349,9 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text("'${exercise.name}' deleted permanently"),
+                      content: Text(
+                        "'${exercise.name}' and all history deleted",
+                      ),
                       backgroundColor: Colors.redAccent,
                     ),
                   );
@@ -337,7 +361,7 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
                 backgroundColor: Colors.redAccent,
                 foregroundColor: Colors.white,
               ),
-              child: const Text("Delete Forever"),
+              child: const Text("Delete Everything"),
             ),
           ],
         );
@@ -345,6 +369,25 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
     );
   }
 
+  // Delete exercise from library only (keep workout history)
+  Future<void> _deleteExerciseOnly(Exercise exercise) async {
+    // 1. Remove from all Routines
+    final routines = _db.getRoutines();
+    for (final routine in routines) {
+      if (routine.exerciseIds.contains(exercise.id)) {
+        routine.exerciseIds.remove(exercise.id);
+        await routine.save();
+      }
+    }
+
+    // 2. Delete the exercise object only (history preserved in sessions)
+    final exerciseBox = Hive.box<Exercise>('exercises');
+    await exerciseBox.delete(exercise.id);
+
+    // UI will auto-refresh via ValueListenableBuilder
+  }
+
+  // Delete exercise AND all associated workout history (deep delete)
   Future<void> _deleteExerciseCompletely(Exercise exercise) async {
     // 1. Remove from all Routines
     final routines = _db.getRoutines();
@@ -355,11 +398,10 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
       }
     }
 
-    // 2. Delete the exercise itself
-    // Note: History is stored in WorkoutSession.sets by exercise NAME,
-    // so deleting the Exercise object does NOT delete historical data.
-    // That's actually good - preserves session integrity.
-    // If user wants to purge history, they'd need a separate action.
+    // 2. Delete all workout history for this exercise
+    await _db.deleteExerciseHistory(exercise.name);
+
+    // 3. Delete the exercise itself
     final exerciseBox = Hive.box<Exercise>('exercises');
     await exerciseBox.delete(exercise.id);
 

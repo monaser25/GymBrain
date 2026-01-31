@@ -219,33 +219,68 @@ class GymDatabase extends ChangeNotifier {
     return null;
   }
 
-  // Exercise History for Charts
+  // Exercise History for Charts (returns history with sets for counting)
   List<Map<String, dynamic>> getExerciseHistory(String exerciseId) {
     final exercise = getExercise(exerciseId);
-    if (exercise == null) return [];
+    if (exercise == null) {
+      debugPrint('getExerciseHistory: Exercise ID $exerciseId not found');
+      return [];
+    }
 
     final history = <Map<String, dynamic>>[];
     final sessions = getSessions().reversed.toList(); // Oldest first for charts
 
     for (final session in sessions) {
-      // Find the best set (Max Weight) for this session
+      // Find all sets for this exercise
+      final exerciseSets = <ExerciseSet>[];
       double maxWeight = 0;
-      bool found = false;
 
       for (final set in session.sets) {
         if (set.exerciseName == exercise.name) {
+          exerciseSets.add(set);
           if (set.weight > maxWeight) {
             maxWeight = set.weight;
-            found = true;
           }
         }
       }
 
-      if (found) {
-        history.add({'date': session.date, 'weight': maxWeight});
+      if (exerciseSets.isNotEmpty) {
+        history.add({
+          'date': session.date,
+          'weight': maxWeight,
+          'sets': exerciseSets, // Include sets for counting
+        });
       }
     }
+
+    debugPrint(
+      'getExerciseHistory for ID $exerciseId (${exercise.name}): found ${history.length} sessions',
+    );
     return history;
+  }
+
+  // Delete all history for an exercise (deep delete)
+  Future<void> deleteExerciseHistory(String exerciseName) async {
+    final sessions = getSessions();
+
+    for (final session in sessions) {
+      // Remove sets matching this exercise
+      final originalLength = session.sets.length;
+      session.sets.removeWhere((set) => set.exerciseName == exerciseName);
+
+      if (session.sets.length != originalLength) {
+        // Session was modified, save it
+        if (session.sets.isEmpty) {
+          // Delete the entire session if no sets remain
+          await _sessionBox.delete(session.id);
+        } else {
+          await session.save();
+        }
+      }
+    }
+
+    notifyListeners();
+    debugPrint('Deleted all history for exercise: $exerciseName');
   }
 
   // Phase 3: Robust Name-Based History
@@ -266,17 +301,22 @@ class GymDatabase extends ChangeNotifier {
     for (final session in sessions) {
       double maxWeight = 0;
       double totalVolume = 0;
+      String maxWeightUnit = 'kg'; // Default for legacy data
       bool found = false;
 
       for (final set in session.sets) {
         if (set.exerciseName == exerciseName) {
           found = true;
-          // Max Weight
+          // Max Weight (track the unit of the heaviest set)
           if (set.weight > maxWeight) {
             maxWeight = set.weight;
+            maxWeightUnit = set.unit;
           }
-          // Volume = Weight * Reps
-          totalVolume += (set.weight * set.reps);
+          // Volume = Weight * Reps (converted to kg for consistency)
+          double weightInKg = set.unit == 'lb'
+              ? set.weight * 0.453592
+              : set.weight;
+          totalVolume += (weightInKg * set.reps);
         }
       }
 
@@ -285,6 +325,7 @@ class GymDatabase extends ChangeNotifier {
           'date': session.date,
           'weight': maxWeight,
           'volume': totalVolume,
+          'unit': maxWeightUnit,
         });
       }
     }

@@ -25,11 +25,11 @@ class _ProgressScreenState extends State<ProgressScreen>
   late TabController _tabController;
 
   // For Exercise Tab
-  // For Exercise Tab
   String? _selectedExerciseName;
   List<Map<String, dynamic>> _exerciseHistory = [];
   ChartMetric _selectedMetric = ChartMetric.maxWeight;
   ChartRange _selectedExerciseRange = ChartRange.all;
+  bool _displayInKg = true; // Unit display preference for chart
 
   // For Body Stats Tab
   BodyMetric? _selectedBodyMetric; // Null means "Show All"
@@ -78,6 +78,17 @@ class _ProgressScreenState extends State<ProgressScreen>
         return const FlLine(color: Colors.white24, strokeWidth: 1);
       },
     );
+  }
+
+  // Convert weight to display unit (handles mixed KG/LB history)
+  double _normalizeWeight(double weight, String originalUnit) {
+    if (_displayInKg) {
+      // Display in KG
+      return originalUnit == 'lb' ? weight * 0.453592 : weight;
+    } else {
+      // Display in LB
+      return originalUnit == 'kg' ? weight * 2.20462 : weight;
+    }
   }
 
   @override
@@ -802,6 +813,81 @@ class _ProgressScreenState extends State<ProgressScreen>
                             ],
                           ),
                         ),
+                        // Unit Toggle (KG/LB)
+                        if (_selectedMetric == ChartMetric.maxWeight)
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 16),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "View as: ",
+                                  style: TextStyle(
+                                    color: Colors.grey[500],
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () =>
+                                      setState(() => _displayInKg = true),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: _displayInKg
+                                          ? const Color(0xFF39FF14)
+                                          : const Color(0xFF2C2C2E),
+                                      borderRadius:
+                                          const BorderRadius.horizontal(
+                                            left: Radius.circular(8),
+                                          ),
+                                    ),
+                                    child: Text(
+                                      "KG",
+                                      style: TextStyle(
+                                        color: _displayInKg
+                                            ? Colors.black
+                                            : Colors.grey,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () =>
+                                      setState(() => _displayInKg = false),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: !_displayInKg
+                                          ? const Color(0xFF39FF14)
+                                          : const Color(0xFF2C2C2E),
+                                      borderRadius:
+                                          const BorderRadius.horizontal(
+                                            right: Radius.circular(8),
+                                          ),
+                                    ),
+                                    child: Text(
+                                      "LB",
+                                      style: TextStyle(
+                                        color: !_displayInKg
+                                            ? Colors.black
+                                            : Colors.grey,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         Container(
                           height: 300,
                           padding: const EdgeInsets.only(
@@ -824,10 +910,19 @@ class _ProgressScreenState extends State<ProgressScreen>
 
                               if (filteredHistory.isNotEmpty) {
                                 for (var h in filteredHistory) {
-                                  double val =
-                                      _selectedMetric == ChartMetric.maxWeight
-                                      ? h['weight']
-                                      : h['volume'];
+                                  double val;
+                                  if (_selectedMetric ==
+                                      ChartMetric.maxWeight) {
+                                    // Normalize weight based on display preference
+                                    final originalUnit =
+                                        h['unit'] as String? ?? 'kg';
+                                    val = _normalizeWeight(
+                                      h['weight'],
+                                      originalUnit,
+                                    );
+                                  } else {
+                                    val = h['volume'];
+                                  }
                                   if (val > maxVal) maxVal = val;
                                   if (val < minVal) minVal = val;
                                 }
@@ -914,11 +1009,19 @@ class _ProgressScreenState extends State<ProgressScreen>
                                           .asMap()
                                           .entries
                                           .map((e) {
-                                            final val =
-                                                _selectedMetric ==
-                                                    ChartMetric.maxWeight
-                                                ? e.value['weight']
-                                                : e.value['volume'];
+                                            double val;
+                                            if (_selectedMetric ==
+                                                ChartMetric.maxWeight) {
+                                              final originalUnit =
+                                                  e.value['unit'] as String? ??
+                                                  'kg';
+                                              val = _normalizeWeight(
+                                                e.value['weight'],
+                                                originalUnit,
+                                              );
+                                            } else {
+                                              val = e.value['volume'];
+                                            }
                                             return FlSpot(
                                               e.key.toDouble(),
                                               val,
@@ -949,7 +1052,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                                           final unit =
                                               _selectedMetric ==
                                                   ChartMetric.maxWeight
-                                              ? "kg"
+                                              ? (_displayInKg ? "kg" : "lb")
                                               : "vol";
                                           return LineTooltipItem(
                                             "${spot.y.toStringAsFixed(1)} $unit\n$dateStr",
@@ -984,7 +1087,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                             const SizedBox(width: 8),
                             Text(
                               _selectedMetric == ChartMetric.maxWeight
-                                  ? "Max Weight"
+                                  ? "Max Weight (${_displayInKg ? 'kg' : 'lb'})"
                                   : "Volume",
                               style: const TextStyle(
                                 color: Colors.white70,
