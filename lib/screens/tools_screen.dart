@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../services/database_service.dart';
 
 class ToolsScreen extends StatefulWidget {
   final int initialTab;
@@ -17,12 +19,21 @@ class _ToolsScreenState extends State<ToolsScreen>
   final _weightController = TextEditingController();
   final _repsController = TextEditingController();
   double? _oneRepMax;
+  String _inputUnit = 'kg'; // Track input unit (kg/lb)
+
+  // Smart 1RM History State
+  String? _selectedExercise;
+  String? _historyDateLabel;
+  List<String> _exerciseNames = [];
 
   // Plate Calculator State
   final _targetWeightController = TextEditingController();
   double _barWeight = 20.0;
   List<Map<String, dynamic>> _platesPerSide = [];
   String? _plateError;
+
+  // Unit System State (Metric = true, Imperial = false)
+  bool _isMetric = true;
 
   @override
   void initState() {
@@ -32,6 +43,58 @@ class _ToolsScreenState extends State<ToolsScreen>
       vsync: this,
       initialIndex: widget.initialTab,
     );
+    _loadExerciseNames();
+  }
+
+  void _loadExerciseNames() {
+    final db = GymDatabase();
+    setState(() {
+      _exerciseNames = db.getExerciseNamesFromHistory();
+    });
+  }
+
+  // Find the best 1RM for a given exercise from history
+  void _onExerciseSelected(String exerciseName) {
+    final db = GymDatabase();
+    final sessions = db.getSessions();
+
+    double maxOneRm = 0;
+    double bestWeight = 0;
+    String bestUnit = 'kg';
+    int bestReps = 0;
+    DateTime? bestDate;
+
+    for (final session in sessions) {
+      for (final set in session.sets) {
+        if (set.exerciseName == exerciseName) {
+          // Calculate 1RM using Epley formula
+          // Normalize to kg for comparison
+          double weightInKg = set.unit == 'lb'
+              ? set.weight * 0.453592
+              : set.weight;
+          double oneRm = weightInKg * (1 + set.reps / 30);
+
+          if (oneRm > maxOneRm) {
+            maxOneRm = oneRm;
+            bestWeight = set.weight;
+            bestReps = set.reps;
+            bestUnit = set.unit; // Capture unit
+            bestDate = session.date;
+          }
+        }
+      }
+    }
+
+    if (bestDate != null) {
+      setState(() {
+        _selectedExercise = exerciseName;
+        _inputUnit = bestUnit; // Set unit
+        _weightController.text = _formatWeight(bestWeight);
+        _repsController.text = bestReps.toString();
+        _historyDateLabel = DateFormat('dd MMM yyyy').format(bestDate!);
+        _oneRepMax = null; // Reset result until user clicks calculate
+      });
+    }
   }
 
   @override
@@ -55,6 +118,36 @@ class _ToolsScreenState extends State<ToolsScreen>
     }
   }
 
+  // Get unit string based on current system
+  String get _unitLabel => _isMetric ? 'kg' : 'lb';
+
+  // Get bar weight options based on unit system
+  List<Map<String, dynamic>> get _barWeightOptions {
+    if (_isMetric) {
+      return [
+        {'value': 20.0, 'label': '20 kg (Olympic Standard)'},
+        {'value': 15.0, 'label': '15 kg (Women\'s Olympic)'},
+        {'value': 10.0, 'label': '10 kg (Training Bar)'},
+      ];
+    } else {
+      return [
+        {'value': 45.0, 'label': '45 lb (Standard)'},
+        {'value': 35.0, 'label': '35 lb (Women\'s)'},
+        {'value': 15.0, 'label': '15 lb (Training Bar)'},
+      ];
+    }
+  }
+
+  // Get available plates based on unit system (from database settings)
+  List<double> get _availablePlates {
+    final db = GymDatabase();
+    if (_isMetric) {
+      return db.availablePlatesKg;
+    } else {
+      return db.availablePlatesLb;
+    }
+  }
+
   // Plate Calculator Logic
   void _calculatePlates() {
     final targetWeight = double.tryParse(_targetWeightController.text);
@@ -62,7 +155,7 @@ class _ToolsScreenState extends State<ToolsScreen>
     if (targetWeight == null || targetWeight <= _barWeight) {
       setState(() {
         _plateError =
-            "Target must be greater than bar weight (${_barWeight.toInt()} kg)";
+            "Target must be greater than bar weight (${_formatWeight(_barWeight)} $_unitLabel)";
         _platesPerSide = [];
       });
       return;
@@ -72,7 +165,7 @@ class _ToolsScreenState extends State<ToolsScreen>
     double remainingPerSide = (targetWeight - _barWeight) / 2;
 
     // Available plates (largest to smallest)
-    final availablePlates = [25.0, 20.0, 15.0, 10.0, 5.0, 2.5, 1.25];
+    final availablePlates = _availablePlates;
     final List<Map<String, dynamic>> result = [];
 
     for (final plate in availablePlates) {
@@ -88,7 +181,7 @@ class _ToolsScreenState extends State<ToolsScreen>
       // Small tolerance for floating point
       setState(() {
         _plateError =
-            "Cannot make exact weight with available plates. ${remainingPerSide.toStringAsFixed(2)} kg remaining.";
+            "Cannot make exact weight with available plates. ${remainingPerSide.toStringAsFixed(2)} $_unitLabel remaining.";
         _platesPerSide = result;
       });
     } else {
@@ -99,10 +192,198 @@ class _ToolsScreenState extends State<ToolsScreen>
     }
   }
 
+  // Switch unit system and reset bar weight to default for that system
+  void _switchUnitSystem(bool isMetric) {
+    setState(() {
+      _isMetric = isMetric;
+      _barWeight = isMetric ? 20.0 : 45.0; // Default bar for each system
+      _platesPerSide = [];
+      _plateError = null;
+      _targetWeightController.clear();
+    });
+  }
+
   String _formatWeight(double weight) {
     return weight == weight.roundToDouble()
         ? weight.toInt().toString()
         : weight.toStringAsFixed(2).replaceAll(RegExp(r'\.?0+$'), '');
+  }
+
+  // Show dialog to customize available plates
+  void _showPlateInventoryDialog() {
+    final db = GymDatabase();
+
+    // Get default and current plates
+    final allPlatesKg = GymDatabase.defaultPlatesKg;
+    final allPlatesLb = GymDatabase.defaultPlatesLb;
+
+    // Create a copy of current selection
+    Set<double> selectedKg = Set.from(db.availablePlatesKg);
+    Set<double> selectedLb = Set.from(db.availablePlatesLb);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: const Color(0xFF1C1C1E),
+              title: const Row(
+                children: [
+                  Icon(Icons.tune, color: Color(0xFF39FF14), size: 24),
+                  SizedBox(width: 12),
+                  Text(
+                    "Plate Inventory",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ],
+              ),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Uncheck plates you don't have at your gym.",
+                        style: TextStyle(color: Colors.grey[400], fontSize: 13),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Metric Plates Section
+                      const Text(
+                        "METRIC (KG)",
+                        style: TextStyle(
+                          color: Color(0xFF39FF14),
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: allPlatesKg.map((plate) {
+                          final isSelected = selectedKg.contains(plate);
+                          return FilterChip(
+                            label: Text(
+                              "${_formatWeight(plate)} kg",
+                              style: TextStyle(
+                                color: isSelected ? Colors.black : Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            selected: isSelected,
+                            onSelected: (selected) {
+                              setDialogState(() {
+                                if (selected) {
+                                  selectedKg.add(plate);
+                                } else {
+                                  selectedKg.remove(plate);
+                                }
+                              });
+                            },
+                            selectedColor: const Color(0xFF39FF14),
+                            backgroundColor: const Color(0xFF2C2C2E),
+                            checkmarkColor: Colors.black,
+                          );
+                        }).toList(),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Imperial Plates Section
+                      const Text(
+                        "IMPERIAL (LB)",
+                        style: TextStyle(
+                          color: Color(0xFF39FF14),
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: allPlatesLb.map((plate) {
+                          final isSelected = selectedLb.contains(plate);
+                          return FilterChip(
+                            label: Text(
+                              "${_formatWeight(plate)} lb",
+                              style: TextStyle(
+                                color: isSelected ? Colors.black : Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            selected: isSelected,
+                            onSelected: (selected) {
+                              setDialogState(() {
+                                if (selected) {
+                                  selectedLb.add(plate);
+                                } else {
+                                  selectedLb.remove(plate);
+                                }
+                              });
+                            },
+                            selectedColor: const Color(0xFF39FF14),
+                            backgroundColor: const Color(0xFF2C2C2E),
+                            checkmarkColor: Colors.black,
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    "Cancel",
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    // Save the selections (sorted largest to smallest)
+                    final sortedKg = selectedKg.toList()
+                      ..sort((a, b) => b.compareTo(a));
+                    final sortedLb = selectedLb.toList()
+                      ..sort((a, b) => b.compareTo(a));
+
+                    await db.setAvailablePlatesKg(sortedKg);
+                    await db.setAvailablePlatesLb(sortedLb);
+
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                      // Clear current calculation to force recalculation with new plates
+                      setState(() {
+                        _platesPerSide = [];
+                        _plateError = null;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Plate inventory updated!"),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF39FF14),
+                    foregroundColor: Colors.black,
+                  ),
+                  child: const Text("Save"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -193,6 +474,125 @@ class _ToolsScreenState extends State<ToolsScreen>
 
           const SizedBox(height: 24),
 
+          // Smart 1RM: Select from History Dropdown
+          if (_exerciseNames.isNotEmpty) ...[
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "SELECT FROM HISTORY",
+                  style: TextStyle(
+                    color: Colors.grey[500],
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2C2C2E),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: _selectedExercise != null
+                                ? const Color(0xFF39FF14).withValues(alpha: 0.5)
+                                : Colors.transparent,
+                          ),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: _selectedExercise,
+                            isExpanded: true,
+                            hint: Text(
+                              "Choose an exercise...",
+                              style: TextStyle(color: Colors.grey[500]),
+                            ),
+                            dropdownColor: const Color(0xFF2C2C2E),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            icon: const Icon(
+                              Icons.history,
+                              color: Color(0xFF39FF14),
+                            ),
+                            items: _exerciseNames.map((name) {
+                              return DropdownMenuItem(
+                                value: name,
+                                child: Text(name),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              if (value != null) {
+                                _onExerciseSelected(value);
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (_selectedExercise != null) ...[
+                      const SizedBox(width: 8),
+                      IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _selectedExercise = null;
+                            _weightController.clear();
+                            _repsController.clear();
+                            _inputUnit = 'kg'; // Reset to default
+                            _oneRepMax = null;
+                            _historyDateLabel = null;
+                          });
+                        },
+                        icon: const Icon(Icons.close, color: Colors.grey),
+                        tooltip: "Clear History",
+                      ),
+                    ],
+                  ],
+                ),
+                // History Date Label
+                if (_historyDateLabel != null) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF39FF14).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.auto_awesome,
+                          color: Color(0xFF39FF14),
+                          size: 16,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          "Based on your lift on $_historyDateLabel",
+                          style: const TextStyle(
+                            color: Color(0xFF39FF14),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            const SizedBox(height: 20),
+          ],
+
           // Input Fields
           Row(
             children: [
@@ -201,7 +601,12 @@ class _ToolsScreenState extends State<ToolsScreen>
                   controller: _weightController,
                   label: "LIFTED WEIGHT",
                   hint: "0",
-                  suffix: "kg",
+                  suffix: _inputUnit,
+                  onSuffixTap: () {
+                    setState(() {
+                      _inputUnit = _inputUnit == 'kg' ? 'lb' : 'kg';
+                    });
+                  },
                 ),
               ),
               const SizedBox(width: 16),
@@ -288,11 +693,11 @@ class _ToolsScreenState extends State<ToolsScreen>
                           fontWeight: FontWeight.w900,
                         ),
                       ),
-                      const Padding(
-                        padding: EdgeInsets.only(bottom: 10),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
                         child: Text(
-                          " kg",
-                          style: TextStyle(
+                          " $_inputUnit",
+                          style: const TextStyle(
                             color: Color(0xFF39FF14),
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -430,55 +835,172 @@ class _ToolsScreenState extends State<ToolsScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1C1C1E),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: const Color(0xFF39FF14).withValues(alpha: 0.2),
-              ),
-            ),
-            child: Column(
-              children: [
-                const Icon(
-                  Icons.donut_large,
-                  color: Color(0xFF39FF14),
-                  size: 40,
-                ),
-                const SizedBox(height: 12),
-                const Text(
-                  "Plate Calculator",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+          // Header with Settings Button
+          Stack(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1C1C1E),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: const Color(0xFF39FF14).withValues(alpha: 0.2),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  "Find out which plates to load on each side",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey[500], fontSize: 13),
+                child: Column(
+                  children: [
+                    const Icon(
+                      Icons.donut_large,
+                      color: Color(0xFF39FF14),
+                      size: 40,
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      "Plate Calculator",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "Find out which plates to load on each side",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey[500], fontSize: 13),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              // Settings Icon (top-right corner)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.tune,
+                    color: Color(0xFF39FF14),
+                    size: 24,
+                  ),
+                  tooltip: "Plate Inventory",
+                  onPressed: _showPlateInventoryDialog,
+                ),
+              ),
+            ],
           ),
 
           const SizedBox(height: 24),
+
+          // Unit System Toggle (Metric/Imperial)
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "UNIT SYSTEM",
+                style: TextStyle(
+                  color: Colors.grey[500],
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2C2C2E),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => _switchUnitSystem(true),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          decoration: BoxDecoration(
+                            color: _isMetric
+                                ? const Color(0xFF39FF14)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.straighten,
+                                size: 18,
+                                color: _isMetric ? Colors.black : Colors.grey,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                "METRIC (KG)",
+                                style: TextStyle(
+                                  color: _isMetric ? Colors.black : Colors.grey,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => _switchUnitSystem(false),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          decoration: BoxDecoration(
+                            color: !_isMetric
+                                ? const Color(0xFF39FF14)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.balance,
+                                size: 18,
+                                color: !_isMetric ? Colors.black : Colors.grey,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                "IMPERIAL (LB)",
+                                style: TextStyle(
+                                  color: !_isMetric
+                                      ? Colors.black
+                                      : Colors.grey,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 20),
 
           // Target Weight Input
           _buildInputField(
             controller: _targetWeightController,
             label: "TARGET WEIGHT",
-            hint: "100",
-            suffix: "kg",
+            hint: _isMetric ? "100" : "225",
+            suffix: _unitLabel,
           ),
 
           const SizedBox(height: 16),
 
-          // Bar Weight Dropdown
+          // Bar Weight Dropdown (Dynamic based on unit system)
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -512,20 +1034,12 @@ class _ToolsScreenState extends State<ToolsScreen>
                       Icons.arrow_drop_down,
                       color: Color(0xFF39FF14),
                     ),
-                    items: const [
-                      DropdownMenuItem(
-                        value: 20.0,
-                        child: Text("20 kg (Olympic Standard)"),
-                      ),
-                      DropdownMenuItem(
-                        value: 15.0,
-                        child: Text("15 kg (Women's Olympic)"),
-                      ),
-                      DropdownMenuItem(
-                        value: 10.0,
-                        child: Text("10 kg (Training Bar)"),
-                      ),
-                    ],
+                    items: _barWeightOptions.map((option) {
+                      return DropdownMenuItem<double>(
+                        value: option['value'] as double,
+                        child: Text(option['label'] as String),
+                      );
+                    }).toList(),
                     onChanged: (value) {
                       if (value != null) {
                         setState(() => _barWeight = value);
@@ -670,7 +1184,7 @@ class _ToolsScreenState extends State<ToolsScreen>
                           ),
                           const SizedBox(width: 16),
                           Text(
-                            "${_formatWeight(weight)} kg plate${count > 1 ? 's' : ''}",
+                            "${_formatWeight(weight)} $_unitLabel plate${count > 1 ? 's' : ''}",
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 16,
@@ -770,44 +1284,86 @@ class _ToolsScreenState extends State<ToolsScreen>
   }
 
   double _getPlateHeight(double weight) {
-    switch (weight) {
-      case 25.0:
-        return 70;
-      case 20.0:
-        return 65;
-      case 15.0:
-        return 55;
-      case 10.0:
-        return 50;
-      case 5.0:
-        return 42;
-      case 2.5:
-        return 35;
-      case 1.25:
-        return 28;
-      default:
-        return 40;
+    if (_isMetric) {
+      // Metric plates (kg)
+      switch (weight) {
+        case 25.0:
+          return 70;
+        case 20.0:
+          return 65;
+        case 15.0:
+          return 55;
+        case 10.0:
+          return 50;
+        case 5.0:
+          return 42;
+        case 2.5:
+          return 35;
+        case 1.25:
+          return 28;
+        default:
+          return 40;
+      }
+    } else {
+      // Imperial plates (lb)
+      switch (weight) {
+        case 45.0:
+          return 70;
+        case 35.0:
+          return 62;
+        case 25.0:
+          return 55;
+        case 10.0:
+          return 45;
+        case 5.0:
+          return 38;
+        case 2.5:
+          return 30;
+        default:
+          return 40;
+      }
     }
   }
 
   Color _getPlateColor(double weight) {
-    switch (weight) {
-      case 25.0:
-        return Colors.red;
-      case 20.0:
-        return Colors.blue;
-      case 15.0:
-        return Colors.yellow;
-      case 10.0:
-        return Colors.green;
-      case 5.0:
-        return Colors.white;
-      case 2.5:
-        return Colors.red[300]!;
-      case 1.25:
-        return Colors.grey[400]!;
-      default:
-        return Colors.grey;
+    if (_isMetric) {
+      // Olympic color coding (kg)
+      switch (weight) {
+        case 25.0:
+          return Colors.red;
+        case 20.0:
+          return Colors.blue;
+        case 15.0:
+          return Colors.yellow;
+        case 10.0:
+          return Colors.green;
+        case 5.0:
+          return Colors.white;
+        case 2.5:
+          return Colors.red[300]!;
+        case 1.25:
+          return Colors.grey[400]!;
+        default:
+          return Colors.grey;
+      }
+    } else {
+      // Standard gym plate colors (lb)
+      switch (weight) {
+        case 45.0:
+          return Colors.blue;
+        case 35.0:
+          return Colors.yellow;
+        case 25.0:
+          return Colors.green;
+        case 10.0:
+          return Colors.white;
+        case 5.0:
+          return Colors.red[300]!;
+        case 2.5:
+          return Colors.grey[400]!;
+        default:
+          return Colors.grey;
+      }
     }
   }
 
@@ -816,6 +1372,7 @@ class _ToolsScreenState extends State<ToolsScreen>
     required String label,
     required String hint,
     required String suffix,
+    VoidCallback? onSuffixTap,
     bool isInteger = false,
   }) {
     return Column(
@@ -858,21 +1415,35 @@ class _ToolsScreenState extends State<ToolsScreen>
                   ),
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.black,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  suffix,
-                  style: const TextStyle(
-                    color: Color(0xFF39FF14),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
+              GestureDetector(
+                onTap: onSuffixTap,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(6),
+                    border: onSuffixTap != null
+                        ? Border.all(
+                            color: const Color(
+                              0xFF39FF14,
+                            ).withValues(alpha: 0.3),
+                          )
+                        : null,
+                  ),
+                  child: Text(
+                    suffix,
+                    style: TextStyle(
+                      color: const Color(0xFF39FF14),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                      decoration: onSuffixTap != null
+                          ? TextDecoration.underline
+                          : TextDecoration.none,
+                      decorationColor: const Color(0xFF39FF14),
+                    ),
                   ),
                 ),
               ),

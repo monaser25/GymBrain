@@ -1293,39 +1293,68 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
     }
   }
 
-  // 🧠 THE GYM BRAIN ALGORITHM (Arabic)
+  // 🧠 THE GYM BRAIN ALGORITHM (Arabic with Gym Math)
   String _generateRecommendation({
     required int reps,
     required double weight,
     required int targetReps,
     required int rpe,
     required bool isAssisted,
+    required bool isKg,
   }) {
     // Helper for number formatting (5.0 -> 5, 2.5 -> 2.5)
-    String formatWeight(double w) {
+    String formatNum(double w) {
       return w.toStringAsFixed(1).replaceAll('.0', '');
     }
 
-    final weightStr = formatWeight(weight);
+    // Format increment suggestion based on unit
+    String formatIncrementSuggestion({
+      required double small,
+      required double large,
+    }) {
+      if (isKg) {
+        // KG suggestions: 2.5 - 5 kg
+        return "${formatNum(small)} - ${formatNum(large)} كجم";
+      } else {
+        // LB suggestions: 5 - 10 lb
+        return "${formatNum(small)} - ${formatNum(large)} lb";
+      }
+    }
+
+    final unitStr = isKg ? "كجم" : "lb";
+    final weightStr = formatNum(weight);
 
     // Case 1: Assisted
     if (isAssisted) {
-      return "⚠️ المرة دي بمساعدة.. ثبت الوزن ($weightStr) المرة الجاية عشان تتقن الأداء.";
+      return "⚠️ المرة دي بمساعدة.. ثبت الوزن ($weightStr $unitStr) المرة الجاية عشان تتقن الأداء.";
     }
 
-    // Case 2: Too Easy
+    // Case 2: Too Easy - Suggest increasing weight
     if (rpe <= 7 && reps >= targetReps) {
-      return "🚀 عاش يا وحش! التمرين سهل.. زود 2.5 - 5 كجم المرة الجاية.";
+      // Suggest increase based on RPE and unit
+      if (rpe <= 5) {
+        // Very easy, suggest bigger jump
+        final suggestion = isKg
+            ? formatIncrementSuggestion(small: 5, large: 7.5)
+            : formatIncrementSuggestion(small: 10, large: 15);
+        return "🚀 عاش يا وحش! التمرين سهل.. زود $suggestion المرة الجاية.";
+      } else {
+        // Moderately easy, suggest smaller jump
+        final suggestion = isKg
+            ? formatIncrementSuggestion(small: 2.5, large: 5)
+            : formatIncrementSuggestion(small: 5, large: 10);
+        return "🚀 عاش! التمرين سهل.. زود $suggestion المرة الجاية.";
+      }
     }
 
     // Case 3: Perfect Zone
     if (rpe == 8 || rpe == 9) {
-      return "✅ الله ينور! الوزن ($weightStr) ممتاز.. حافظ عليه وركز في التكنيك.";
+      return "✅ الله ينور! الوزن ($weightStr $unitStr) ممتاز.. حافظ عليه وركز في التكنيك.";
     }
 
     // Case 4: Failure/Max Effort
     if (rpe == 10 || reps < targetReps) {
-      return "🔥 أداء عالي! ريح كويس وثبت الوزن ($weightStr) لحد ما تجيبه مرتاح.";
+      return "🔥 أداء عالي! ريح كويس وثبت الوزن ($weightStr $unitStr) لحد ما تجيبه مرتاح.";
     }
 
     // Fallback
@@ -1395,6 +1424,7 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
         targetReps: 8, // Default target, could be customized per exercise
         rpe: _rpeValue,
         isAssisted: _isAssisted,
+        isKg: _isKg,
       );
 
       // Show recommendation as Arabic Bottom Sheet (if enabled)

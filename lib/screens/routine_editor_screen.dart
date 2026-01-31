@@ -29,7 +29,17 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
 
         return Scaffold(
           appBar: AppBar(
-            title: Text(routine.name),
+            title: GestureDetector(
+              onTap: () => _showRenameRoutineDialog(routine),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(routine.name),
+                  const SizedBox(width: 8),
+                  Icon(Icons.edit, size: 16, color: Colors.grey[500]),
+                ],
+              ),
+            ),
             backgroundColor: Colors.transparent,
             elevation: 0,
           ),
@@ -172,6 +182,77 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
     final item = routine.exerciseIds.removeAt(oldIndex);
     routine.exerciseIds.insert(newIndex, item);
     await routine.save();
+  }
+
+  // Show dialog to rename routine
+  void _showRenameRoutineDialog(Routine routine) {
+    final controller = TextEditingController(text: routine.name);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1C1C1E),
+          title: const Text(
+            "Rename Routine",
+            style: TextStyle(color: Colors.white),
+          ),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            style: const TextStyle(color: Colors.white),
+            cursorColor: const Color(0xFF39FF14),
+            decoration: const InputDecoration(
+              labelText: "Routine Name",
+              labelStyle: TextStyle(color: Colors.grey),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.grey),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Color(0xFF39FF14)),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final newName = controller.text.trim();
+                if (newName.isNotEmpty && newName != routine.name) {
+                  // Create updated routine
+                  final updatedRoutine = Routine(
+                    id: routine.id,
+                    name: newName,
+                    exerciseIds: routine.exerciseIds,
+                  );
+                  await _db.saveRoutine(updatedRoutine);
+
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("Renamed to '$newName'"),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                } else {
+                  Navigator.pop(context);
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF39FF14),
+                foregroundColor: Colors.black,
+              ),
+              child: const Text("Save"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   // --- ADD / EDIT DIALOG (Refactored for State/Scope) ---
@@ -337,9 +418,13 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
                                   TextField(
                                     controller: setupController,
                                     style: const TextStyle(color: Colors.white),
+                                    maxLines: null,
+                                    keyboardType: TextInputType.multiline,
+                                    textInputAction: TextInputAction.newline,
                                     decoration: const InputDecoration(
                                       labelText: "Setup Note (Optional)",
-                                      hintText: "e.g. Seat 4, Pin 3",
+                                      hintText:
+                                          "e.g. Seat 4, Pin 3\nGrip width: medium",
                                       labelStyle: TextStyle(color: Colors.grey),
                                       enabledBorder: UnderlineInputBorder(
                                         borderSide: BorderSide(

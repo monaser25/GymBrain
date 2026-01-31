@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:uuid/uuid.dart';
 import '../models/gym_models.dart';
 import '../services/database_service.dart';
 
@@ -199,6 +200,155 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
           ),
         ],
       ),
+      // FAB for adding new exercise
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFF39FF14),
+        foregroundColor: Colors.black,
+        onPressed: _showAddExerciseDialog,
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  // Add new exercise dialog
+  void _showAddExerciseDialog() {
+    final nameController = TextEditingController();
+    final setsController = TextEditingController(text: "3");
+    final noteController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1C1C1E),
+          title: const Text(
+            "Add New Exercise",
+            style: TextStyle(color: Colors.white),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  autofocus: true,
+                  style: const TextStyle(color: Colors.white),
+                  cursorColor: const Color(0xFF39FF14),
+                  decoration: const InputDecoration(
+                    labelText: "Exercise Name",
+                    hintText: "e.g. Bench Press",
+                    labelStyle: TextStyle(color: Colors.grey),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Color(0xFF39FF14)),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: setsController,
+                  keyboardType: TextInputType.number,
+                  style: const TextStyle(color: Colors.white),
+                  cursorColor: const Color(0xFF39FF14),
+                  decoration: const InputDecoration(
+                    labelText: "Target Sets",
+                    hintText: "3",
+                    labelStyle: TextStyle(color: Colors.grey),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Color(0xFF39FF14)),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: noteController,
+                  style: const TextStyle(color: Colors.white),
+                  cursorColor: const Color(0xFF39FF14),
+                  maxLines: null,
+                  keyboardType: TextInputType.multiline,
+                  textInputAction: TextInputAction.newline,
+                  decoration: const InputDecoration(
+                    labelText: "Setup Note (Optional)",
+                    hintText: "e.g. Seat 4, Pin 3",
+                    labelStyle: TextStyle(color: Colors.grey),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Color(0xFF39FF14)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final name = nameController.text.trim();
+                if (name.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Please enter an exercise name"),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                  return;
+                }
+
+                // Check if exercise already exists
+                final existingId = _db.findExerciseIdByName(name);
+                if (existingId != null) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("'$name' already exists"),
+                        backgroundColor: Colors.orange,
+                      ),
+                    );
+                  }
+                  return;
+                }
+
+                // Create new exercise
+                final newExercise = Exercise(
+                  id: const Uuid().v4(),
+                  name: name,
+                  targetSets: int.tryParse(setsController.text) ?? 3,
+                  setupNote: noteController.text.trim().isNotEmpty
+                      ? noteController.text.trim()
+                      : null,
+                );
+                await _db.saveExercise(newExercise);
+
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("'$name' added to library!"),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF39FF14),
+                foregroundColor: Colors.black,
+              ),
+              child: const Text("Add"),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -337,8 +487,8 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
                 side: const BorderSide(color: Colors.orange),
               ),
               child: const Text(
-                "Remove from Library",
-                style: TextStyle(color: Colors.orange),
+                "Hide from List (Keep History)",
+                style: TextStyle(color: Colors.orange, fontSize: 12),
               ),
             ),
             // Option 2: Delete Everything
@@ -361,7 +511,10 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
                 backgroundColor: Colors.redAccent,
                 foregroundColor: Colors.white,
               ),
-              child: const Text("Delete Everything"),
+              child: const Text(
+                "Permanently Delete (Wipe History)",
+                style: TextStyle(fontSize: 12),
+              ),
             ),
           ],
         );

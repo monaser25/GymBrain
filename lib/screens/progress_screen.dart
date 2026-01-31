@@ -12,7 +12,7 @@ class ProgressScreen extends StatefulWidget {
   State<ProgressScreen> createState() => _ProgressScreenState();
 }
 
-enum ChartRange { oneMonth, threeMonths, all }
+enum ChartRange { oneMonth, threeMonths, oneYear, all }
 
 enum ChartMetric { maxWeight, volume }
 
@@ -296,6 +296,13 @@ class _ProgressScreenState extends State<ProgressScreen>
                           ),
                         ),
                         _FilterButton(
+                          text: "1Y",
+                          isSelected: _selectedRange == ChartRange.oneYear,
+                          onTap: () => setState(
+                            () => _selectedRange = ChartRange.oneYear,
+                          ),
+                        ),
+                        _FilterButton(
                           text: "ALL",
                           isSelected: _selectedRange == ChartRange.all,
                           onTap: () =>
@@ -441,6 +448,35 @@ class _ProgressScreenState extends State<ProgressScreen>
                                       ),
                                   ],
                                   lineTouchData: LineTouchData(
+                                    handleBuiltInTouches: true,
+                                    getTouchedSpotIndicator:
+                                        (barData, spotIndexes) {
+                                          return spotIndexes.map((index) {
+                                            return TouchedSpotIndicatorData(
+                                              const FlLine(
+                                                color: Colors.white24,
+                                                strokeWidth: 2,
+                                              ),
+                                              FlDotData(
+                                                show: true,
+                                                getDotPainter:
+                                                    (
+                                                      spot,
+                                                      percent,
+                                                      barData,
+                                                      index,
+                                                    ) => FlDotCirclePainter(
+                                                      radius: 6,
+                                                      color: const Color(
+                                                        0xFF39FF14,
+                                                      ),
+                                                      strokeWidth: 2,
+                                                      strokeColor: Colors.black,
+                                                    ),
+                                              ),
+                                            );
+                                          }).toList();
+                                        },
                                     touchTooltipData: LineTouchTooltipData(
                                       getTooltipItems: (touchedSpots) {
                                         return touchedSpots.map((spot) {
@@ -772,122 +808,144 @@ class _ProgressScreenState extends State<ProgressScreen>
                           ],
                         ),
                         const SizedBox(height: 16),
-                        Container(
-                          margin: const EdgeInsets.only(bottom: 16),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1C1C1E),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          padding: const EdgeInsets.all(4),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _FilterButton(
-                                text: "1M",
-                                isSelected:
-                                    _selectedExerciseRange ==
-                                    ChartRange.oneMonth,
-                                onTap: () => setState(
-                                  () => _selectedExerciseRange =
-                                      ChartRange.oneMonth,
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1C1C1E),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.all(4),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    _FilterButton(
+                                      text: "1M",
+                                      isSelected:
+                                          _selectedExerciseRange ==
+                                          ChartRange.oneMonth,
+                                      onTap: () => setState(
+                                        () => _selectedExerciseRange =
+                                            ChartRange.oneMonth,
+                                      ),
+                                    ),
+                                    _FilterButton(
+                                      text: "3M",
+                                      isSelected:
+                                          _selectedExerciseRange ==
+                                          ChartRange.threeMonths,
+                                      onTap: () => setState(
+                                        () => _selectedExerciseRange =
+                                            ChartRange.threeMonths,
+                                      ),
+                                    ),
+                                    _FilterButton(
+                                      text: "1Y",
+                                      isSelected:
+                                          _selectedExerciseRange ==
+                                          ChartRange.oneYear,
+                                      onTap: () => setState(
+                                        () => _selectedExerciseRange =
+                                            ChartRange.oneYear,
+                                      ),
+                                    ),
+                                    _FilterButton(
+                                      text: "ALL",
+                                      isSelected:
+                                          _selectedExerciseRange ==
+                                          ChartRange.all,
+                                      onTap: () => setState(
+                                        () => _selectedExerciseRange =
+                                            ChartRange.all,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              _FilterButton(
-                                text: "3M",
-                                isSelected:
-                                    _selectedExerciseRange ==
-                                    ChartRange.threeMonths,
-                                onTap: () => setState(
-                                  () => _selectedExerciseRange =
-                                      ChartRange.threeMonths,
+                              const SizedBox(height: 10),
+                              // Unit Toggle (KG/LB) - Segmented Control Style
+                              if (_selectedMetric == ChartMetric.maxWeight)
+                                Container(
+                                  margin: const EdgeInsets.only(bottom: 16),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF2C2C2E),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () =>
+                                            setState(() => _displayInKg = true),
+                                        child: AnimatedContainer(
+                                          duration: const Duration(
+                                            milliseconds: 200,
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 24,
+                                            vertical: 8,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: _displayInKg
+                                                ? const Color(0xFF39FF14)
+                                                : Colors.transparent,
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            "KG",
+                                            style: TextStyle(
+                                              color: _displayInKg
+                                                  ? Colors.black
+                                                  : Colors.grey,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      GestureDetector(
+                                        onTap: () => setState(
+                                          () => _displayInKg = false,
+                                        ),
+                                        child: AnimatedContainer(
+                                          duration: const Duration(
+                                            milliseconds: 200,
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 24,
+                                            vertical: 8,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: !_displayInKg
+                                                ? const Color(0xFF39FF14)
+                                                : Colors.transparent,
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            "LB",
+                                            style: TextStyle(
+                                              color: !_displayInKg
+                                                  ? Colors.black
+                                                  : Colors.grey,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              _FilterButton(
-                                text: "ALL",
-                                isSelected:
-                                    _selectedExerciseRange == ChartRange.all,
-                                onTap: () => setState(
-                                  () => _selectedExerciseRange = ChartRange.all,
-                                ),
-                              ),
                             ],
                           ),
                         ),
-                        // Unit Toggle (KG/LB)
-                        if (_selectedMetric == ChartMetric.maxWeight)
-                          Container(
-                            margin: const EdgeInsets.only(bottom: 16),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  "View as: ",
-                                  style: TextStyle(
-                                    color: Colors.grey[500],
-                                    fontSize: 12,
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () =>
-                                      setState(() => _displayInKg = true),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 6,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: _displayInKg
-                                          ? const Color(0xFF39FF14)
-                                          : const Color(0xFF2C2C2E),
-                                      borderRadius:
-                                          const BorderRadius.horizontal(
-                                            left: Radius.circular(8),
-                                          ),
-                                    ),
-                                    child: Text(
-                                      "KG",
-                                      style: TextStyle(
-                                        color: _displayInKg
-                                            ? Colors.black
-                                            : Colors.grey,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () =>
-                                      setState(() => _displayInKg = false),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 6,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: !_displayInKg
-                                          ? const Color(0xFF39FF14)
-                                          : const Color(0xFF2C2C2E),
-                                      borderRadius:
-                                          const BorderRadius.horizontal(
-                                            right: Radius.circular(8),
-                                          ),
-                                    ),
-                                    child: Text(
-                                      "LB",
-                                      style: TextStyle(
-                                        color: !_displayInKg
-                                            ? Colors.black
-                                            : Colors.grey,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
                         Container(
                           height: 300,
                           padding: const EdgeInsets.only(
@@ -1039,6 +1097,35 @@ class _ProgressScreenState extends State<ProgressScreen>
                                     ),
                                   ],
                                   lineTouchData: LineTouchData(
+                                    handleBuiltInTouches: true,
+                                    getTouchedSpotIndicator:
+                                        (barData, spotIndexes) {
+                                          return spotIndexes.map((index) {
+                                            return TouchedSpotIndicatorData(
+                                              const FlLine(
+                                                color: Colors.white24,
+                                                strokeWidth: 2,
+                                              ),
+                                              FlDotData(
+                                                show: true,
+                                                getDotPainter:
+                                                    (
+                                                      spot,
+                                                      percent,
+                                                      barData,
+                                                      index,
+                                                    ) => FlDotCirclePainter(
+                                                      radius: 6,
+                                                      color: const Color(
+                                                        0xFF39FF14,
+                                                      ),
+                                                      strokeWidth: 2,
+                                                      strokeColor: Colors.black,
+                                                    ),
+                                              ),
+                                            );
+                                          }).toList();
+                                        },
                                     touchTooltipData: LineTouchTooltipData(
                                       tooltipPadding: const EdgeInsets.all(8),
                                       getTooltipItems: (spots) {
@@ -1137,6 +1224,9 @@ class _ProgressScreenState extends State<ProgressScreen>
       case ChartRange.threeMonths:
         cutoff = now.subtract(const Duration(days: 90));
         break;
+      case ChartRange.oneYear:
+        cutoff = now.subtract(const Duration(days: 365));
+        break;
       case ChartRange.all:
         return allData;
     }
@@ -1162,6 +1252,9 @@ class _ProgressScreenState extends State<ProgressScreen>
         break;
       case ChartRange.threeMonths:
         cutoff = now.subtract(const Duration(days: 90));
+        break;
+      case ChartRange.oneYear:
+        cutoff = now.subtract(const Duration(days: 365));
         break;
       case ChartRange.all:
         return history;

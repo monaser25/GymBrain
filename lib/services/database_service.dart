@@ -62,6 +62,45 @@ class GymDatabase extends ChangeNotifier {
   Future<void> setEnableAiFeedback(bool enable) async =>
       _settingsBox.put('enable_ai_feedback', enable);
 
+  // Plate Calculator Inventory Settings
+  static const List<double> defaultPlatesKg = [
+    25.0,
+    20.0,
+    15.0,
+    10.0,
+    5.0,
+    2.5,
+    1.25,
+    0.5,
+  ];
+  static const List<double> defaultPlatesLb = [
+    45.0,
+    35.0,
+    25.0,
+    10.0,
+    5.0,
+    2.5,
+    1.25,
+  ];
+
+  List<double> get availablePlatesKg {
+    final stored = _settingsBox.get('available_plates_kg');
+    if (stored == null) return defaultPlatesKg;
+    return (stored as List).cast<double>();
+  }
+
+  Future<void> setAvailablePlatesKg(List<double> plates) async =>
+      _settingsBox.put('available_plates_kg', plates);
+
+  List<double> get availablePlatesLb {
+    final stored = _settingsBox.get('available_plates_lb');
+    if (stored == null) return defaultPlatesLb;
+    return (stored as List).cast<double>();
+  }
+
+  Future<void> setAvailablePlatesLb(List<double> plates) async =>
+      _settingsBox.put('available_plates_lb', plates);
+
   Future<void> saveActiveSession(
     String routineId,
     DateTime startTime,
