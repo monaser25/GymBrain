@@ -17,6 +17,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late bool _soundEnabled;
   late bool _notificationsEnabled;
   late bool _aiFeedbackEnabled;
+  late bool _defaultIsKg;
 
   bool _isBackingUp = false;
   bool _isRestoring = false;
@@ -28,6 +29,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _soundEnabled = _db.enableSound;
     _notificationsEnabled = _db.enableNotifications;
     _aiFeedbackEnabled = _db.enableAiFeedback;
+    _defaultIsKg = _db.defaultIsKg;
   }
 
   String _formatDuration(int seconds) {
@@ -149,6 +151,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // GENERAL SECTION
+              const Text(
+                "⚙️ General",
+                style: TextStyle(
+                  color: Color(0xFF39FF14),
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Default Weight Unit Toggle
+              SwitchListTile(
+                title: const Text(
+                  "Default Weight Unit",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                subtitle: Text(
+                  "Current: ${_defaultIsKg ? 'KG (Kilograms)' : 'LB (Pounds)'}",
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
+                value: _defaultIsKg,
+                activeThumbColor: const Color(0xFF39FF14),
+                contentPadding: EdgeInsets.zero,
+                onChanged: (val) {
+                  setState(() => _defaultIsKg = val);
+                  _db.setDefaultIsKg(val);
+                },
+              ),
+
+              const SizedBox(height: 40),
+              const Divider(color: Colors.white10),
+              const SizedBox(height: 24),
+
               // TIMER & FEEDBACK SECTION
               const Text(
                 "⏱️ Timer & Feedback",

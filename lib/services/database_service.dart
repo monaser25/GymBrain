@@ -62,6 +62,11 @@ class GymDatabase extends ChangeNotifier {
   Future<void> setEnableAiFeedback(bool enable) async =>
       _settingsBox.put('enable_ai_feedback', enable);
 
+  // Default Weight Unit Setting (true = KG, false = LB)
+  bool get defaultIsKg => _settingsBox.get('default_is_kg', defaultValue: true);
+  Future<void> setDefaultIsKg(bool isKg) async =>
+      _settingsBox.put('default_is_kg', isKg);
+
   // Plate Calculator Inventory Settings
   static const List<double> defaultPlatesKg = [
     25.0,

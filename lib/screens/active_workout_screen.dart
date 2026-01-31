@@ -782,7 +782,10 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
   final _repsController = TextEditingController();
   int _rpeValue = 8; // 1-10 scale
   bool _isAssisted = false;
-  bool _isKg = false; // Default LB
+  bool _isKg = GymDatabase().settingsBox.get(
+    'default_is_kg',
+    defaultValue: true,
+  );
 
   @override
   Widget build(BuildContext context) {
