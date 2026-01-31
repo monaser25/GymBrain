@@ -186,7 +186,7 @@ class _ProgressScreenState extends State<ProgressScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          // TAB 1: BODY STATS (Fixed Layout)
+          // TAB 1: BODY STATS (Full Page Scroll with ShrinkWrap Solution)
           recentRecords.isEmpty
               ? const Center(
                   child: Text(
@@ -194,603 +194,538 @@ class _ProgressScreenState extends State<ProgressScreen>
                     style: TextStyle(color: Colors.grey, fontSize: 16),
                   ),
                 )
-              : Column(
-                  children: [
-                    // SCROLLABLE TOP SECTION (Stats Cards + Filters + Chart + Legend)
-                    Flexible(
-                      flex: 0,
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          children: [
-                            // 1. Stats Row
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _StatCard(
-                                    label: "WEIGHT",
-                                    value: current?.weight.toString() ?? "--",
-                                    unit: "kg",
-                                    change: _calculateChange(
-                                      current?.weight,
-                                      previous?.weight,
+              : SingleChildScrollView(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 1. Stats Row
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _StatCard(
+                              label: "WEIGHT",
+                              value: current?.weight.toString() ?? "--",
+                              unit: "kg",
+                              change: _calculateChange(
+                                current?.weight,
+                                previous?.weight,
+                              ),
+                              trendColor: Colors.white,
+                              color: Colors.white,
+                              isSelected:
+                                  _selectedBodyMetric == BodyMetric.weight,
+                              onTap: () => setState(() {
+                                if (_selectedBodyMetric == BodyMetric.weight) {
+                                  _selectedBodyMetric = null;
+                                } else {
+                                  _selectedBodyMetric = BodyMetric.weight;
+                                }
+                              }),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _StatCard(
+                              label: "SMM",
+                              value: current?.smm.toString() ?? "--",
+                              unit: "kg",
+                              change: _calculateChange(
+                                current?.smm,
+                                previous?.smm,
+                              ),
+                              trendColor:
+                                  (_calculateChange(
+                                            current?.smm,
+                                            previous?.smm,
+                                          ) ??
+                                          0) >=
+                                      0
+                                  ? const Color(0xFF39FF14)
+                                  : Colors.redAccent,
+                              color: const Color(0xFF39FF14),
+                              isSelected: _selectedBodyMetric == BodyMetric.smm,
+                              onTap: () => setState(() {
+                                if (_selectedBodyMetric == BodyMetric.smm) {
+                                  _selectedBodyMetric = null;
+                                } else {
+                                  _selectedBodyMetric = BodyMetric.smm;
+                                }
+                              }),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _StatCard(
+                              label: "PBF",
+                              value: current?.pbf.toString() ?? "--",
+                              unit: "%",
+                              change: _calculateChange(
+                                current?.pbf,
+                                previous?.pbf,
+                              ),
+                              trendColor:
+                                  (_calculateChange(
+                                            current?.pbf,
+                                            previous?.pbf,
+                                          ) ??
+                                          0) <=
+                                      0
+                                  ? const Color(0xFF39FF14)
+                                  : Colors.redAccent,
+                              color: Colors.orangeAccent,
+                              isSelected: _selectedBodyMetric == BodyMetric.pbf,
+                              onTap: () => setState(() {
+                                if (_selectedBodyMetric == BodyMetric.pbf) {
+                                  _selectedBodyMetric = null;
+                                } else {
+                                  _selectedBodyMetric = BodyMetric.pbf;
+                                }
+                              }),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // 2. Filter Buttons
+                      Center(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1C1C1E),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.all(4),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _FilterButton(
+                                text: "1M",
+                                isSelected:
+                                    _selectedRange == ChartRange.oneMonth,
+                                onTap: () => setState(
+                                  () => _selectedRange = ChartRange.oneMonth,
+                                ),
+                              ),
+                              _FilterButton(
+                                text: "3M",
+                                isSelected:
+                                    _selectedRange == ChartRange.threeMonths,
+                                onTap: () => setState(
+                                  () => _selectedRange = ChartRange.threeMonths,
+                                ),
+                              ),
+                              _FilterButton(
+                                text: "1Y",
+                                isSelected:
+                                    _selectedRange == ChartRange.oneYear,
+                                onTap: () => setState(
+                                  () => _selectedRange = ChartRange.oneYear,
+                                ),
+                              ),
+                              _FilterButton(
+                                text: "ALL",
+                                isSelected: _selectedRange == ChartRange.all,
+                                onTap: () => setState(
+                                  () => _selectedRange = ChartRange.all,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // 3. Chart Section (FIXED HEIGHT - 300)
+                      Container(
+                        height: 300,
+                        padding: const EdgeInsets.only(
+                          right: 16,
+                          top: 24,
+                          bottom: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1C1C1E),
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: chartData.isEmpty
+                            ? const Center(
+                                child: Text(
+                                  "Add data to see chart",
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                              )
+                            : LineChart(
+                                LineChartData(
+                                  gridData: _getCyberGrid(interval),
+                                  titlesData: FlTitlesData(
+                                    rightTitles: const AxisTitles(
+                                      sideTitles: SideTitles(showTitles: false),
                                     ),
-                                    trendColor: Colors.white,
-                                    color: Colors.white,
-                                    isSelected:
+                                    topTitles: const AxisTitles(
+                                      sideTitles: SideTitles(showTitles: false),
+                                    ),
+                                    bottomTitles: AxisTitles(
+                                      sideTitles: SideTitles(
+                                        showTitles: true,
+                                        reservedSize: 22,
+                                        interval: (chartData.length / 4)
+                                            .ceilToDouble(),
+                                        getTitlesWidget: (value, meta) {
+                                          final index = value.toInt();
+                                          if (index >= 0 &&
+                                              index < chartData.length) {
+                                            return Padding(
+                                              padding: const EdgeInsets.only(
+                                                top: 8.0,
+                                              ),
+                                              child: Text(
+                                                DateFormat(
+                                                  'MM/dd',
+                                                ).format(chartData[index].date),
+                                                style: const TextStyle(
+                                                  color: Colors.grey,
+                                                  fontSize: 10,
+                                                ),
+                                              ),
+                                            );
+                                          }
+                                          return const Text('');
+                                        },
+                                      ),
+                                    ),
+                                    leftTitles: AxisTitles(
+                                      sideTitles: SideTitles(
+                                        showTitles: true,
+                                        interval: interval,
+                                        reservedSize: 30,
+                                        getTitlesWidget: (value, meta) {
+                                          return Text(
+                                            value.toInt().toString(),
+                                            style: const TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: 10,
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                  borderData: FlBorderData(show: false),
+                                  minX: 0,
+                                  maxX: (chartData.length - 1).toDouble(),
+                                  minY: minY,
+                                  maxY: maxY,
+                                  lineBarsData: [
+                                    if (_selectedBodyMetric == null ||
                                         _selectedBodyMetric ==
-                                        BodyMetric.weight,
-                                    onTap: () => setState(() {
-                                      if (_selectedBodyMetric ==
-                                          BodyMetric.weight) {
-                                        _selectedBodyMetric = null;
-                                      } else {
-                                        _selectedBodyMetric = BodyMetric.weight;
-                                      }
-                                    }),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _StatCard(
-                                    label: "SMM",
-                                    value: current?.smm.toString() ?? "--",
-                                    unit: "kg",
-                                    change: _calculateChange(
-                                      current?.smm,
-                                      previous?.smm,
+                                            BodyMetric.weight)
+                                      LineChartBarData(
+                                        spots: chartData.asMap().entries.map((
+                                          e,
+                                        ) {
+                                          return FlSpot(
+                                            e.key.toDouble(),
+                                            e.value.weight,
+                                          );
+                                        }).toList(),
+                                        isCurved: true,
+                                        color: Colors.white,
+                                        barWidth: 3,
+                                        dotData: const FlDotData(show: true),
+                                      ),
+                                    if (_selectedBodyMetric == null ||
+                                        _selectedBodyMetric == BodyMetric.smm)
+                                      LineChartBarData(
+                                        spots: chartData.asMap().entries.map((
+                                          e,
+                                        ) {
+                                          return FlSpot(
+                                            e.key.toDouble(),
+                                            e.value.smm,
+                                          );
+                                        }).toList(),
+                                        isCurved: true,
+                                        color: const Color(0xFF39FF14),
+                                        barWidth: 3,
+                                        dotData: const FlDotData(show: true),
+                                      ),
+                                    if (_selectedBodyMetric == null ||
+                                        _selectedBodyMetric == BodyMetric.pbf)
+                                      LineChartBarData(
+                                        spots: chartData.asMap().entries.map((
+                                          e,
+                                        ) {
+                                          return FlSpot(
+                                            e.key.toDouble(),
+                                            e.value.pbf,
+                                          );
+                                        }).toList(),
+                                        isCurved: true,
+                                        color: Colors.orangeAccent,
+                                        barWidth: 3,
+                                        dotData: const FlDotData(show: true),
+                                      ),
+                                  ],
+                                  lineTouchData: LineTouchData(
+                                    handleBuiltInTouches: true,
+                                    getTouchedSpotIndicator:
+                                        (barData, spotIndexes) {
+                                          return spotIndexes.map((index) {
+                                            return TouchedSpotIndicatorData(
+                                              const FlLine(
+                                                color: Colors.white24,
+                                                strokeWidth: 2,
+                                              ),
+                                              FlDotData(
+                                                show: true,
+                                                getDotPainter:
+                                                    (
+                                                      spot,
+                                                      percent,
+                                                      barData,
+                                                      index,
+                                                    ) => FlDotCirclePainter(
+                                                      radius: 6,
+                                                      color: const Color(
+                                                        0xFF39FF14,
+                                                      ),
+                                                      strokeWidth: 2,
+                                                      strokeColor: Colors.black,
+                                                    ),
+                                              ),
+                                            );
+                                          }).toList();
+                                        },
+                                    touchTooltipData: LineTouchTooltipData(
+                                      getTooltipItems: (touchedSpots) {
+                                        return touchedSpots.map((spot) {
+                                          final val = spot.y;
+                                          final metricName = spot.barIndex == 0
+                                              ? "Weight"
+                                              : spot.barIndex == 1
+                                              ? "SMM"
+                                              : "PBF";
+
+                                          final dateIndex = spot.x.toInt();
+                                          String dateStr = "";
+                                          if (dateIndex >= 0 &&
+                                              dateIndex < chartData.length) {
+                                            dateStr = DateFormat(
+                                              'MM/dd',
+                                            ).format(chartData[dateIndex].date);
+                                          }
+
+                                          return LineTooltipItem(
+                                            "$metricName: $val\n$dateStr",
+                                            const TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          );
+                                        }).toList();
+                                      },
+                                      tooltipPadding: const EdgeInsets.all(8),
+                                      fitInsideHorizontally: true,
+                                      fitInsideVertically: true,
                                     ),
-                                    trendColor:
-                                        (_calculateChange(
-                                                  current?.smm,
-                                                  previous?.smm,
-                                                ) ??
-                                                0) >=
-                                            0
-                                        ? const Color(0xFF39FF14)
-                                        : Colors.redAccent,
-                                    color: const Color(0xFF39FF14),
-                                    isSelected:
-                                        _selectedBodyMetric == BodyMetric.smm,
-                                    onTap: () => setState(() {
-                                      if (_selectedBodyMetric ==
-                                          BodyMetric.smm) {
-                                        _selectedBodyMetric = null;
-                                      } else {
-                                        _selectedBodyMetric = BodyMetric.smm;
-                                      }
-                                    }),
                                   ),
                                 ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _StatCard(
-                                    label: "PBF",
-                                    value: current?.pbf.toString() ?? "--",
-                                    unit: "%",
-                                    change: _calculateChange(
-                                      current?.pbf,
-                                      previous?.pbf,
-                                    ),
-                                    trendColor:
-                                        (_calculateChange(
-                                                  current?.pbf,
-                                                  previous?.pbf,
-                                                ) ??
-                                                0) <=
-                                            0
-                                        ? const Color(0xFF39FF14)
-                                        : Colors.redAccent,
-                                    color: Colors.orangeAccent,
-                                    isSelected:
-                                        _selectedBodyMetric == BodyMetric.pbf,
-                                    onTap: () => setState(() {
-                                      if (_selectedBodyMetric ==
-                                          BodyMetric.pbf) {
-                                        _selectedBodyMetric = null;
-                                      } else {
-                                        _selectedBodyMetric = BodyMetric.pbf;
-                                      }
-                                    }),
-                                  ),
-                                ),
-                              ],
+                              ),
+                      ),
+
+                      // Legend for Body Stats
+                      const SizedBox(height: 16),
+                      if (_selectedBodyMetric == null)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _LegendItem(color: Colors.white, text: "Weight"),
+                            const SizedBox(width: 16),
+                            _LegendItem(
+                              color: const Color(0xFF39FF14),
+                              text: "SMM",
                             ),
+                            const SizedBox(width: 16),
+                            _LegendItem(
+                              color: Colors.orangeAccent,
+                              text: "PBF",
+                            ),
+                          ],
+                        ),
 
-                            const SizedBox(height: 24),
+                      const SizedBox(height: 32),
 
-                            // 2. Filter Buttons
-                            Container(
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1C1C1E),
-                                borderRadius: BorderRadius.circular(12),
+                      // 4. History Header
+                      const Text(
+                        "History",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // 5. History List (SHRINK WRAP SOLUTION)
+                      ListView.builder(
+                        shrinkWrap:
+                            true, // <--- CRITICAL: Calculates height from children
+                        physics:
+                            const NeverScrollableScrollPhysics(), // <--- CRITICAL: Disables internal scroll
+                        itemCount: recentRecords.length,
+                        itemBuilder: (context, index) {
+                          final record = recentRecords[index];
+                          final key = record.key;
+
+                          return Dismissible(
+                            key: ValueKey(key ?? record.date.toString()),
+                            direction: DismissDirection.endToStart,
+                            background: Container(
+                              alignment: Alignment.centerRight,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
                               ),
-                              padding: const EdgeInsets.all(4),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  _FilterButton(
-                                    text: "1M",
-                                    isSelected:
-                                        _selectedRange == ChartRange.oneMonth,
-                                    onTap: () => setState(
-                                      () =>
-                                          _selectedRange = ChartRange.oneMonth,
-                                    ),
-                                  ),
-                                  _FilterButton(
-                                    text: "3M",
-                                    isSelected:
-                                        _selectedRange ==
-                                        ChartRange.threeMonths,
-                                    onTap: () => setState(
-                                      () => _selectedRange =
-                                          ChartRange.threeMonths,
-                                    ),
-                                  ),
-                                  _FilterButton(
-                                    text: "1Y",
-                                    isSelected:
-                                        _selectedRange == ChartRange.oneYear,
-                                    onTap: () => setState(
-                                      () => _selectedRange = ChartRange.oneYear,
-                                    ),
-                                  ),
-                                  _FilterButton(
-                                    text: "ALL",
-                                    isSelected:
-                                        _selectedRange == ChartRange.all,
-                                    onTap: () => setState(
-                                      () => _selectedRange = ChartRange.all,
-                                    ),
-                                  ),
-                                ],
+                              color: Colors.redAccent,
+                              child: const Icon(
+                                Icons.delete,
+                                color: Colors.white,
                               ),
                             ),
-
-                            const SizedBox(height: 16),
-
-                            // 3. Chart Section (FIXED HEIGHT)
-                            Container(
-                              height: 280,
-                              padding: const EdgeInsets.only(
-                                right: 16,
-                                top: 24,
-                                bottom: 12,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1C1C1E),
-                                borderRadius: BorderRadius.circular(24),
-                              ),
-                              child: chartData.isEmpty
-                                  ? const Center(
-                                      child: Text(
-                                        "Add data to see chart",
+                            confirmDismiss: (direction) async {
+                              return await showDialog(
+                                context: context,
+                                builder: (context) => AlertDialog(
+                                  backgroundColor: const Color(0xFF1C1C1E),
+                                  title: const Text(
+                                    "Delete Record?",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, false),
+                                      child: const Text(
+                                        "Cancel",
                                         style: TextStyle(color: Colors.grey),
                                       ),
-                                    )
-                                  : LineChart(
-                                      LineChartData(
-                                        gridData: _getCyberGrid(interval),
-                                        titlesData: FlTitlesData(
-                                          rightTitles: const AxisTitles(
-                                            sideTitles: SideTitles(
-                                              showTitles: false,
-                                            ),
-                                          ),
-                                          topTitles: const AxisTitles(
-                                            sideTitles: SideTitles(
-                                              showTitles: false,
-                                            ),
-                                          ),
-                                          bottomTitles: AxisTitles(
-                                            sideTitles: SideTitles(
-                                              showTitles: true,
-                                              reservedSize: 22,
-                                              interval: (chartData.length / 4)
-                                                  .ceilToDouble(),
-                                              getTitlesWidget: (value, meta) {
-                                                final index = value.toInt();
-                                                if (index >= 0 &&
-                                                    index < chartData.length) {
-                                                  return Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                          top: 8.0,
-                                                        ),
-                                                    child: Text(
-                                                      DateFormat(
-                                                        'MM/dd',
-                                                      ).format(
-                                                        chartData[index].date,
-                                                      ),
-                                                      style: const TextStyle(
-                                                        color: Colors.grey,
-                                                        fontSize: 10,
-                                                      ),
-                                                    ),
-                                                  );
-                                                }
-                                                return const Text('');
-                                              },
-                                            ),
-                                          ),
-                                          leftTitles: AxisTitles(
-                                            sideTitles: SideTitles(
-                                              showTitles: true,
-                                              interval: interval,
-                                              reservedSize: 30,
-                                              getTitlesWidget: (value, meta) {
-                                                return Text(
-                                                  value.toInt().toString(),
-                                                  style: const TextStyle(
-                                                    color: Colors.grey,
-                                                    fontSize: 10,
-                                                  ),
-                                                );
-                                              },
-                                            ),
-                                          ),
-                                        ),
-                                        borderData: FlBorderData(show: false),
-                                        minX: 0,
-                                        maxX: (chartData.length - 1).toDouble(),
-                                        minY: minY,
-                                        maxY: maxY,
-                                        lineBarsData: [
-                                          if (_selectedBodyMetric == null ||
-                                              _selectedBodyMetric ==
-                                                  BodyMetric.weight)
-                                            LineChartBarData(
-                                              spots: chartData
-                                                  .asMap()
-                                                  .entries
-                                                  .map((e) {
-                                                    return FlSpot(
-                                                      e.key.toDouble(),
-                                                      e.value.weight,
-                                                    );
-                                                  })
-                                                  .toList(),
-                                              isCurved: true,
-                                              color: Colors.white,
-                                              barWidth: 3,
-                                              dotData: const FlDotData(
-                                                show: true,
-                                              ),
-                                            ),
-                                          if (_selectedBodyMetric == null ||
-                                              _selectedBodyMetric ==
-                                                  BodyMetric.smm)
-                                            LineChartBarData(
-                                              spots: chartData
-                                                  .asMap()
-                                                  .entries
-                                                  .map((e) {
-                                                    return FlSpot(
-                                                      e.key.toDouble(),
-                                                      e.value.smm,
-                                                    );
-                                                  })
-                                                  .toList(),
-                                              isCurved: true,
-                                              color: const Color(0xFF39FF14),
-                                              barWidth: 3,
-                                              dotData: const FlDotData(
-                                                show: true,
-                                              ),
-                                            ),
-                                          if (_selectedBodyMetric == null ||
-                                              _selectedBodyMetric ==
-                                                  BodyMetric.pbf)
-                                            LineChartBarData(
-                                              spots: chartData
-                                                  .asMap()
-                                                  .entries
-                                                  .map((e) {
-                                                    return FlSpot(
-                                                      e.key.toDouble(),
-                                                      e.value.pbf,
-                                                    );
-                                                  })
-                                                  .toList(),
-                                              isCurved: true,
-                                              color: Colors.orangeAccent,
-                                              barWidth: 3,
-                                              dotData: const FlDotData(
-                                                show: true,
-                                              ),
-                                            ),
-                                        ],
-                                        lineTouchData: LineTouchData(
-                                          handleBuiltInTouches: true,
-                                          getTouchedSpotIndicator:
-                                              (barData, spotIndexes) {
-                                                return spotIndexes.map((index) {
-                                                  return TouchedSpotIndicatorData(
-                                                    const FlLine(
-                                                      color: Colors.white24,
-                                                      strokeWidth: 2,
-                                                    ),
-                                                    FlDotData(
-                                                      show: true,
-                                                      getDotPainter:
-                                                          (
-                                                            spot,
-                                                            percent,
-                                                            barData,
-                                                            index,
-                                                          ) => FlDotCirclePainter(
-                                                            radius: 6,
-                                                            color: const Color(
-                                                              0xFF39FF14,
-                                                            ),
-                                                            strokeWidth: 2,
-                                                            strokeColor:
-                                                                Colors.black,
-                                                          ),
-                                                    ),
-                                                  );
-                                                }).toList();
-                                              },
-                                          touchTooltipData: LineTouchTooltipData(
-                                            getTooltipItems: (touchedSpots) {
-                                              return touchedSpots.map((spot) {
-                                                final val = spot.y;
-                                                final metricName =
-                                                    spot.barIndex == 0
-                                                    ? "Weight"
-                                                    : spot.barIndex == 1
-                                                    ? "SMM"
-                                                    : "PBF";
-
-                                                final dateIndex = spot.x
-                                                    .toInt();
-                                                String dateStr = "";
-                                                if (dateIndex >= 0 &&
-                                                    dateIndex <
-                                                        chartData.length) {
-                                                  dateStr = DateFormat('MM/dd')
-                                                      .format(
-                                                        chartData[dateIndex]
-                                                            .date,
-                                                      );
-                                                }
-
-                                                return LineTooltipItem(
-                                                  "$metricName: $val\n$dateStr",
-                                                  const TextStyle(
-                                                    color: Colors.white,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                );
-                                              }).toList();
-                                            },
-                                            tooltipPadding:
-                                                const EdgeInsets.all(8),
-                                            fitInsideHorizontally: true,
-                                            fitInsideVertically: true,
-                                          ),
+                                    ),
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, true),
+                                      child: const Text(
+                                        "Delete",
+                                        style: TextStyle(
+                                          color: Colors.redAccent,
                                         ),
                                       ),
                                     ),
-                            ),
-
-                            // Legend for Body Stats
-                            const SizedBox(height: 16),
-                            if (_selectedBodyMetric == null)
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                                  ],
+                                ),
+                              );
+                            },
+                            onDismissed: (direction) {
+                              _db.deleteInBodyRecord(key);
+                              setState(() {});
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1C1C1E),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  _LegendItem(
-                                    color: Colors.white,
-                                    text: "Weight",
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        DateFormat(
+                                          'MMM d, yyyy',
+                                        ).format(record.date),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          Container(
+                                            width: 8,
+                                            height: 8,
+                                            decoration: const BoxDecoration(
+                                              color: Color(0xFF39FF14),
+                                              shape: BoxShape.circle,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            "${record.smm} (SMM)",
+                                            style: TextStyle(
+                                              color: Colors.grey[500],
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Container(
+                                            width: 8,
+                                            height: 8,
+                                            decoration: const BoxDecoration(
+                                              color: Colors.orangeAccent,
+                                              shape: BoxShape.circle,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            "${record.pbf}% (PBF)",
+                                            style: TextStyle(
+                                              color: Colors.grey[500],
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(width: 16),
-                                  _LegendItem(
-                                    color: const Color(0xFF39FF14),
-                                    text: "SMM",
-                                  ),
-                                  const SizedBox(width: 16),
-                                  _LegendItem(
-                                    color: Colors.orangeAccent,
-                                    text: "PBF",
+                                  Row(
+                                    children: [
+                                      Text(
+                                        "${record.weight} kg",
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      InkWell(
+                                        onTap: () => _showAddDialog(
+                                          context,
+                                          existingRecord: record,
+                                        ),
+                                        child: const Icon(
+                                          Icons.edit,
+                                          color: Colors.grey,
+                                          size: 20,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // HISTORY SECTION (Expandable ListView)
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              "History",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
                             ),
-                            const SizedBox(height: 12),
-                            Expanded(
-                              child: ListView.builder(
-                                itemCount: recentRecords.length,
-                                itemBuilder: (context, index) {
-                                  final record = recentRecords[index];
-                                  final key = record.key;
-
-                                  return Dismissible(
-                                    key: ValueKey(
-                                      key ?? record.date.toString(),
-                                    ),
-                                    direction: DismissDirection.endToStart,
-                                    background: Container(
-                                      alignment: Alignment.centerRight,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 20,
-                                      ),
-                                      color: Colors.redAccent,
-                                      child: const Icon(
-                                        Icons.delete,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    confirmDismiss: (direction) async {
-                                      return await showDialog(
-                                        context: context,
-                                        builder: (context) => AlertDialog(
-                                          backgroundColor: const Color(
-                                            0xFF1C1C1E,
-                                          ),
-                                          title: const Text(
-                                            "Delete Record?",
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(context, false),
-                                              child: const Text(
-                                                "Cancel",
-                                                style: TextStyle(
-                                                  color: Colors.grey,
-                                                ),
-                                              ),
-                                            ),
-                                            TextButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(context, true),
-                                              child: const Text(
-                                                "Delete",
-                                                style: TextStyle(
-                                                  color: Colors.redAccent,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                    onDismissed: (direction) {
-                                      _db.deleteInBodyRecord(key);
-                                      setState(() {});
-                                    },
-                                    child: Container(
-                                      margin: const EdgeInsets.only(bottom: 12),
-                                      padding: const EdgeInsets.all(16),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF1C1C1E),
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                DateFormat(
-                                                  'MMM d, yyyy',
-                                                ).format(record.date),
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Row(
-                                                children: [
-                                                  Container(
-                                                    width: 8,
-                                                    height: 8,
-                                                    decoration:
-                                                        const BoxDecoration(
-                                                          color: Color(
-                                                            0xFF39FF14,
-                                                          ),
-                                                          shape:
-                                                              BoxShape.circle,
-                                                        ),
-                                                  ),
-                                                  const SizedBox(width: 4),
-                                                  Text(
-                                                    "${record.smm} (SMM)",
-                                                    style: TextStyle(
-                                                      color: Colors.grey[500],
-                                                      fontSize: 12,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                  Container(
-                                                    width: 8,
-                                                    height: 8,
-                                                    decoration:
-                                                        const BoxDecoration(
-                                                          color: Colors
-                                                              .orangeAccent,
-                                                          shape:
-                                                              BoxShape.circle,
-                                                        ),
-                                                  ),
-                                                  const SizedBox(width: 4),
-                                                  Text(
-                                                    "${record.pbf}% (PBF)",
-                                                    style: TextStyle(
-                                                      color: Colors.grey[500],
-                                                      fontSize: 12,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                          Row(
-                                            children: [
-                                              Text(
-                                                "${record.weight} kg",
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              const SizedBox(width: 16),
-                                              InkWell(
-                                                onTap: () => _showAddDialog(
-                                                  context,
-                                                  existingRecord: record,
-                                                ),
-                                                child: const Icon(
-                                                  Icons.edit,
-                                                  color: Colors.grey,
-                                                  size: 20,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
+                          );
+                        },
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
 
           // TAB 2: EXERCISE PROGRESS
