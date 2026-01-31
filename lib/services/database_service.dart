@@ -20,15 +20,26 @@ class GymDatabase extends ChangeNotifier {
   Future<void> init() async {
     await Hive.initFlutter();
 
-    Hive.registerAdapter(ExerciseAdapter());
-    Hive.registerAdapter(RoutineAdapter());
-    Hive.registerAdapter(ExerciseSetAdapter());
-    Hive.registerAdapter(WorkoutSessionAdapter());
-    Hive.registerAdapter(InBodyRecordAdapter());
+    // Register adapters safely (check if not already registered)
+    if (!Hive.isAdapterRegistered(0)) {
+      Hive.registerAdapter(ExerciseAdapter());
+    }
+    if (!Hive.isAdapterRegistered(1)) {
+      Hive.registerAdapter(RoutineAdapter());
+    }
+    if (!Hive.isAdapterRegistered(2)) {
+      Hive.registerAdapter(ExerciseSetAdapter());
+    }
+    if (!Hive.isAdapterRegistered(3)) {
+      Hive.registerAdapter(WorkoutSessionAdapter());
+    }
+    if (!Hive.isAdapterRegistered(4)) {
+      Hive.registerAdapter(InBodyRecordAdapter());
+    }
 
+    // Open all boxes
     _exerciseBox = await Hive.openBox<Exercise>('exercises');
     _routineBox = await Hive.openBox<Routine>('routines');
-    _sessionBox = await Hive.openBox<WorkoutSession>('sessions');
     _sessionBox = await Hive.openBox<WorkoutSession>('sessions');
     _inBodyBox = await Hive.openBox<InBodyRecord>('inbody');
     _activeSessionBox = await Hive.openBox('active_session');
