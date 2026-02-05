@@ -8,6 +8,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter/services.dart';
 import '../utils/timer_config.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 class ActiveWorkoutScreen extends StatefulWidget {
   final Routine routine;
@@ -37,6 +38,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
   Timer? _restTimer;
   int _restSecondsRemaining = 0;
   bool _isResting = false;
+  DateTime? _restEndTime; // Target end time for rest timer (timestamp-based)
 
   // State for the session
   final List<ExerciseSet> _completedSets = [];
@@ -55,6 +57,8 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
     _startStopwatch();
     _loadExercisesAndHistory();
     _checkActiveSession();
+    // Enable wakelock to keep screen on during workout
+    WakelockPlus.enable();
   }
 
   Future<void> _requestAndroidExactAlarmPermission() async {
@@ -164,6 +168,8 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
       0,
     ); // Cancel timer notification on dispose
     _scrollController.dispose();
+    // Disable wakelock when leaving workout screen
+    WakelockPlus.disable();
     super.dispose();
   }
 
@@ -178,26 +184,38 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
   }
 
   // --- Rest Timer Logic ---
+  // Uses timestamp-based calculation to survive iOS background throttling
   void _startRestTimer([int? duration]) {
     _restTimer?.cancel();
+    final targetSeconds = duration ?? _db.defaultRestSeconds;
+
+    // Calculate the target end time using timestamp delta approach
+    _restEndTime = DateTime.now().add(Duration(seconds: targetSeconds));
+
     setState(() {
       _isResting = true;
-      _restSecondsRemaining =
-          duration ?? _db.defaultRestSeconds; // Use User Setting
+      _restSecondsRemaining = targetSeconds;
     });
 
-    _scheduleNotification(_restSecondsRemaining);
+    _scheduleNotification(targetSeconds);
 
     _restTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
         timer.cancel();
         return;
       }
+
+      // Calculate remaining time from timestamp delta (not tick counting!)
+      // This fixes iOS timer freeze when phone locks
+      final remaining = _restEndTime!.difference(DateTime.now()).inSeconds;
+
       setState(() {
-        if (_restSecondsRemaining > 0) {
-          _restSecondsRemaining--;
+        if (remaining > 0) {
+          _restSecondsRemaining = remaining;
         } else {
+          _restSecondsRemaining = 0;
           _isResting = false;
+          _restEndTime = null;
           timer.cancel();
           // Sound & Vibration Feedback
           if (_db.enableSound) {
@@ -211,6 +229,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
 
   void _skipRest() {
     _restTimer?.cancel();
+    _restEndTime = null;
     NotificationService().cancelNotification(0);
     setState(() {
       _isResting = false;
@@ -218,12 +237,18 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
   }
 
   void _add30Seconds() {
-    setState(() {
-      _restSecondsRemaining += 30;
-    });
-    // Reschedule
-    NotificationService().cancelNotification(0);
-    _scheduleNotification(_restSecondsRemaining);
+    // Extend the end time by 30 seconds
+    if (_restEndTime != null) {
+      _restEndTime = _restEndTime!.add(const Duration(seconds: 30));
+      setState(() {
+        _restSecondsRemaining = _restEndTime!
+            .difference(DateTime.now())
+            .inSeconds;
+      });
+      // Reschedule notification
+      NotificationService().cancelNotification(0);
+      _scheduleNotification(_restSecondsRemaining);
+    }
   }
 
   void _scrollToIndex(int index) {
