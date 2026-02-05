@@ -275,7 +275,7 @@ class WorkoutDetailScreen extends StatelessWidget {
                     ),
                   ],
                   const Spacer(),
-                  _buildRpeIndicator(set.rpeValue ?? 0),
+                  _buildRpeIndicator(set.rpeValue),
                 ],
               );
             },
@@ -287,12 +287,13 @@ class WorkoutDetailScreen extends StatelessWidget {
 
   Widget _buildRpeIndicator(int rpe) {
     Color color;
-    if (rpe <= 6)
+    if (rpe <= 6) {
       color = Colors.greenAccent;
-    else if (rpe <= 8)
+    } else if (rpe <= 8) {
       color = Colors.orangeAccent;
-    else
+    } else {
       color = Colors.redAccent;
+    }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

@@ -460,7 +460,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await Hive.box('active_session').clear();
     await Hive.box('settings').clear();
 
-    if (!mounted) return;
+    if (!context.mounted) return;
 
     // Navigate to Onboarding and clear entire navigation stack
     Navigator.of(context).pushAndRemoveUntil(

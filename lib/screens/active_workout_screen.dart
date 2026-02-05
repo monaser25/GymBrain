@@ -712,7 +712,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
               if (shouldFinish) {
                 await provider.finishWorkout();
                 NotificationService().cancelAll();
-                if (mounted) Navigator.pop(context);
+                if (context.mounted) Navigator.pop(context);
               }
             },
             style: ElevatedButton.styleFrom(
@@ -1706,7 +1706,7 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
     final weightCtrl = TextEditingController(text: set.weight.toString());
     final repsCtrl = TextEditingController(text: set.reps.toString());
     bool isDrop = set.isDropSet;
-    int rpe = set.rpeValue ?? 8;
+    int rpe = set.rpeValue;
 
     showDialog(
       context: context,
@@ -1818,12 +1818,13 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
               final newReps = int.tryParse(repsCtrl.text) ?? set.reps;
 
               String legacyRpe;
-              if (rpe <= 6)
+              if (rpe <= 6) {
                 legacyRpe = 'Easy';
-              else if (rpe <= 8)
+              } else if (rpe <= 8) {
                 legacyRpe = 'Good';
-              else
+              } else {
                 legacyRpe = 'Hard';
+              }
 
               final newSet = ExerciseSet(
                 exerciseName: set.exerciseName,
