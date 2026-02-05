@@ -96,6 +96,9 @@ class ExerciseSet extends HiveObject {
   @HiveField(7) // Spotter/Assisted flag
   final bool isAssisted;
 
+  @HiveField(8)
+  final bool isDropSet;
+
   ExerciseSet({
     required this.exerciseName,
     required this.weight,
@@ -105,6 +108,7 @@ class ExerciseSet extends HiveObject {
     this.unit = 'kg',
     this.rpeValue = 8, // Default to 8 (good effort)
     this.isAssisted = false,
+    this.isDropSet = false,
   });
 
   Map<String, dynamic> toJson() => {
@@ -116,6 +120,7 @@ class ExerciseSet extends HiveObject {
     'unit': unit,
     'rpeValue': rpeValue,
     'isAssisted': isAssisted,
+    'isDropSet': isDropSet,
   };
 
   factory ExerciseSet.fromJson(Map<String, dynamic> json) => ExerciseSet(
@@ -127,6 +132,7 @@ class ExerciseSet extends HiveObject {
     unit: json['unit'] as String? ?? 'kg',
     rpeValue: json['rpeValue'] as int? ?? 8,
     isAssisted: json['isAssisted'] as bool? ?? false,
+    isDropSet: json['isDropSet'] as bool? ?? false,
   );
 }
 

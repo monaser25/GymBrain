@@ -111,13 +111,14 @@ class ExerciseSetAdapter extends TypeAdapter<ExerciseSet> {
       unit: fields[5] as String,
       rpeValue: fields[6] as int,
       isAssisted: fields[7] as bool,
+      isDropSet: fields[8] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, ExerciseSet obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.exerciseName)
       ..writeByte(1)
@@ -133,7 +134,9 @@ class ExerciseSetAdapter extends TypeAdapter<ExerciseSet> {
       ..writeByte(6)
       ..write(obj.rpeValue)
       ..writeByte(7)
-      ..write(obj.isAssisted);
+      ..write(obj.isAssisted)
+      ..writeByte(8)
+      ..write(obj.isDropSet);
   }
 
   @override

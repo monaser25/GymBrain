@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
 import '../models/gym_models.dart';
 import '../services/database_service.dart';
 import '../services/notification_service.dart';
@@ -9,6 +8,8 @@ import 'package:vibration/vibration.dart';
 import 'package:flutter/services.dart';
 import '../utils/timer_config.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
+import 'package:provider/provider.dart';
+import '../providers/active_workout_provider.dart';
 
 class ActiveWorkoutScreen extends StatefulWidget {
   final Routine routine;
@@ -27,7 +28,6 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
   String _elapsedString = "00:00";
 
   // Focus Mode State
-  int _focusedIndex = 0;
   final ScrollController _scrollController = ScrollController();
 
   // Ghost Data Cache
@@ -38,14 +38,10 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
   Timer? _restTimer;
   int _restSecondsRemaining = 0;
   bool _isResting = false;
-  DateTime? _restEndTime; // Target end time for rest timer (timestamp-based)
-
-  // State for the session
-  final List<ExerciseSet> _completedSets = [];
-  late DateTime _startTime;
+  DateTime? _restEndTime;
   DateTime? _timerEndTime;
 
-  // Cache for exercise objects
+  // Exercise Cache
   List<Exercise> _exercises = [];
 
   @override
@@ -53,10 +49,25 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _requestAndroidExactAlarmPermission();
-    _startTime = DateTime.now();
-    _startStopwatch();
-    _loadExercisesAndHistory();
-    _checkActiveSession();
+
+    // Initialize Provider State
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = context.read<ActiveWorkoutProvider>();
+      if (provider.currentRoutine?.id == widget.routine.id) {
+        // Resuming: Use provider data
+      } else {
+        // New Workout
+        provider.startWorkout(widget.routine);
+      }
+      _startStopwatch();
+      _loadExercisesAndHistory();
+
+      // Sync Focused Index
+      if (provider.focusedIndex > 0) {
+        _scrollToIndex(provider.focusedIndex);
+      }
+    });
+
     // Enable wakelock to keep screen on during workout
     WakelockPlus.enable();
   }
@@ -87,9 +98,6 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
           setState(() {
             _restSecondsRemaining = remaining;
           });
-          // Also cancel notification since user is back
-          // We can't easily track the specific ID unless we store it.
-          // For now, let's cancelAll or just rely on the fact user is here.
           NotificationService().cancelAll();
         } else {
           _skipRest();
@@ -98,41 +106,18 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
     }
   }
 
-  Future<void> _checkActiveSession() async {
-    final active = _db.getActiveSession();
-    if (active != null && active['routineId'] == widget.routine.id) {
-      setState(() {
-        if (active['startTime'] != null) {
-          _startTime = active['startTime'];
-          // Adjust stopwatch to match persisted start time
-          _stopwatch.reset(); // Stop and reset
-          // We can't set elapsed manually easily on Stopwatch.
-          // Instead, we should rely on Start Time diff for the display string.
-          // But _stopwatch is used for final duration.
-          // Let's just assume we rely on DateTime diff for final duration (we already fixed that).
-          // For the display loop:
-        }
-        if (active['completedSets'] != null) {
-          _completedSets.clear();
-          _completedSets.addAll(active['completedSets']);
-        }
-        if (active['focusedIndex'] != null) {
-          _focusedIndex = active['focusedIndex'];
-          _scrollToIndex(_focusedIndex);
-        }
-      });
-    }
-  }
+  // Removed _checkActiveSession as it is handled by Provider initialization
 
   void _startStopwatch() {
-    // If restoring, _startTime is old. DateTime.now().difference(_startTime) is real elapsed.
-    // If new, _startTime is now.
     _stopwatchTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) {
-        setState(() {
-          final elapsed = DateTime.now().difference(_startTime);
-          _elapsedString = _formatDuration(elapsed);
-        });
+        final provider = context.read<ActiveWorkoutProvider>();
+        if (provider.startTime != null) {
+          setState(() {
+            final elapsed = DateTime.now().difference(provider.startTime!);
+            _elapsedString = _formatDuration(elapsed);
+          });
+        }
       }
     });
   }
@@ -252,11 +237,10 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
   }
 
   void _scrollToIndex(int index) {
-    // Small delay to allow UI to rebuild if size changed
     Future.delayed(const Duration(milliseconds: 100), () {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
-          index * 150.0, // Approximation, but workable
+          index * 150.0,
           duration: const Duration(milliseconds: 500),
           curve: Curves.easeInOut,
         );
@@ -265,34 +249,23 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
   }
 
   void _onSetCompleted(ExerciseSet set, int index) {
-    setState(() {
-      _completedSets.add(set);
-    });
+    // Add to provider
+    context.read<ActiveWorkoutProvider>().addSet(set);
 
-    _saveProgress();
-
-    // Check if we should advance to next exercise
-    // Logic: If user has done 3 sets (or whatever logic), advance.
-    // For now, let's keep it manual or based on a "Finish Exercise" button?
-    // The prompt says "Check if this was the last set".
-    // Since we don't have a rigid "Target Sets" property yet, let's look at completed sets count
-    // If user hits 3 sets, we propose moving on.
     final exercise = _exercises[index];
-    final setsForThis = _completedSets
+    final provider = context.read<ActiveWorkoutProvider>();
+    final setsForThis = provider.completedSets
         .where((s) => s.exerciseName == set.exerciseName)
         .length;
 
-    // Use dynamic targetSets
     if (setsForThis >= exercise.targetSets) {
-      if (_focusedIndex < _exercises.length - 1) {
-        setState(() => _focusedIndex++);
-        _scrollToIndex(_focusedIndex);
-        _saveProgress(); // Update focused index persistence
+      if (index < _exercises.length - 1) {
+        // Update focused index in provider
+        provider.setFocusedIndex(index + 1);
+        _scrollToIndex(index + 1);
       }
     }
 
-    // Smart Timer Logic
-    // Smart Timer Logic
     final restTime = TimerConfig.getRestTime(exercise.name);
     _startRestTimer(restTime);
   }
@@ -301,10 +274,12 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
     if (!_db.enableNotifications) return;
 
     final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-    // Determine the current exercise name for the dynamic body
+    final provider = context.read<ActiveWorkoutProvider>();
+
     String currentExerciseName = "your next set";
-    if (_focusedIndex >= 0 && _focusedIndex < _exercises.length) {
-      currentExerciseName = _exercises[_focusedIndex].name;
+    if (provider.focusedIndex >= 0 &&
+        provider.focusedIndex < _exercises.length) {
+      currentExerciseName = _exercises[provider.focusedIndex].name;
     }
 
     try {
@@ -316,7 +291,6 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
         playSound: _db.enableSound,
       );
     } catch (e) {
-      // Fallback: Simple Delay
       Future.delayed(Duration(seconds: seconds), () async {
         if (!mounted || !_isResting) return;
 
@@ -344,346 +318,358 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
     }
   }
 
-  void _saveProgress() {
-    _db.saveActiveSession(
-      widget.routine.id,
-      _startTime,
-      _completedSets,
-      focusedIndex: _focusedIndex,
-    );
-  }
+  // _saveProgress removed (handled by provider)
 
   @override
   Widget build(BuildContext context) {
     final bool isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-        final shouldPop = await _showExitConfirmation();
-        if (shouldPop && context.mounted) {
-          Navigator.pop(context);
-        }
-      },
-      child: Scaffold(
-        backgroundColor: Colors.black, // Dark Mode Background
-        resizeToAvoidBottomInset: true,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () async {
-              if (await _showExitConfirmation()) {
-                if (context.mounted) Navigator.pop(context);
-              }
-            },
-          ),
-          title: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  widget.routine.name,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+    return Consumer<ActiveWorkoutProvider>(
+      builder: (context, provider, child) {
+        final completedSets = provider.completedSets;
+        final focusedIndex = provider.focusedIndex;
+
+        return PopScope(
+          canPop: false,
+          onPopInvokedWithResult: (didPop, result) async {
+            if (didPop) return;
+            // Feature 4: Minimize vs End
+            final action = await showDialog<String>(
+              context: context,
+              builder: (context) => AlertDialog(
+                backgroundColor: const Color(0xFF1C1C1E),
+                title: const Text(
+                  "Workout Active",
+                  style: TextStyle(color: Colors.white),
+                ),
+                content: const Text(
+                  "Do you want to minimize the workout (keep running) or end it (discard part)?\nUse 'Finish' button to save.",
+                  style: TextStyle(color: Colors.white70),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, 'minimize'),
+                    child: const Text(
+                      "Minimize",
+                      style: TextStyle(color: Colors.blueAccent),
+                    ),
                   ),
-                  overflow: TextOverflow.ellipsis,
-                ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, 'end'),
+                    child: const Text(
+                      "End (Discard)",
+                      style: TextStyle(color: Colors.redAccent),
+                    ),
+                  ),
+                ],
               ),
-              // Timer Pill
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF39FF14), // Neon Green
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  _elapsedString,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
+            );
+
+            if (action == 'minimize' && context.mounted) {
+              provider.minimizeWorkout();
+              Navigator.pop(context);
+            } else if (action == 'end' && context.mounted) {
+              await provider.clearData();
+              if (context.mounted) Navigator.pop(context);
+            }
+          },
+          child: Scaffold(
+            backgroundColor: Colors.black,
+            resizeToAvoidBottomInset: true,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () async {
+                  // Trigger PopScope logic
+                  Navigator.maybePop(context);
+                },
+              ),
+              title: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.routine.name,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF39FF14),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      _elapsedString,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            body: Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.only(bottom: 120),
+                    itemCount: _exercises.length,
+                    itemBuilder: (context, index) {
+                      final exercise = _exercises[index];
+                      // Filter sets for this exercise
+                      final todaysSets = completedSets
+                          .where((s) => s.exerciseName == exercise.name)
+                          .toList();
+                      final isTargetMet =
+                          todaysSets.length >= exercise.targetSets;
+
+                      if (index == focusedIndex) {
+                        return _ExerciseInputCard(
+                          key: ValueKey(exercise.id),
+                          exercise: exercise,
+                          lastPerformance: _historyCache[exercise.id],
+                          isLoadingHistory: _isLoadingHistory,
+                          todaysSets: todaysSets,
+                          isFocused: true,
+                          isTargetMet: isTargetMet,
+                          onCollapse: () {
+                            provider.setFocusedIndex(-1);
+                          },
+                          onSetCompleted: (set) => _onSetCompleted(set, index),
+                          // Feature 2: Edit Set Callback
+                          onSetEdited: (oldSet, newSet) {
+                            // Find index in main list
+                            final globalIndex = completedSets.indexOf(oldSet);
+                            if (globalIndex != -1) {
+                              provider.updateSet(globalIndex, newSet);
+                            }
+                          },
+                        );
+                      }
+
+                      if (index != focusedIndex) {
+                        final isStarted = todaysSets.isNotEmpty;
+                        final isComplete =
+                            todaysSets.length >= exercise.targetSets;
+
+                        return GestureDetector(
+                          onTap: () {
+                            provider.setFocusedIndex(index);
+                            _scrollToIndex(index);
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 6,
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: focusedIndex == -1
+                                  ? const Color(0xFF1C1C1E)
+                                  : (index > focusedIndex
+                                        ? const Color(
+                                            0xFF1C1C1E,
+                                          ).withValues(alpha: 0.5)
+                                        : Colors.black),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.white10),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        exercise.name,
+                                        style: TextStyle(
+                                          color: isComplete
+                                              ? Colors.grey[500]
+                                              : Colors.white,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                          decoration: isComplete
+                                              ? TextDecoration.lineThrough
+                                              : null,
+                                        ),
+                                      ),
+                                      if (isStarted || isComplete) ...[
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          "Completed: ${todaysSets.length} / ${exercise.targetSets}",
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: isComplete
+                                                ? const Color(0xFF39FF14)
+                                                : Colors.yellow,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ] else ...[
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          "${exercise.targetSets} Sets",
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                                if (isComplete)
+                                  const Icon(
+                                    Icons.check_circle,
+                                    color: Color(0xFF39FF14),
+                                    size: 24,
+                                  )
+                                else if (index > focusedIndex &&
+                                    focusedIndex != -1)
+                                  Icon(
+                                    Icons.lock_outline,
+                                    color: Colors.grey[700],
+                                    size: 18,
+                                  )
+                                else if (isStarted)
+                                  const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.yellow,
+                                    ),
+                                  )
+                                else
+                                  Icon(
+                                    Icons.chevron_right,
+                                    color: Colors.grey[700],
+                                    size: 18,
+                                  ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
                   ),
                 ),
-              ),
-            ],
-          ),
-        ),
-        body: Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                padding: const EdgeInsets.only(bottom: 120),
-                itemCount: _exercises.length,
-                itemBuilder: (context, index) {
-                  final exercise = _exercises[index];
-                  final todaysSets = _completedSets
-                      .where((s) => s.exerciseName == exercise.name)
-                      .toList();
-                  final isTargetMet = todaysSets.length >= exercise.targetSets;
 
-                  // Condition A: Active (Focused)
-                  if (index == _focusedIndex) {
-                    return _ExerciseInputCard(
-                      key: ValueKey(exercise.id),
-                      exercise: exercise,
-                      lastPerformance: _historyCache[exercise.id],
-                      isLoadingHistory: _isLoadingHistory,
-                      todaysSets: todaysSets,
-                      isFocused: true,
-                      isTargetMet: isTargetMet,
-                      onCollapse: () {
-                        setState(() {
-                          _focusedIndex = -1;
-                        });
-                      },
-                      onSetCompleted: (set) => _onSetCompleted(set, index),
-                    );
-                  }
-
-                  // Condition B & C: Untargeted (Collapsed) Card
-                  if (index != _focusedIndex) {
-                    final isStarted = todaysSets.isNotEmpty;
-                    final isComplete = todaysSets.length >= exercise.targetSets;
-
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() => _focusedIndex = index);
-                        _scrollToIndex(index);
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 6,
-                        ),
+                // Sticky Footer Area
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_isResting)
+                      Container(
+                        width: double.infinity,
+                        color: const Color(0xFF39FF14),
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: _focusedIndex == -1
-                              ? const Color(0xFF1C1C1E)
-                              : (index > _focusedIndex
-                                    ? const Color(
-                                        0xFF1C1C1E,
-                                      ).withValues(alpha: 0.5)
-                                    : Colors.black),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white10),
+                          vertical: 10,
+                          horizontal: 20,
                         ),
                         child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    exercise.name,
-                                    style: TextStyle(
-                                      color: isComplete
-                                          ? Colors.grey[500]
-                                          : Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      decoration: isComplete
-                                          ? TextDecoration.lineThrough
-                                          : null,
-                                    ),
-                                  ),
-                                  if (isStarted || isComplete) ...[
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      "Completed: ${todaysSets.length} / ${exercise.targetSets}",
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: isComplete
-                                            ? const Color(0xFF39FF14)
-                                            : Colors.yellow,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ] else ...[
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      "${exercise.targetSets} Sets",
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey[600],
-                                      ),
-                                    ),
-                                  ],
-                                ],
+                            const Icon(
+                              Icons.timer,
+                              color: Colors.black,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              "Rest: ${_restSecondsRemaining}s",
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 18,
+                                letterSpacing: 1.0,
                               ),
                             ),
-                            if (isComplete)
-                              const Icon(
-                                Icons.check_circle,
-                                color: Color(0xFF39FF14),
-                                size: 24,
-                              )
-                            else if (index > _focusedIndex &&
-                                _focusedIndex != -1)
-                              // Lock icon only if we are in focused mode and it's ahead
-                              Icon(
-                                Icons.lock_outline,
-                                color: Colors.grey[700],
-                                size: 18,
-                              )
-                            else if (isStarted)
-                              // In progress indicator
-                              const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.yellow,
+                            const SizedBox(width: 16),
+                            TextButton(
+                              onPressed: _add30Seconds,
+                              style: TextButton.styleFrom(
+                                backgroundColor: Colors.black.withValues(
+                                  alpha: 0.1,
                                 ),
-                              )
-                            else
-                              // Chevron or nothing
-                              Icon(
-                                Icons.chevron_right,
-                                color: Colors.grey[700],
-                                size: 18,
+                                foregroundColor: Colors.black,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
                               ),
+                              child: const Text(
+                                "+30s",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            TextButton(
+                              onPressed: _skipRest,
+                              style: TextButton.styleFrom(
+                                backgroundColor: Colors.black.withValues(
+                                  alpha: 0.1,
+                                ),
+                                foregroundColor: Colors.black,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                              ),
+                              child: const Text(
+                                "SKIP",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                    );
-                  }
-                  // Should be unreachable if logic is correct, but for safety:
-                  return const SizedBox.shrink();
-                },
-              ),
-            ),
 
-            // Sticky Footer Area
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Rest Timer Overlay
-                if (_isResting)
-                  Container(
-                    width: double.infinity,
-                    color: const Color(0xFF39FF14),
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 10,
-                      horizontal: 20,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.timer, color: Colors.black, size: 20),
-                        const SizedBox(width: 8),
-                        Text(
-                          "Rest: ${_restSecondsRemaining}s",
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 18,
-                            letterSpacing: 1.0,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        TextButton(
-                          onPressed: _add30Seconds,
-                          style: TextButton.styleFrom(
-                            backgroundColor: Colors.black.withValues(
-                              alpha: 0.1,
-                            ),
-                            foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                          child: const Text(
-                            "+30s",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        TextButton(
-                          onPressed: _skipRest,
-                          style: TextButton.styleFrom(
-                            backgroundColor: Colors.black.withValues(
-                              alpha: 0.1,
-                            ),
-                            foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ),
-                          child: const Text(
-                            "SKIP",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                // Finish Button (Only visible if near end or explicitly scrolled? User requested visibility logic)
-                // Let's show it always at bottom for safety, but maybe highlight it when last exercise is done.
-                if (!isKeyboardVisible &&
-                    (_focusedIndex >= _exercises.length - 1 ||
-                        _completedSets.isNotEmpty))
-                  _buildFinishButton(),
+                    if (!isKeyboardVisible &&
+                        (focusedIndex >= _exercises.length - 1 ||
+                            completedSets.isNotEmpty))
+                      _buildFinishButton(
+                        context,
+                        provider,
+                      ), // Pass context/provider if needed
+                  ],
+                ),
               ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
-  Future<bool> _showExitConfirmation() async {
-    return await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            backgroundColor: const Color(0xFF1C1C1E),
-            title: const Text(
-              "Exit Workout?",
-              style: TextStyle(color: Colors.white),
-            ),
-            content: const Text(
-              "Current progress will be lost. Are you sure?",
-              style: TextStyle(color: Colors.white70),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text(
-                  "Cancel",
-                  style: TextStyle(color: Colors.grey),
-                ),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text(
-                  "Exit",
-                  style: TextStyle(color: Colors.redAccent),
-                ),
-              ),
-            ],
-          ),
-        ) ??
-        false;
-  }
+  // Helper dialogs for PopScope above (already implemented inline or can be helper)
+  // I implemented inline.
 
-  Widget _buildFinishButton() {
+  Widget _buildFinishButton(
+    BuildContext context,
+    ActiveWorkoutProvider provider,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       color: Colors.black,
       child: SafeArea(
-        // Ensure it respects bottom notch
         top: false,
         child: SizedBox(
           width: double.infinity,
@@ -724,7 +710,9 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
                   false;
 
               if (shouldFinish) {
-                _finishWorkout();
+                await provider.finishWorkout();
+                NotificationService().cancelAll();
+                if (mounted) Navigator.pop(context);
               }
             },
             style: ElevatedButton.styleFrom(
@@ -749,31 +737,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
     );
   }
 
-  void _finishWorkout() async {
-    if (_completedSets.isEmpty) {
-      if (!mounted) return;
-      Navigator.pop(context);
-      return;
-    }
-
-    final session = WorkoutSession(
-      id: const Uuid().v4(),
-      routineName: widget.routine.name,
-      date: DateTime.now(),
-      durationInSeconds: DateTime.now().difference(_startTime).inSeconds,
-      sets: _completedSets,
-    );
-
-    await _db.saveSession(session);
-    await _db.clearActiveSession();
-    NotificationService().cancelAll();
-
-    // Slight delay to ensure saving
-    await Future.delayed(const Duration(milliseconds: 300));
-
-    if (!mounted) return;
-    Navigator.pop(context);
-  }
+  // remove _finishWorkout as it is now inside the widget builder logic or implicitly handled
 }
 
 class _ExerciseInputCard extends StatefulWidget {
@@ -781,6 +745,7 @@ class _ExerciseInputCard extends StatefulWidget {
   final ExerciseSet? lastPerformance;
   final bool isLoadingHistory;
   final Function(ExerciseSet) onSetCompleted;
+  final Function(ExerciseSet, ExerciseSet)? onSetEdited; // New callback
   final List<ExerciseSet> todaysSets;
   final bool isFocused;
   final bool isTargetMet;
@@ -792,6 +757,7 @@ class _ExerciseInputCard extends StatefulWidget {
     required this.lastPerformance,
     required this.isLoadingHistory,
     required this.onSetCompleted,
+    this.onSetEdited,
     required this.todaysSets,
     required this.onCollapse,
     this.isFocused = false,
@@ -807,6 +773,7 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
   final _repsController = TextEditingController();
   int _rpeValue = 8; // 1-10 scale
   bool _isAssisted = false;
+  bool _isDropSet = false; // New state
   bool _isKg = GymDatabase().settingsBox.get(
     'default_is_kg',
     defaultValue: true,
@@ -1186,6 +1153,68 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
                       ),
                     ),
 
+                    Container(
+                      margin: const EdgeInsets.only(top: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2C2C2E),
+                        borderRadius: BorderRadius.circular(8),
+                        border: _isDropSet
+                            ? Border.all(color: Colors.amber, width: 1)
+                            : null,
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.layers,
+                            color: _isDropSet ? Colors.amber : Colors.grey[600],
+                            size: 20,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  "Drop Set?",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                if (_isDropSet)
+                                  Text(
+                                    "Weight lowered immediately",
+                                    style: TextStyle(
+                                      color: Colors.amber[200],
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          Transform.scale(
+                            scale: 0.85,
+                            child: Switch(
+                              value: _isDropSet,
+                              onChanged: (val) =>
+                                  setState(() => _isDropSet = val),
+                              activeThumbColor: Colors.amber,
+                              activeTrackColor: Colors.amber.withValues(
+                                alpha: 0.3,
+                              ),
+                              inactiveThumbColor: Colors.grey[600],
+                              inactiveTrackColor: Colors.grey[800],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
                     const SizedBox(height: 24),
 
                     // COMPLETE BUTTON
@@ -1220,48 +1249,87 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
                       ...widget.todaysSets.asMap().entries.map((entry) {
                         final idx = entry.key + 1;
                         final set = entry.value;
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4.0),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.grey[800],
-                                ),
-                                child: Text(
-                                  "$idx",
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 10,
+                        return GestureDetector(
+                          onTap: () => _showEditSetDialog(context, set),
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(vertical: 4.0),
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[900],
+                              borderRadius: BorderRadius.circular(8),
+                              border: set.isDropSet
+                                  ? Border.all(color: Colors.amber, width: 1)
+                                  : Border.all(color: Colors.white10),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: set.isDropSet
+                                        ? Colors.amber
+                                        : Colors.grey[800],
+                                  ),
+                                  child: Text(
+                                    "$idx",
+                                    style: TextStyle(
+                                      color: set.isDropSet
+                                          ? Colors.black
+                                          : Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                "${set.weight}${set.unit} x ${set.reps}",
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
+                                const SizedBox(width: 8),
+                                Text(
+                                  "${set.weight}${set.unit} x ${set.reps}",
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              Container(
-                                width: 6,
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: _getRpeColor(set.rpe),
+                                if (set.isDropSet) ...[
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.amber.withValues(
+                                        alpha: 0.2,
+                                      ),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: const Text(
+                                      "DROP",
+                                      style: TextStyle(
+                                        color: Colors.amber,
+                                        fontSize: 8,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(width: 8),
+                                Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: _getRpeColor(set.rpe),
+                                  ),
                                 ),
-                              ),
-                              const Spacer(),
-                              const Icon(
-                                Icons.check,
-                                size: 16,
-                                color: Color(0xFF39FF14),
-                              ),
-                            ],
+                                const Spacer(),
+                                const Icon(
+                                  Icons.edit,
+                                  size: 14,
+                                  color: Colors.grey,
+                                ),
+                              ],
+                            ),
                           ),
                         );
                       }),
@@ -1441,7 +1509,9 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
         rpeValue: _rpeValue,
         isAssisted: _isAssisted,
         isCompleted: true,
+
         unit: _isKg ? 'kg' : 'lb',
+        isDropSet: _isDropSet,
       );
 
       widget.onSetCompleted(set);
@@ -1462,7 +1532,11 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
       }
 
       // Reset assisted toggle after each set
-      setState(() => _isAssisted = false);
+      // Reset state
+      setState(() {
+        _isAssisted = false;
+        _isDropSet = false;
+      });
 
       FocusScope.of(context).unfocus();
     }
@@ -1625,6 +1699,150 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
           ],
         );
       },
+    );
+  }
+
+  void _showEditSetDialog(BuildContext context, ExerciseSet set) {
+    final weightCtrl = TextEditingController(text: set.weight.toString());
+    final repsCtrl = TextEditingController(text: set.reps.toString());
+    bool isDrop = set.isDropSet;
+    int rpe = set.rpeValue ?? 8;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1C1C1E),
+        title: const Text("Edit Set", style: TextStyle(color: Colors.white)),
+        content: StatefulBuilder(
+          builder: (context, setState) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: weightCtrl,
+                        style: const TextStyle(color: Colors.white),
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        decoration: const InputDecoration(
+                          labelText: "Weight",
+                          labelStyle: TextStyle(color: Colors.grey),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.grey),
+                          ),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Color(0xFF39FF14)),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: TextField(
+                        controller: repsCtrl,
+                        style: const TextStyle(color: Colors.white),
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: "Reps",
+                          labelStyle: TextStyle(color: Colors.grey),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.grey),
+                          ),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Color(0xFF39FF14)),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "RPE: $rpe",
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: _getRpeValueColor(rpe),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ],
+                ),
+                Slider(
+                  value: rpe.toDouble(),
+                  min: 1,
+                  max: 10,
+                  divisions: 9,
+                  activeColor: _getRpeValueColor(rpe),
+                  onChanged: (v) => setState(() => rpe = v.round()),
+                ),
+                CheckboxListTile(
+                  title: const Text(
+                    "Drop Set?",
+                    style: TextStyle(color: Colors.white, fontSize: 14),
+                  ),
+                  value: isDrop,
+                  activeColor: Colors.amber,
+                  checkColor: Colors.black,
+                  contentPadding: EdgeInsets.zero,
+                  onChanged: (v) => setState(() => isDrop = v ?? false),
+                ),
+              ],
+            );
+          },
+        ),
+        actions: [
+          TextButton(
+            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+            onPressed: () => Navigator.pop(ctx),
+          ),
+          TextButton(
+            child: const Text(
+              "Save",
+              style: TextStyle(
+                color: Color(0xFF39FF14),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            onPressed: () {
+              final newWeight = double.tryParse(weightCtrl.text) ?? set.weight;
+              final newReps = int.tryParse(repsCtrl.text) ?? set.reps;
+
+              String legacyRpe;
+              if (rpe <= 6)
+                legacyRpe = 'Easy';
+              else if (rpe <= 8)
+                legacyRpe = 'Good';
+              else
+                legacyRpe = 'Hard';
+
+              final newSet = ExerciseSet(
+                exerciseName: set.exerciseName,
+                weight: newWeight,
+                reps: newReps,
+                rpe: legacyRpe,
+                rpeValue: rpe,
+                unit: set.unit,
+                isAssisted: set.isAssisted,
+                isCompleted: true,
+                isDropSet: isDrop,
+              );
+
+              widget.onSetEdited?.call(set, newSet);
+              Navigator.pop(ctx);
+            },
+          ),
+        ],
+      ),
     );
   }
 }

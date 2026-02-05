@@ -6,6 +6,7 @@ import 'services/database_service.dart';
 import 'services/notification_service.dart';
 import 'package:provider/provider.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
+import 'providers/active_workout_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,7 +35,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ChangeNotifierProvider.value(value: GymDatabase())],
+      providers: [
+        ChangeNotifierProvider.value(value: GymDatabase()),
+        ChangeNotifierProvider(create: (_) => ActiveWorkoutProvider()),
+      ],
       child: MaterialApp(
         title: 'Gym Brain',
         debugShowCheckedModeBanner: false,

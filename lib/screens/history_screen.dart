@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/gym_models.dart';
 import '../services/database_service.dart';
+import 'workout_detail_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -12,13 +13,24 @@ class HistoryScreen extends StatefulWidget {
 
 class _HistoryScreenState extends State<HistoryScreen> {
   final _db = GymDatabase();
+  List<WorkoutSession> _sessions = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSessions();
+  }
+
+  void _loadSessions() {
+    final sessions = _db.getSessions().toList();
+    sessions.sort((a, b) => b.date.compareTo(a.date));
+    setState(() {
+      _sessions = sessions;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Fetch sessions and sort by date descending (newest first)
-    final sessions = _db.getSessions().toList()
-      ..sort((a, b) => b.date.compareTo(a.date));
-
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -33,7 +45,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: sessions.isEmpty
+      body: _sessions.isEmpty
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -49,11 +61,80 @@ class _HistoryScreenState extends State<HistoryScreen> {
             )
           : ListView.separated(
               padding: const EdgeInsets.all(20),
-              itemCount: sessions.length,
+              itemCount: _sessions.length,
               separatorBuilder: (context, index) => const SizedBox(height: 16),
               itemBuilder: (context, index) {
-                final session = sessions[index];
-                return _buildHistoryCard(session);
+                final session = _sessions[index];
+                return Dismissible(
+                  key: Key(session.id),
+                  direction: DismissDirection.endToStart,
+                  background: Container(
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.only(right: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(
+                      Icons.delete,
+                      color: Colors.white,
+                      size: 30,
+                    ),
+                  ),
+                  confirmDismiss: (direction) async {
+                    return await showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        backgroundColor: const Color(0xFF1C1C1E),
+                        title: const Text(
+                          "Delete Workout?",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        content: const Text(
+                          "This action cannot be undone.",
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: const Text(
+                              "Cancel",
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, true),
+                            child: const Text(
+                              "Delete",
+                              style: TextStyle(color: Colors.redAccent),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  onDismissed: (direction) async {
+                    // 1. Remove from local list immediately to update UI
+                    setState(() {
+                      _sessions.removeAt(index);
+                    });
+
+                    // 2. Delete from DB
+                    await _db.deleteSession(session.id);
+
+                    // 3. Show Feedback
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Workout deleted"),
+                          backgroundColor: Colors.redAccent,
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  },
+                  child: _buildHistoryCard(session),
+                );
               },
             ),
     );
@@ -83,54 +164,70 @@ class _HistoryScreenState extends State<HistoryScreen> {
           "${duration.inHours}h ${duration.inMinutes.remainder(60)}m";
     }
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1C1C1E),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                session.routineName,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+    return GestureDetector(
+      onTap: () async {
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => WorkoutDetailScreen(session: session),
+          ),
+        );
+        if (result == true) {
+          _loadSessions();
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1C1C1E),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  session.routineName,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              Text(
-                dateFormat.format(session.date),
-                style: TextStyle(color: Colors.grey[400], fontSize: 14),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            timeFormat.format(session.date),
-            style: TextStyle(color: Colors.grey[600], fontSize: 12),
-          ),
+                Text(
+                  dateFormat.format(session.date),
+                  style: TextStyle(color: Colors.grey[400], fontSize: 14),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              timeFormat.format(session.date),
+              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+            ),
 
-          const SizedBox(height: 16),
-          const Divider(color: Colors.white10),
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
+            const Divider(color: Colors.white10),
+            const SizedBox(height: 16),
 
-          // Stats Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildStatItem("DURATION", durationString),
-              _buildStatItem("VOLUME", "${totalVolume.toStringAsFixed(1)} kg"),
-              _buildStatItem("SETS", "${session.sets.length}"),
-            ],
-          ),
-        ],
+            // Stats Row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildStatItem("DURATION", durationString),
+                _buildStatItem(
+                  "VOLUME",
+                  "${totalVolume.toStringAsFixed(1)} kg",
+                ),
+                _buildStatItem("SETS", "${session.sets.length}"),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

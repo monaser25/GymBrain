@@ -229,6 +229,11 @@ class GymDatabase extends ChangeNotifier {
     return sessions;
   }
 
+  Future<void> deleteSession(String id) async {
+    await _sessionBox.delete(id);
+    notifyListeners();
+  }
+
   // InBody
   Future<void> addInBodyRecord(InBodyRecord record) async {
     await _inBodyBox.add(record);

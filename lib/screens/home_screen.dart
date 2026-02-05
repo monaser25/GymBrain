@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import '../models/gym_models.dart';
 import '../services/database_service.dart';
 import 'package:provider/provider.dart';
+import '../providers/active_workout_provider.dart';
+import '../utils/workout_helper.dart';
 // Screens
 import 'active_workout_screen.dart';
 import 'progress_screen.dart';
@@ -39,7 +41,107 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       drawer: _buildDrawer(context),
-      body: IndexedStack(index: _currentIndex, children: _pages),
+      body: Stack(
+        children: [
+          IndexedStack(index: _currentIndex, children: _pages),
+          // Resume Workout Sticky Banner
+          Consumer<ActiveWorkoutProvider>(
+            builder: (context, provider, child) {
+              if (!provider.hasActiveWorkout) return const SizedBox.shrink();
+
+              // Calculate duration string (helper)
+              String durationStr = "In Progress";
+              if (provider.startTime != null) {
+                final diff = DateTime.now().difference(provider.startTime!);
+                durationStr = "${diff.inMinutes}m ${diff.inSeconds % 60}s";
+              }
+
+              return Positioned(
+                bottom: 16,
+                left: 16,
+                right: 16,
+                child: GestureDetector(
+                  onTap: () {
+                    if (provider.currentRoutine != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ActiveWorkoutScreen(
+                            routine: provider.currentRoutine!,
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1C1C1E),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: const Color(0xFF39FF14),
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF39FF14).withValues(alpha: 0.2),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                color: Color(0xFF39FF14),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Resume Workout",
+                                  style: const TextStyle(
+                                    color: Color(0xFF39FF14),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                Text(
+                                  "${provider.currentRoutine?.name ?? 'Unknown'} • $durationStr",
+                                  style: TextStyle(
+                                    color: Colors.grey[400],
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const Icon(
+                          Icons.arrow_forward,
+                          color: Color(0xFF39FF14),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           border: Border(top: BorderSide(color: Colors.white10, width: 0.5)),
@@ -551,14 +653,19 @@ class _DashboardView extends StatelessWidget {
                                   size: 18,
                                 ),
                               ),
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        ActiveWorkoutScreen(routine: routine),
-                                  ),
-                                );
+                              onTap: () async {
+                                if (await checkActiveWorkout(context)) {
+                                  if (context.mounted) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => ActiveWorkoutScreen(
+                                          routine: routine,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                }
                               },
                             ),
                           );
@@ -663,16 +770,19 @@ class _DashboardView extends StatelessWidget {
                             color: Color(0xFF39FF14),
                             size: 16,
                           ),
-                          onTap: () {
+                          onTap: () async {
                             Navigator.pop(context); // Close sheet
-                            // Push ActiveWorkoutScreen
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    ActiveWorkoutScreen(routine: routine),
-                              ),
-                            );
+                            if (await checkActiveWorkout(context)) {
+                              if (context.mounted) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        ActiveWorkoutScreen(routine: routine),
+                                  ),
+                                );
+                              }
+                            }
                           },
                         );
                       },

@@ -5,6 +5,8 @@ import '../models/gym_models.dart';
 import '../services/database_service.dart';
 import 'routine_editor_screen.dart';
 import 'exercise_library_screen.dart';
+import '../utils/workout_helper.dart';
+import 'active_workout_screen.dart';
 
 class RoutinesScreen extends StatelessWidget {
   const RoutinesScreen({super.key});
@@ -109,6 +111,19 @@ class RoutinesScreen extends StatelessWidget {
                       ),
                     ],
                   ),
+                  onTap: () async {
+                    if (await checkActiveWorkout(context)) {
+                      if (context.mounted) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                ActiveWorkoutScreen(routine: routine),
+                          ),
+                        );
+                      }
+                    }
+                  },
                 ),
               );
             },
