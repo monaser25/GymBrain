@@ -133,6 +133,270 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Continue'**
   String get continueBtn;
+
+  /// No description provided for @toolsAndUtilities.
+  ///
+  /// In en, this message translates to:
+  /// **'Tools & Utilities'**
+  String get toolsAndUtilities;
+
+  /// No description provided for @oneRmCalculator.
+  ///
+  /// In en, this message translates to:
+  /// **'1RM Calculator'**
+  String get oneRmCalculator;
+
+  /// No description provided for @plateCalculator.
+  ///
+  /// In en, this message translates to:
+  /// **'Plate Calculator'**
+  String get plateCalculator;
+
+  /// No description provided for @version.
+  ///
+  /// In en, this message translates to:
+  /// **'Version 1.0.0'**
+  String get version;
+
+  /// No description provided for @home.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get home;
+
+  /// No description provided for @workout.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout'**
+  String get workout;
+
+  /// No description provided for @stats.
+  ///
+  /// In en, this message translates to:
+  /// **'Stats'**
+  String get stats;
+
+  /// No description provided for @settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings;
+
+  /// No description provided for @noWorkoutsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No workouts yet'**
+  String get noWorkoutsYet;
+
+  /// No description provided for @currentWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Weight'**
+  String get currentWeight;
+
+  /// No description provided for @lastWorkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Workout'**
+  String get lastWorkout;
+
+  /// No description provided for @startWorkout.
+  ///
+  /// In en, this message translates to:
+  /// **'START\nWORKOUT'**
+  String get startWorkout;
+
+  /// No description provided for @savedRoutines.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved Routines'**
+  String get savedRoutines;
+
+  /// No description provided for @seeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See All'**
+  String get seeAll;
+
+  /// No description provided for @noRoutinesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No routines yet. Create one!'**
+  String get noRoutinesYet;
+
+  /// No description provided for @exercises.
+  ///
+  /// In en, this message translates to:
+  /// **'Exercises'**
+  String get exercises;
+
+  /// No description provided for @selectRoutine.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Routine'**
+  String get selectRoutine;
+
+  /// No description provided for @noRoutinesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No routines found.\nCreate one in the Workout tab!'**
+  String get noRoutinesFound;
+
+  /// No description provided for @resumeWorkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume Workout'**
+  String get resumeWorkout;
+
+  /// No description provided for @inProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'In Progress'**
+  String get inProgress;
+
+  /// No description provided for @workoutActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout Active'**
+  String get workoutActive;
+
+  /// No description provided for @minimizeWorkoutQuery.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you want to minimize the workout (keep running) or end it (discard part)?\nUse \'Finish\' button to save.'**
+  String get minimizeWorkoutQuery;
+
+  /// No description provided for @minimize.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimize'**
+  String get minimize;
+
+  /// No description provided for @endDiscard.
+  ///
+  /// In en, this message translates to:
+  /// **'End (Discard)'**
+  String get endDiscard;
+
+  /// No description provided for @completed.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed:'**
+  String get completed;
+
+  /// No description provided for @restTimeStr.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest:'**
+  String get restTimeStr;
+
+  /// No description provided for @skip.
+  ///
+  /// In en, this message translates to:
+  /// **'SKIP'**
+  String get skip;
+
+  /// No description provided for @finishWorkoutQuest.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish Workout?'**
+  String get finishWorkoutQuest;
+
+  /// No description provided for @readyToComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you ready to complete this session?'**
+  String get readyToComplete;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @finish.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish'**
+  String get finish;
+
+  /// No description provided for @finishWorkoutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'FINISH WORKOUT'**
+  String get finishWorkoutTitle;
+
+  /// No description provided for @loadingHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading history...'**
+  String get loadingHistory;
+
+  /// No description provided for @noHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'No history'**
+  String get noHistory;
+
+  /// No description provided for @lastPer.
+  ///
+  /// In en, this message translates to:
+  /// **'Last:'**
+  String get lastPer;
+
+  /// No description provided for @weightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'WEIGHT'**
+  String get weightLabel;
+
+  /// No description provided for @repsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'REPS'**
+  String get repsLabel;
+
+  /// No description provided for @rpeEffort.
+  ///
+  /// In en, this message translates to:
+  /// **'RPE (EFFORT 1-10)'**
+  String get rpeEffort;
+
+  /// No description provided for @spotterAssisted.
+  ///
+  /// In en, this message translates to:
+  /// **'Spotter Assisted?'**
+  String get spotterAssisted;
+
+  /// No description provided for @markIfHelped.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark if someone helped you'**
+  String get markIfHelped;
+
+  /// No description provided for @dropSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Drop Set?'**
+  String get dropSet;
+
+  /// No description provided for @weightLowered.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight lowered immediately'**
+  String get weightLowered;
+
+  /// No description provided for @completeSet.
+  ///
+  /// In en, this message translates to:
+  /// **'COMPLETE SET'**
+  String get completeSet;
+
+  /// No description provided for @drop.
+  ///
+  /// In en, this message translates to:
+  /// **'DROP'**
+  String get drop;
 }
 
 class _AppLocalizationsDelegate

@@ -14,6 +14,7 @@ import 'settings_screen.dart';
 import 'history_screen.dart';
 import 'profile_screen.dart';
 import 'tools_screen.dart';
+import '../l10n/app_localizations.dart';
 // Note: RoutineEditorScreen import might be needed if we link directly,
 // but RoutinesScreen handles that.
 
@@ -50,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
               if (!provider.hasActiveWorkout) return const SizedBox.shrink();
 
               // Calculate duration string (helper)
-              String durationStr = "In Progress";
+              String durationStr = AppLocalizations.of(context)!.inProgress;
               if (provider.startTime != null) {
                 final diff = DateTime.now().difference(provider.startTime!);
                 durationStr = "${diff.inMinutes}m ${diff.inSeconds % 60}s";
@@ -111,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "Resume Workout",
+                                  AppLocalizations.of(context)!.resumeWorkout,
                                   style: const TextStyle(
                                     color: Color(0xFF39FF14),
                                     fontWeight: FontWeight.bold,
@@ -172,29 +173,29 @@ class _HomeScreenState extends State<HomeScreen> {
             selectedIndex: _currentIndex,
             onDestinationSelected: (index) =>
                 setState(() => _currentIndex = index),
-            destinations: const [
+            destinations: [
               NavigationDestination(
-                icon: Icon(Icons.dashboard_outlined),
-                selectedIcon: Icon(Icons.dashboard, color: Color(0xFF39FF14)),
-                label: 'Home',
+                icon: const Icon(Icons.dashboard_outlined),
+                selectedIcon: const Icon(Icons.dashboard, color: Color(0xFF39FF14)),
+                label: AppLocalizations.of(context)!.home,
               ),
               NavigationDestination(
-                icon: Icon(Icons.fitness_center_outlined),
-                selectedIcon: Icon(
+                icon: const Icon(Icons.fitness_center_outlined),
+                selectedIcon: const Icon(
                   Icons.fitness_center,
                   color: Color(0xFF39FF14),
                 ),
-                label: 'Workout',
+                label: AppLocalizations.of(context)!.workout,
               ),
               NavigationDestination(
-                icon: Icon(Icons.show_chart),
-                selectedIcon: Icon(Icons.show_chart, color: Color(0xFF39FF14)),
-                label: 'Stats',
+                icon: const Icon(Icons.show_chart),
+                selectedIcon: const Icon(Icons.show_chart, color: Color(0xFF39FF14)),
+                label: AppLocalizations.of(context)!.stats,
               ),
               NavigationDestination(
-                icon: Icon(Icons.settings_outlined),
-                selectedIcon: Icon(Icons.settings, color: Color(0xFF39FF14)),
-                label: 'Settings',
+                icon: const Icon(Icons.settings_outlined),
+                selectedIcon: const Icon(Icons.settings, color: Color(0xFF39FF14)),
+                label: AppLocalizations.of(context)!.settings,
               ),
             ],
           ),
@@ -235,20 +236,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const SizedBox(width: 14),
-                  const Column(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Gym Brain",
-                        style: TextStyle(
+                        AppLocalizations.of(context)!.appName,
+                        style: const TextStyle(
                           color: Color(0xFF39FF14),
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
-                        "Tools & Utilities",
-                        style: TextStyle(color: Colors.grey, fontSize: 12),
+                        AppLocalizations.of(context)!.toolsAndUtilities,
+                        style: const TextStyle(color: Colors.grey, fontSize: 12),
                       ),
                     ],
                   ),
@@ -262,7 +263,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _buildDrawerTile(
               context: context,
               icon: Icons.calculate_outlined,
-              label: "1RM Calculator",
+              label: AppLocalizations.of(context)!.oneRmCalculator,
               emoji: "🔢",
               onTap: () {
                 Navigator.pop(context);
@@ -279,7 +280,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _buildDrawerTile(
               context: context,
               icon: Icons.donut_large_outlined,
-              label: "Plate Calculator",
+              label: AppLocalizations.of(context)!.plateCalculator,
               emoji: "💿",
               onTap: () {
                 Navigator.pop(context);
@@ -298,7 +299,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Padding(
               padding: const EdgeInsets.all(20),
               child: Text(
-                "Version 1.0.0",
+                AppLocalizations.of(context)!.version,
                 style: TextStyle(color: Colors.grey[700], fontSize: 12),
               ),
             ),
@@ -354,7 +355,7 @@ class _DashboardView extends StatelessWidget {
         final sessions = db.getSessions();
         final lastSession = sessions.isNotEmpty ? sessions.first : null;
 
-        String lastWorkoutTitle = "No workouts yet";
+        String lastWorkoutTitle = AppLocalizations.of(context)!.noWorkoutsYet;
         String lastWorkoutTime = "--";
 
         if (lastSession != null) {
@@ -404,9 +405,9 @@ class _DashboardView extends StatelessWidget {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                "Gym Brain",
-                                style: TextStyle(
+                              Text(
+                                AppLocalizations.of(context)!.appName,
+                                style: const TextStyle(
                                   color: Colors.grey,
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
@@ -468,7 +469,7 @@ class _DashboardView extends StatelessWidget {
                             );
                           },
                           child: _SummaryCard(
-                            title: 'Last Workout',
+                            title: AppLocalizations.of(context)!.lastWorkout,
                             value: lastWorkoutTitle,
                             subtitle: lastWorkoutTime,
                             icon: Icons.history,
@@ -483,7 +484,7 @@ class _DashboardView extends StatelessWidget {
                             onSwitchTab(2); // Switch to Stats (Index 2)
                           },
                           child: _SummaryCard(
-                            title: 'Current Weight',
+                            title: AppLocalizations.of(context)!.currentWeight,
                             value: weightString,
                             subtitle: lastInBody != null
                                 ? DateFormat('MMM d').format(lastInBody.date)
@@ -529,17 +530,17 @@ class _DashboardView extends StatelessWidget {
                         ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
-                            Icon(
+                          children: [
+                            const Icon(
                               Icons.play_arrow_rounded,
                               size: 60,
                               color: Color(0xFF39FF14),
                             ),
-                            SizedBox(height: 8),
+                            const SizedBox(height: 8),
                             Text(
-                              "START\nWORKOUT",
+                              AppLocalizations.of(context)!.startWorkout,
                               textAlign: TextAlign.center,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w900,
                                 letterSpacing: 1.5,
@@ -559,9 +560,9 @@ class _DashboardView extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        "Saved Routines",
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)!.savedRoutines,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -571,9 +572,9 @@ class _DashboardView extends StatelessWidget {
                         onPressed: () {
                           onSwitchTab(1); // Switch to Workout (Index 1)
                         },
-                        child: const Text(
-                          "See All",
-                          style: TextStyle(color: Color(0xFF39FF14)),
+                        child: Text(
+                          AppLocalizations.of(context)!.seeAll,
+                          style: const TextStyle(color: Color(0xFF39FF14)),
                         ),
                       ),
                     ],
@@ -593,10 +594,10 @@ class _DashboardView extends StatelessWidget {
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(color: Colors.white10),
                           ),
-                          child: const Center(
+                          child: Center(
                             child: Text(
-                              "No routines yet. Create one!",
-                              style: TextStyle(color: Colors.grey),
+                              AppLocalizations.of(context)!.noRoutinesYet,
+                              style: const TextStyle(color: Colors.grey),
                             ),
                           ),
                         );
@@ -635,7 +636,7 @@ class _DashboardView extends StatelessWidget {
                                 ),
                               ),
                               subtitle: Text(
-                                "${routine.exerciseIds.length} Exercises",
+                                "${routine.exerciseIds.length} ${AppLocalizations.of(context)!.exercises}",
                                 style: TextStyle(color: Colors.grey[500]),
                               ),
                               trailing: Container(
@@ -715,11 +716,11 @@ class _DashboardView extends StatelessWidget {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.all(24.0),
+              Padding(
+                padding: const EdgeInsets.all(24.0),
                 child: Text(
-                  "Select Routine",
-                  style: TextStyle(
+                  AppLocalizations.of(context)!.selectRoutine,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -735,7 +736,7 @@ class _DashboardView extends StatelessWidget {
                       return Padding(
                         padding: const EdgeInsets.all(32.0),
                         child: Text(
-                          "No routines found.\nCreate one in the Workout tab!",
+                          AppLocalizations.of(context)!.noRoutinesFound,
                           textAlign: TextAlign.center,
                           style: TextStyle(color: Colors.grey[500]),
                         ),
@@ -762,7 +763,7 @@ class _DashboardView extends StatelessWidget {
                             ),
                           ),
                           subtitle: Text(
-                            "${routine.exerciseIds.length} Exercises",
+                            "${routine.exerciseIds.length} ${AppLocalizations.of(context)!.exercises}",
                             style: TextStyle(color: Colors.grey[400]),
                           ),
                           trailing: const Icon(

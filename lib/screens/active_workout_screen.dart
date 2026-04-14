@@ -10,6 +10,8 @@ import '../utils/timer_config.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:provider/provider.dart';
 import '../providers/active_workout_provider.dart';
+import 'tools_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class ActiveWorkoutScreen extends StatefulWidget {
   final Routine routine;
@@ -338,27 +340,27 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
               context: context,
               builder: (context) => AlertDialog(
                 backgroundColor: const Color(0xFF1C1C1E),
-                title: const Text(
-                  "Workout Active",
-                  style: TextStyle(color: Colors.white),
+                title: Text(
+                  AppLocalizations.of(context)!.workoutActive,
+                  style: const TextStyle(color: Colors.white),
                 ),
-                content: const Text(
-                  "Do you want to minimize the workout (keep running) or end it (discard part)?\nUse 'Finish' button to save.",
-                  style: TextStyle(color: Colors.white70),
+                content: Text(
+                  AppLocalizations.of(context)!.minimizeWorkoutQuery,
+                  style: const TextStyle(color: Colors.white70),
                 ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context, 'minimize'),
-                    child: const Text(
-                      "Minimize",
-                      style: TextStyle(color: Colors.blueAccent),
+                    child: Text(
+                      AppLocalizations.of(context)!.minimize,
+                      style: const TextStyle(color: Colors.blueAccent),
                     ),
                   ),
                   TextButton(
                     onPressed: () => Navigator.pop(context, 'end'),
-                    child: const Text(
-                      "End (Discard)",
-                      style: TextStyle(color: Colors.redAccent),
+                    child: Text(
+                      AppLocalizations.of(context)!.endDiscard,
+                      style: const TextStyle(color: Colors.redAccent),
                     ),
                   ),
                 ],
@@ -419,6 +421,33 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
                   ),
                 ],
               ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.calculate_outlined, color: Colors.white),
+                  onPressed: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (context) {
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            top: MediaQuery.of(context).padding.top + 40,
+                          ),
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF1C1C1E),
+                              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                            ),
+                            clipBehavior: Clip.antiAlias,
+                            child: const ToolsScreen(initialTab: 1),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ],
             ),
             body: Column(
               children: [
@@ -514,7 +543,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
                                       if (isStarted || isComplete) ...[
                                         const SizedBox(height: 4),
                                         Text(
-                                          "Completed: ${todaysSets.length} / ${exercise.targetSets}",
+                                          "${AppLocalizations.of(context)!.completed} ${todaysSets.length} / ${exercise.targetSets}",
                                           style: TextStyle(
                                             fontSize: 12,
                                             color: isComplete
@@ -596,7 +625,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              "Rest: ${_restSecondsRemaining}s",
+                              "${AppLocalizations.of(context)!.restTimeStr} ${_restSecondsRemaining}s",
                               style: const TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.w900,
@@ -633,9 +662,9 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                               ),
-                              child: const Text(
-                                "SKIP",
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                              child: Text(
+                                AppLocalizations.of(context)!.skip,
+                                style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                             ),
                           ],
@@ -681,27 +710,27 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
                     context: context,
                     builder: (context) => AlertDialog(
                       backgroundColor: const Color(0xFF1C1C1E),
-                      title: const Text(
-                        "Finish Workout?",
-                        style: TextStyle(color: Colors.white),
+                      title: Text(
+                        AppLocalizations.of(context)!.finishWorkoutQuest,
+                        style: const TextStyle(color: Colors.white),
                       ),
-                      content: const Text(
-                        "Are you ready to complete this session?",
-                        style: TextStyle(color: Colors.white70),
+                      content: Text(
+                        AppLocalizations.of(context)!.readyToComplete,
+                        style: const TextStyle(color: Colors.white70),
                       ),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context, false),
-                          child: const Text(
-                            "Cancel",
-                            style: TextStyle(color: Colors.grey),
+                          child: Text(
+                            AppLocalizations.of(context)!.cancel,
+                            style: const TextStyle(color: Colors.grey),
                           ),
                         ),
                         TextButton(
                           onPressed: () => Navigator.pop(context, true),
-                          child: const Text(
-                            "Finish",
-                            style: TextStyle(color: Colors.redAccent),
+                          child: Text(
+                            AppLocalizations.of(context)!.finish,
+                            style: const TextStyle(color: Colors.redAccent),
                           ),
                         ),
                       ],
@@ -723,9 +752,9 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
               ),
               elevation: 0,
             ),
-            child: const Text(
-              "FINISH WORKOUT",
-              style: TextStyle(
+            child: Text(
+              AppLocalizations.of(context)!.finishWorkoutTitle,
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.0,
@@ -863,27 +892,30 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
                       child: widget.isLoadingHistory
-                          ? const Text(
-                              "Loading history...",
-                              style: TextStyle(
+                          ? Text(
+                              AppLocalizations.of(context)!.loadingHistory,
+                              style: const TextStyle(
                                 color: Colors.grey,
                                 fontSize: 12,
                               ),
                             )
                           : (widget.lastPerformance != null
                                 ? Text(
-                                    "Last: ${widget.lastPerformance!.weight}${widget.lastPerformance!.unit} x ${widget.lastPerformance!.reps} (${widget.lastPerformance!.rpe})",
+                                    "${AppLocalizations.of(context)!.lastPer} ${widget.lastPerformance!.weight}${widget.lastPerformance!.unit} x ${widget.lastPerformance!.reps} (${widget.lastPerformance!.rpe})",
                                     style: TextStyle(
                                       color: Colors.grey[600],
                                       fontSize: 13,
                                       fontStyle: FontStyle.italic,
                                     ),
                                   )
-                                : TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 13,
-                                    fontStyle: FontStyle.italic,
-                                  ).toText("No history")),
+                                : Text(
+                                    AppLocalizations.of(context)!.noHistory,
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 13,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  )),
                     ),
 
                     // Inputs
@@ -897,7 +929,7 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "WEIGHT",
+                                AppLocalizations.of(context)!.weightLabel,
                                 style: TextStyle(
                                   color: Colors.grey[500],
                                   fontSize: 10,
@@ -979,7 +1011,7 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "REPS",
+                                AppLocalizations.of(context)!.repsLabel,
                                 style: TextStyle(
                                   color: Colors.grey[500],
                                   fontSize: 10,
@@ -1026,7 +1058,7 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "RPE (EFFORT 1-10)",
+                          AppLocalizations.of(context)!.rpeEffort,
                           style: TextStyle(
                             color: Colors.grey[500],
                             fontSize: 10,
@@ -1117,16 +1149,16 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  "Spotter Assisted?",
-                                  style: TextStyle(
+                                Text(
+                                  AppLocalizations.of(context)!.spotterAssisted,
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 13,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
                                 Text(
-                                  "Mark if someone helped you",
+                                  AppLocalizations.of(context)!.markIfHelped,
                                   style: TextStyle(
                                     color: Colors.grey[600],
                                     fontSize: 10,
@@ -1178,9 +1210,9 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text(
-                                  "Drop Set?",
-                                  style: TextStyle(
+                                Text(
+                                  AppLocalizations.of(context)!.dropSet,
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 13,
                                     fontWeight: FontWeight.w500,
@@ -1188,7 +1220,7 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
                                 ),
                                 if (_isDropSet)
                                   Text(
-                                    "Weight lowered immediately",
+                                    AppLocalizations.of(context)!.weightLowered,
                                     style: TextStyle(
                                       color: Colors.amber[200],
                                       fontSize: 10,
@@ -1231,8 +1263,8 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
                           ),
                           elevation: 0,
                         ),
-                        child: const Text(
-                          "COMPLETE SET",
+                        child: Text(
+                          AppLocalizations.of(context)!.completeSet,
                           style: TextStyle(
                             fontWeight: FontWeight.w900,
                             fontSize: 16,
@@ -1303,9 +1335,9 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
                                       ),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
-                                    child: const Text(
-                                      "DROP",
-                                      style: TextStyle(
+                                    child: Text(
+                                      AppLocalizations.of(context)!.drop,
+                                      style: const TextStyle(
                                         color: Colors.amber,
                                         fontSize: 8,
                                         fontWeight: FontWeight.bold,
