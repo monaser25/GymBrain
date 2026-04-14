@@ -66,3 +66,33 @@ Future<bool> checkActiveWorkout(BuildContext context) async {
 
   return shouldProceed ?? false;
 }
+
+String getLocalizedExerciseName(BuildContext context, String englishName) {
+  final lang = Localizations.localeOf(context).languageCode;
+  if (lang != 'ar') return englishName;
+
+  switch (englishName) {
+    case 'Bench Press': return 'بنش برس';
+    case 'Squat': return 'سكوات (قرفصاء)';
+    case 'Deadlift': return 'رفعة مميتة';
+    case 'Overhead Press': return 'ضغط علوي للأكتاف';
+    case 'Pull-Up': return 'عقلة';
+    case 'Barbell Row': return 'تجديف بالبار';
+    case 'Dumbbell Curl': return 'بايسبس دامبلز';
+    case 'Triceps Extension': return 'ترايسبس خلفي';
+    case 'Leg Press': return 'دفع أرجل';
+    case 'Leg Curl': return 'مرجحة أرجل خلفي';
+    case 'Leg Extension': return 'رفرفة أرجل أمامي';
+    case 'Calf Raise': return 'سمانة';
+    case 'Lat Pulldown': return 'سحب ظهر أمامي';
+    case 'Seated Cable Row': return 'تجديف كابل أرضي';
+    case 'Incline Bench Press': return 'بنش برس علوي';
+    case 'Lateral Raise': return 'رفرفة أكتاف جانبي';
+    case 'Face Pull': return 'سحب خلفي بالكروس (Face Pull)';
+    case 'Romanian Deadlift (RDL)': return 'رفعة مميتة رومانية (RDL)';
+    case 'Hip Thrust': return 'دفع حوض (Hip Thrust)';
+    case 'Crunch': return 'طحن معدة';
+    case 'Plank': return 'بلانك';
+    default: return englishName;
+  }
+}

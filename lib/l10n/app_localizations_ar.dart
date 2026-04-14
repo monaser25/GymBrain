@@ -186,4 +186,154 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get progressText => 'التقدم';
+
+  @override
+  String get chartAll => 'الكل';
+
+  @override
+  String get chart1m => '١ شهر';
+
+  @override
+  String get chart3m => '٣ شهور';
+
+  @override
+  String get chart1y => '١ سنة';
+
+  @override
+  String get volume => 'الحجم الكلي';
+
+  @override
+  String get maxWeight => 'أقصى وزن';
+
+  @override
+  String get estimated1RM => '1RM التقديري';
+
+  @override
+  String get bodyWeight => 'وزن الجسم';
+
+  @override
+  String get deleteWorkout => 'حذف التمرين';
+
+  @override
+  String get myProfile => 'ملفي الشخصي';
+
+  @override
+  String get time => 'الوقت';
+
+  @override
+  String get feedback => 'الآراء والمقترحات';
+
+  @override
+  String get dataManagement => 'إدارة البيانات';
+
+  @override
+  String get dangerZone => 'منطقة الخطر';
+
+  @override
+  String get welcomeToGymBrain => 'مرحباً بك في GymBrain';
+
+  @override
+  String get enterYourName => 'أدخل اسمك';
+
+  @override
+  String get getStarted => 'ابدأ الآن';
+
+  @override
+  String get addStarterPack => 'إضافة الحزمة التدريبية';
+
+  @override
+  String get addExerciseBtn => 'إضافة تمرين';
+
+  @override
+  String get timeFeedback => 'تنبيهات الوقت';
+
+  @override
+  String get defaultRestTimer => 'مؤقت الراحة الافتراضي';
+
+  @override
+  String get timerSoundEffect => 'صوت المؤقت';
+
+  @override
+  String get resetTimer => 'إعادة ضبط المؤقت';
+
+  @override
+  String get backgroundAlerts => 'تنبيهات الخلفية';
+
+  @override
+  String get personalInfo => 'المعلومات الشخصية';
+
+  @override
+  String get name => 'الاسم';
+
+  @override
+  String get age => 'العمر';
+
+  @override
+  String get height => 'الطول';
+
+  @override
+  String get gender => 'الجنس';
+
+  @override
+  String get activityLevel => 'مستوى النشاط';
+
+  @override
+  String get bodyStats => 'إحصائيات الجسم';
+
+  @override
+  String get smartMetrics => 'المقاييس الذكية';
+
+  @override
+  String get bodyMassIndex => 'مؤشر كتلة الجسم';
+
+  @override
+  String get dailyCalories => 'السعرات الحرارية اليومية';
+
+  @override
+  String get editNameTitle => 'تعديل الاسم';
+
+  @override
+  String get editAgeTitle => 'تعديل العمر';
+
+  @override
+  String get editHeightTitle => 'تعديل الطول';
+
+  @override
+  String get selectGenderTitle => 'اختر الجنس';
+
+  @override
+  String get male => 'ذكر';
+
+  @override
+  String get female => 'أنثى';
+
+  @override
+  String get activityLevelTitle => 'مستوى النشاط';
+
+  @override
+  String get save => 'حفظ';
+
+  @override
+  String get cancelBtn => 'إلغاء';
+
+  @override
+  String get oneRepMaxCalc => 'حاسبة 1RM';
+
+  @override
+  String get calculate1RM => 'احسب 1RM';
+
+  @override
+  String get liftedWeight => 'الوزن المرفوع';
+
+  @override
+  String get repsPerformed => 'العدات';
+
+  @override
+  String get exerciseNameLabel => 'اسم التمرين';
+
+  @override
+  String get targetSetsLabel => 'مجموعات الهدف';
+
+  @override
+  String get setupNoteOptionalLabel => 'ملاحظات الإعداد (اختياري)';
 }

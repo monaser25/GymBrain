@@ -302,7 +302,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               _FilterButton(
-                                text: "1M",
+                                text: AppLocalizations.of(context)?.chart1m ?? "1M",
                                 isSelected:
                                     _selectedRange == ChartRange.oneMonth,
                                 onTap: () => setState(
@@ -310,7 +310,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                                 ),
                               ),
                               _FilterButton(
-                                text: "3M",
+                                text: AppLocalizations.of(context)?.chart3m ?? "3M",
                                 isSelected:
                                     _selectedRange == ChartRange.threeMonths,
                                 onTap: () => setState(
@@ -318,7 +318,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                                 ),
                               ),
                               _FilterButton(
-                                text: "1Y",
+                                text: AppLocalizations.of(context)?.chart1y ?? "1Y",
                                 isSelected:
                                     _selectedRange == ChartRange.oneYear,
                                 onTap: () => setState(
@@ -326,7 +326,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                                 ),
                               ),
                               _FilterButton(
-                                text: "ALL",
+                                text: AppLocalizations.of(context)?.chartAll ?? "ALL",
                                 isSelected: _selectedRange == ChartRange.all,
                                 onTap: () => setState(
                                   () => _selectedRange = ChartRange.all,
@@ -642,7 +642,8 @@ class _ProgressScreenState extends State<ProgressScreen>
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Column(
+                                  Expanded(
+                                    child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
@@ -656,44 +657,62 @@ class _ProgressScreenState extends State<ProgressScreen>
                                         ),
                                       ),
                                       const SizedBox(height: 4),
-                                      Row(
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Container(
-                                            width: 8,
-                                            height: 8,
-                                            decoration: const BoxDecoration(
-                                              color: Color(0xFF39FF14),
-                                              shape: BoxShape.circle,
-                                            ),
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Container(
+                                                width: 8,
+                                                height: 8,
+                                                decoration: const BoxDecoration(
+                                                  color: Color(0xFF39FF14),
+                                                  shape: BoxShape.circle,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Expanded(
+                                                child: Text(
+                                                  "${record.smm} (${AppLocalizations.of(context)?.smmLabel ?? "SMM"})",
+                                                  style: TextStyle(
+                                                    color: Colors.grey[500],
+                                                    fontSize: 12,
+                                                  ),
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            "${record.smm} (${AppLocalizations.of(context)?.smmLabel ?? "SMM"})",
-                                            style: TextStyle(
-                                              color: Colors.grey[500],
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Container(
-                                            width: 8,
-                                            height: 8,
-                                            decoration: const BoxDecoration(
-                                              color: Colors.orangeAccent,
-                                              shape: BoxShape.circle,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            "${record.pbf}% (${AppLocalizations.of(context)?.pfmLabel ?? "PBF"})",
-                                            style: TextStyle(
-                                              color: Colors.grey[500],
-                                              fontSize: 12,
-                                            ),
+                                          const SizedBox(height: 4),
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Container(
+                                                width: 8,
+                                                height: 8,
+                                                decoration: const BoxDecoration(
+                                                  color: Colors.orangeAccent,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Expanded(
+                                                child: Text(
+                                                  "${record.pbf}% (${AppLocalizations.of(context)?.pfmLabel ?? "PBF"})",
+                                                  style: TextStyle(
+                                                    color: Colors.grey[500],
+                                                    fontSize: 12,
+                                                  ),
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ],
                                       ),
                                     ],
+                                  ),
                                   ),
                                   Row(
                                     children: [
@@ -809,7 +828,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                                 child: Row(
                                   children: [
                                     MetricToggle(
-                                      text: "Max Weight",
+                                      text: AppLocalizations.of(context)?.maxWeight ?? "Max Weight",
                                       isSelected:
                                           _selectedMetric ==
                                           ChartMetric.maxWeight,
@@ -819,7 +838,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                                       ),
                                     ),
                                     MetricToggle(
-                                      text: "Volume",
+                                      text: AppLocalizations.of(context)?.volume ?? "Volume",
                                       isSelected:
                                           _selectedMetric == ChartMetric.volume,
                                       onTap: () => setState(
@@ -848,7 +867,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     _FilterButton(
-                                      text: "1M",
+                                      text: AppLocalizations.of(context)?.chart1m ?? "1M",
                                       isSelected:
                                           _selectedExerciseRange ==
                                           ChartRange.oneMonth,
@@ -858,7 +877,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                                       ),
                                     ),
                                     _FilterButton(
-                                      text: "3M",
+                                      text: AppLocalizations.of(context)?.chart3m ?? "3M",
                                       isSelected:
                                           _selectedExerciseRange ==
                                           ChartRange.threeMonths,
@@ -868,7 +887,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                                       ),
                                     ),
                                     _FilterButton(
-                                      text: "1Y",
+                                      text: AppLocalizations.of(context)?.chart1y ?? "1Y",
                                       isSelected:
                                           _selectedExerciseRange ==
                                           ChartRange.oneYear,
@@ -878,7 +897,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                                       ),
                                     ),
                                     _FilterButton(
-                                      text: "ALL",
+                                      text: AppLocalizations.of(context)?.chartAll ?? "ALL",
                                       isSelected:
                                           _selectedExerciseRange ==
                                           ChartRange.all,
@@ -1551,12 +1570,16 @@ class _StatCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 6),
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: Colors.grey[500],
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: Colors.grey[500],
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
                   ),
                 ),
               ],
@@ -1566,12 +1589,15 @@ class _StatCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.baseline,
               textBaseline: TextBaseline.alphabetic,
               children: [
-                Text(
-                  value,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+                Flexible(
+                  child: Text(
+                    value,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 if (value != "--")
@@ -1597,6 +1623,7 @@ class _StatCard extends StatelessWidget {
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),

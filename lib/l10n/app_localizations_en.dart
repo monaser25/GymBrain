@@ -186,4 +186,154 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get progressText => 'Progress';
+
+  @override
+  String get chartAll => 'All';
+
+  @override
+  String get chart1m => '1m';
+
+  @override
+  String get chart3m => '3m';
+
+  @override
+  String get chart1y => '1y';
+
+  @override
+  String get volume => 'Volume';
+
+  @override
+  String get maxWeight => 'Max Weight';
+
+  @override
+  String get estimated1RM => 'Estimated 1RM';
+
+  @override
+  String get bodyWeight => 'Body Weight';
+
+  @override
+  String get deleteWorkout => 'Delete Workout';
+
+  @override
+  String get myProfile => 'My Profile';
+
+  @override
+  String get time => 'Time';
+
+  @override
+  String get feedback => 'Feedback';
+
+  @override
+  String get dataManagement => 'Data Management';
+
+  @override
+  String get dangerZone => 'Danger Zone';
+
+  @override
+  String get welcomeToGymBrain => 'Welcome to GymBrain';
+
+  @override
+  String get enterYourName => 'Enter your name';
+
+  @override
+  String get getStarted => 'Get Started';
+
+  @override
+  String get addStarterPack => 'Add Starter Pack?';
+
+  @override
+  String get addExerciseBtn => 'Add Exercise';
+
+  @override
+  String get timeFeedback => 'Time Feedback';
+
+  @override
+  String get defaultRestTimer => 'Default Rest Timer';
+
+  @override
+  String get timerSoundEffect => 'Timer Sound Effect';
+
+  @override
+  String get resetTimer => 'Reset Timer';
+
+  @override
+  String get backgroundAlerts => 'Background Alerts';
+
+  @override
+  String get personalInfo => 'PERSONAL INFO';
+
+  @override
+  String get name => 'Name';
+
+  @override
+  String get age => 'Age';
+
+  @override
+  String get height => 'Height';
+
+  @override
+  String get gender => 'Gender';
+
+  @override
+  String get activityLevel => 'Activity Level';
+
+  @override
+  String get bodyStats => 'BODY STATS';
+
+  @override
+  String get smartMetrics => 'SMART METRICS';
+
+  @override
+  String get bodyMassIndex => 'Body Mass Index';
+
+  @override
+  String get dailyCalories => 'Daily Calories (TDEE)';
+
+  @override
+  String get editNameTitle => 'Edit Name';
+
+  @override
+  String get editAgeTitle => 'Edit Age';
+
+  @override
+  String get editHeightTitle => 'Edit Height';
+
+  @override
+  String get selectGenderTitle => 'Select Gender';
+
+  @override
+  String get male => 'Male';
+
+  @override
+  String get female => 'Female';
+
+  @override
+  String get activityLevelTitle => 'Activity Level';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get cancelBtn => 'Cancel';
+
+  @override
+  String get oneRepMaxCalc => 'One Rep Max Calculator';
+
+  @override
+  String get calculate1RM => 'CALCULATE 1RM';
+
+  @override
+  String get liftedWeight => 'LIFTED WEIGHT';
+
+  @override
+  String get repsPerformed => 'REPS PERFORMED';
+
+  @override
+  String get exerciseNameLabel => 'Exercise Name';
+
+  @override
+  String get targetSetsLabel => 'Target Sets';
+
+  @override
+  String get setupNoteOptionalLabel => 'Setup Note (Optional)';
 }

@@ -273,7 +273,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           // Rest Duration Slider
           Text(
-            "Default Rest Timer",
+            AppLocalizations.of(context)?.defaultRestTimer ?? "Default Rest Timer",
             style: TextStyle(
               color: Colors.grey[400],
               fontSize: 14,
@@ -320,8 +320,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           // Sound Toggle
           SwitchListTile(
-            title: const Text(
-              "Timer Sound Effect",
+            title: Text(
+              AppLocalizations.of(context)?.timerSoundEffect ?? "Timer Sound Effect",
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -344,8 +344,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           // Notification Toggle
           SwitchListTile(
-            title: const Text(
-              "Background Alerts",
+            title: Text(
+              AppLocalizations.of(context)?.backgroundAlerts ?? "Background Alerts",
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -368,8 +368,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           // AI Feedback Toggle
           SwitchListTile(
-            title: const Text(
-              "Show Smart Feedback",
+            title: Text(
+              AppLocalizations.of(context)?.timeFeedback ?? "Show Smart Feedback",
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -393,8 +393,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 24),
 
           // DATA MANAGEMENT SECTION
-          const Text(
-            "💾 Data Management",
+          Text(
+            "💾 ${AppLocalizations.of(context)?.dataManagement ?? 'Data Management'}",
             style: TextStyle(
               color: Color(0xFF39FF14),
               fontSize: 18,
@@ -435,10 +435,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 16),
 
           // DANGER ZONE SECTION
-          const ListTile(
+          ListTile(
             contentPadding: EdgeInsets.zero,
             title: Text(
-              "🚨 Danger Zone",
+              "🚨 ${AppLocalizations.of(context)?.dangerZone ?? 'Danger Zone'}",
               style: TextStyle(
                 color: Colors.red,
                 fontSize: 18,
@@ -447,28 +447,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
 
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(
-                Icons.delete_forever,
-                color: Colors.red,
-                size: 24,
-              ),
-            ),
-            title: const Text(
-              "Factory Reset App",
-              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-            ),
-            subtitle: Text(
-              "Wipe all data and restart fresh",
-              style: TextStyle(color: Colors.grey[600]),
-            ),
+          _buildActionButton(
+            icon: Icons.delete_forever,
+            label: "Factory Reset App",
+            description: "Wipe all data and restart fresh",
+            isLoading: false,
+            color: Colors.red,
             onTap: () => _showResetConfirmationDialog(context),
           ),
 

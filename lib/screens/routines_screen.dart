@@ -86,18 +86,22 @@ class RoutinesScreen extends StatelessWidget {
                     children: [
                       IconButton(
                         icon: const Icon(
-                          Icons.edit_outlined,
-                          size: 22,
+                          Icons.play_arrow_rounded,
+                          size: 32,
                           color: Color(0xFF39FF14),
                         ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  RoutineEditorScreen(routineId: routine.id),
-                            ),
-                          );
+                        onPressed: () async {
+                          if (await checkActiveWorkout(context)) {
+                            if (context.mounted) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      ActiveWorkoutScreen(routine: routine),
+                                ),
+                              );
+                            }
+                          }
                         },
                       ),
                       IconButton(
@@ -111,18 +115,14 @@ class RoutinesScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  onTap: () async {
-                    if (await checkActiveWorkout(context)) {
-                      if (context.mounted) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                ActiveWorkoutScreen(routine: routine),
-                          ),
-                        );
-                      }
-                    }
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            RoutineEditorScreen(routineId: routine.id),
+                      ),
+                    );
                   },
                 ),
               );

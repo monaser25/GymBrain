@@ -347,7 +347,8 @@ class _DashboardView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Date Header
-    final dateString = DateFormat('EEEE, MMM d').format(DateTime.now());
+    final locale = Localizations.localeOf(context).languageCode;
+    final dateString = DateFormat.yMMMMEEEEd(locale).format(DateTime.now());
 
     return Consumer<GymDatabase>(
       builder: (context, db, child) {
@@ -366,7 +367,7 @@ class _DashboardView extends StatelessWidget {
         // Fetch Weight
         final lastInBody = db.getLatestInBody();
         final weightString = lastInBody != null
-            ? "${lastInBody.weight} kg"
+            ? "${lastInBody.weight} ${AppLocalizations.of(context)?.kgUnit ?? "kg"}"
             : "--";
 
         return SafeArea(
@@ -481,7 +482,12 @@ class _DashboardView extends StatelessWidget {
                       Expanded(
                         child: GestureDetector(
                           onTap: () {
-                            onSwitchTab(2); // Switch to Stats (Index 2)
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const ProgressScreen(),
+                              ),
+                            );
                           },
                           child: _SummaryCard(
                             title: AppLocalizations.of(context)!.currentWeight,

@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 import '../models/gym_models.dart';
 import '../services/database_service.dart';
 import 'home_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -315,7 +316,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
               // Welcome Title
               Text(
-                'Welcome to',
+                AppLocalizations.of(context)?.welcomeToGymBrain ?? 'Welcome to',
                 style: TextStyle(
                   fontSize: 20,
                   color: Colors.white.withValues(alpha: 0.7),
@@ -355,7 +356,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 textAlign: TextAlign.center,
                 textCapitalization: TextCapitalization.words,
                 decoration: InputDecoration(
-                  hintText: 'Your Name',
+                  hintText: AppLocalizations.of(context)?.enterYourName ?? 'Enter your name',
                   hintStyle: TextStyle(
                     color: Colors.white.withValues(alpha: 0.3),
                   ),
@@ -406,9 +407,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  title: const Text(
-                    'Add Starter Pack?',
-                    style: TextStyle(
+                  title: Text(
+                    AppLocalizations.of(context)?.addStarterPack ?? 'Add Starter Pack?',
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -455,9 +456,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             strokeWidth: 2,
                           ),
                         )
-                      : const Text(
-                          'Get Started',
-                          style: TextStyle(
+                      : Text(
+                          AppLocalizations.of(context)?.getStarted ?? 'Get Started',
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),

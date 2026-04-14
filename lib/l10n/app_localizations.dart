@@ -451,6 +451,306 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Progress'**
   String get progressText;
+
+  /// No description provided for @chartAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get chartAll;
+
+  /// No description provided for @chart1m.
+  ///
+  /// In en, this message translates to:
+  /// **'1m'**
+  String get chart1m;
+
+  /// No description provided for @chart3m.
+  ///
+  /// In en, this message translates to:
+  /// **'3m'**
+  String get chart3m;
+
+  /// No description provided for @chart1y.
+  ///
+  /// In en, this message translates to:
+  /// **'1y'**
+  String get chart1y;
+
+  /// No description provided for @volume.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume'**
+  String get volume;
+
+  /// No description provided for @maxWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Max Weight'**
+  String get maxWeight;
+
+  /// No description provided for @estimated1RM.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimated 1RM'**
+  String get estimated1RM;
+
+  /// No description provided for @bodyWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Body Weight'**
+  String get bodyWeight;
+
+  /// No description provided for @deleteWorkout.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Workout'**
+  String get deleteWorkout;
+
+  /// No description provided for @myProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'My Profile'**
+  String get myProfile;
+
+  /// No description provided for @time.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get time;
+
+  /// No description provided for @feedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback'**
+  String get feedback;
+
+  /// No description provided for @dataManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Management'**
+  String get dataManagement;
+
+  /// No description provided for @dangerZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Danger Zone'**
+  String get dangerZone;
+
+  /// No description provided for @welcomeToGymBrain.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to GymBrain'**
+  String get welcomeToGymBrain;
+
+  /// No description provided for @enterYourName.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your name'**
+  String get enterYourName;
+
+  /// No description provided for @getStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get getStarted;
+
+  /// No description provided for @addStarterPack.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Starter Pack?'**
+  String get addStarterPack;
+
+  /// No description provided for @addExerciseBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Exercise'**
+  String get addExerciseBtn;
+
+  /// No description provided for @timeFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Time Feedback'**
+  String get timeFeedback;
+
+  /// No description provided for @defaultRestTimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Default Rest Timer'**
+  String get defaultRestTimer;
+
+  /// No description provided for @timerSoundEffect.
+  ///
+  /// In en, this message translates to:
+  /// **'Timer Sound Effect'**
+  String get timerSoundEffect;
+
+  /// No description provided for @resetTimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Timer'**
+  String get resetTimer;
+
+  /// No description provided for @backgroundAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Background Alerts'**
+  String get backgroundAlerts;
+
+  /// No description provided for @personalInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'PERSONAL INFO'**
+  String get personalInfo;
+
+  /// No description provided for @name.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get name;
+
+  /// No description provided for @age.
+  ///
+  /// In en, this message translates to:
+  /// **'Age'**
+  String get age;
+
+  /// No description provided for @height.
+  ///
+  /// In en, this message translates to:
+  /// **'Height'**
+  String get height;
+
+  /// No description provided for @gender.
+  ///
+  /// In en, this message translates to:
+  /// **'Gender'**
+  String get gender;
+
+  /// No description provided for @activityLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity Level'**
+  String get activityLevel;
+
+  /// No description provided for @bodyStats.
+  ///
+  /// In en, this message translates to:
+  /// **'BODY STATS'**
+  String get bodyStats;
+
+  /// No description provided for @smartMetrics.
+  ///
+  /// In en, this message translates to:
+  /// **'SMART METRICS'**
+  String get smartMetrics;
+
+  /// No description provided for @bodyMassIndex.
+  ///
+  /// In en, this message translates to:
+  /// **'Body Mass Index'**
+  String get bodyMassIndex;
+
+  /// No description provided for @dailyCalories.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Calories (TDEE)'**
+  String get dailyCalories;
+
+  /// No description provided for @editNameTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Name'**
+  String get editNameTitle;
+
+  /// No description provided for @editAgeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Age'**
+  String get editAgeTitle;
+
+  /// No description provided for @editHeightTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Height'**
+  String get editHeightTitle;
+
+  /// No description provided for @selectGenderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Gender'**
+  String get selectGenderTitle;
+
+  /// No description provided for @male.
+  ///
+  /// In en, this message translates to:
+  /// **'Male'**
+  String get male;
+
+  /// No description provided for @female.
+  ///
+  /// In en, this message translates to:
+  /// **'Female'**
+  String get female;
+
+  /// No description provided for @activityLevelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity Level'**
+  String get activityLevelTitle;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @cancelBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancelBtn;
+
+  /// No description provided for @oneRepMaxCalc.
+  ///
+  /// In en, this message translates to:
+  /// **'One Rep Max Calculator'**
+  String get oneRepMaxCalc;
+
+  /// No description provided for @calculate1RM.
+  ///
+  /// In en, this message translates to:
+  /// **'CALCULATE 1RM'**
+  String get calculate1RM;
+
+  /// No description provided for @liftedWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'LIFTED WEIGHT'**
+  String get liftedWeight;
+
+  /// No description provided for @repsPerformed.
+  ///
+  /// In en, this message translates to:
+  /// **'REPS PERFORMED'**
+  String get repsPerformed;
+
+  /// No description provided for @exerciseNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Exercise Name'**
+  String get exerciseNameLabel;
+
+  /// No description provided for @targetSetsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Target Sets'**
+  String get targetSetsLabel;
+
+  /// No description provided for @setupNoteOptionalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Setup Note (Optional)'**
+  String get setupNoteOptionalLabel;
 }
 
 class _AppLocalizationsDelegate

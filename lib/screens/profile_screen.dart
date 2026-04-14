@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/database_service.dart';
+import '../l10n/app_localizations.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -101,9 +102,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text(
-          "My Profile",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        title: Text(
+          AppLocalizations.of(context)?.myProfile ?? "My Profile",
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -123,9 +124,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 32),
 
             // PERSONAL INFO SECTION
-            const Text(
-              "PERSONAL INFO",
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context)?.personalInfo ?? "PERSONAL INFO",
+              style: const TextStyle(
                 color: Colors.grey,
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
@@ -136,19 +137,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             _buildInfoTile(
               icon: Icons.person_outline,
-              label: "Name",
+              label: AppLocalizations.of(context)?.name ?? "Name",
               value: _userName ?? "Tap to set",
               onTap: () => _editName(),
             ),
             _buildInfoTile(
               icon: Icons.cake_outlined,
-              label: "Age",
+              label: AppLocalizations.of(context)?.age ?? "Age",
               value: _userAge != null ? "$_userAge years" : "Tap to set",
               onTap: () => _editAge(),
             ),
             _buildInfoTile(
               icon: Icons.height,
-              label: "Height",
+              label: AppLocalizations.of(context)?.height ?? "Height",
               value: _userHeightCm != null
                   ? "${_userHeightCm!.toStringAsFixed(1)} cm"
                   : "Tap to set",
@@ -156,13 +157,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             _buildInfoTile(
               icon: Icons.wc_outlined,
-              label: "Gender",
+              label: AppLocalizations.of(context)?.gender ?? "Gender",
               value: _userGender ?? "Tap to set",
               onTap: () => _editGender(),
             ),
             _buildInfoTile(
               icon: Icons.directions_run,
-              label: "Activity Level",
+              label: AppLocalizations.of(context)?.activityLevel ?? "Activity Level",
               value: _activityLevel != null
                   ? activityLevels[_activityLevel] ?? "Custom"
                   : "Tap to set",
@@ -172,9 +173,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 32),
 
             // BODY STATS (READ-ONLY, SYNCED)
-            const Text(
-              "BODY STATS",
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context)?.bodyStats ?? "BODY STATS",
+              style: const TextStyle(
                 color: Colors.grey,
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
@@ -185,7 +186,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             _buildInfoTile(
               icon: Icons.monitor_weight_outlined,
-              label: "Current Weight",
+              label: AppLocalizations.of(context)?.currentWeight ?? "Current Weight",
               value: _currentWeight != null
                   ? "${_currentWeight!.toStringAsFixed(1)} kg"
                   : "Add in Stats tab",
@@ -248,9 +249,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           size: 20,
                         ),
                         const SizedBox(width: 8),
-                        const Text(
-                          "Body Mass Index",
-                          style: TextStyle(color: Colors.grey, fontSize: 12),
+                        Text(
+                          AppLocalizations.of(context)?.bodyMassIndex ?? "Body Mass Index",
+                          style: const TextStyle(color: Colors.grey, fontSize: 12),
                         ),
                       ],
                     ),
@@ -326,9 +327,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           size: 20,
                         ),
                         const SizedBox(width: 8),
-                        const Text(
-                          "Daily Calories (TDEE)",
-                          style: TextStyle(color: Colors.grey, fontSize: 12),
+                        Text(
+                          AppLocalizations.of(context)?.dailyCalories ?? "Daily Calories (TDEE)",
+                          style: const TextStyle(color: Colors.grey, fontSize: 12),
                         ),
                       ],
                     ),
@@ -454,7 +455,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1C1C1E),
-        title: const Text("Edit Name", style: TextStyle(color: Colors.white)),
+        title: Text(AppLocalizations.of(context)?.editNameTitle ?? "Edit Name", style: const TextStyle(color: Colors.white)),
         content: TextField(
           controller: controller,
           autofocus: true,
@@ -501,7 +502,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1C1C1E),
-        title: const Text("Edit Age", style: TextStyle(color: Colors.white)),
+        title: Text(AppLocalizations.of(context)?.editAgeTitle ?? "Edit Age", style: const TextStyle(color: Colors.white)),
         content: TextField(
           controller: controller,
           autofocus: true,
@@ -552,7 +553,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1C1C1E),
-        title: const Text("Edit Height", style: TextStyle(color: Colors.white)),
+        title: Text(AppLocalizations.of(context)?.editHeightTitle ?? "Edit Height", style: const TextStyle(color: Colors.white)),
         content: TextField(
           controller: controller,
           autofocus: true,
@@ -601,13 +602,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1C1C1E),
-        title: const Text(
-          "Select Gender",
+        title: Text(
+          AppLocalizations.of(context)?.selectGenderTitle ?? "Select Gender",
           style: TextStyle(color: Colors.white),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: ['Male', 'Female'].map((gender) {
+          children: [
+            AppLocalizations.of(context)?.male ?? 'Male',
+            AppLocalizations.of(context)?.female ?? 'Female'
+          ].map((gender) {
             final isSelected = _userGender == gender;
             return GestureDetector(
               onTap: () {
@@ -631,7 +635,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Row(
                   children: [
                     Icon(
-                      gender == 'Male' ? Icons.male : Icons.female,
+                      gender == (AppLocalizations.of(context)?.male ?? 'Male') ? Icons.male : Icons.female,
                       color: isSelected ? const Color(0xFF39FF14) : Colors.grey,
                     ),
                     const SizedBox(width: 12),
@@ -664,8 +668,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1C1C1E),
-        title: const Text(
-          "Activity Level",
+        title: Text(
+          AppLocalizations.of(context)?.activityLevelTitle ?? "Activity Level",
           style: TextStyle(color: Colors.white),
         ),
         content: SingleChildScrollView(

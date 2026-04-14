@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/database_service.dart';
+import '../l10n/app_localizations.dart';
 
 class ToolsScreen extends StatefulWidget {
   final int initialTab;
@@ -411,11 +412,11 @@ class _ToolsScreenState extends State<ToolsScreen>
             fontWeight: FontWeight.bold,
             fontSize: 14,
           ),
-          tabs: const [
-            Tab(icon: Icon(Icons.calculate_outlined), text: "1RM Calculator"),
+          tabs: [
+            Tab(icon: const Icon(Icons.calculate_outlined), text: AppLocalizations.of(context)?.oneRepMaxCalc ?? "1RM Calculator"),
             Tab(
-              icon: Icon(Icons.donut_large_outlined),
-              text: "Plate Calculator",
+              icon: const Icon(Icons.donut_large_outlined),
+              text: AppLocalizations.of(context)?.plateCalculator ?? "Plate Calculator",
             ),
           ],
         ),
@@ -454,9 +455,9 @@ class _ToolsScreenState extends State<ToolsScreen>
                   size: 40,
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  "One Rep Max Calculator",
-                  style: TextStyle(
+                Text(
+                  AppLocalizations.of(context)?.oneRepMaxCalc ?? "One Rep Max Calculator",
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -599,7 +600,7 @@ class _ToolsScreenState extends State<ToolsScreen>
               Expanded(
                 child: _buildInputField(
                   controller: _weightController,
-                  label: "LIFTED WEIGHT",
+                  label: AppLocalizations.of(context)?.liftedWeight ?? "LIFTED WEIGHT",
                   hint: "0",
                   suffix: _inputUnit,
                   onSuffixTap: () {
@@ -613,7 +614,7 @@ class _ToolsScreenState extends State<ToolsScreen>
               Expanded(
                 child: _buildInputField(
                   controller: _repsController,
-                  label: "REPS PERFORMED",
+                  label: AppLocalizations.of(context)?.repsPerformed ?? "REPS PERFORMED",
                   hint: "0",
                   suffix: "reps",
                   isInteger: true,
@@ -637,9 +638,9 @@ class _ToolsScreenState extends State<ToolsScreen>
                 ),
                 elevation: 0,
               ),
-              child: const Text(
-                "CALCULATE 1RM",
-                style: TextStyle(
+              child: Text(
+                AppLocalizations.of(context)?.calculate1RM ?? "CALCULATE 1RM",
+                style: const TextStyle(
                   fontWeight: FontWeight.w900,
                   fontSize: 16,
                   letterSpacing: 1.0,

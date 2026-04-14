@@ -3,6 +3,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../models/gym_models.dart';
 import '../services/database_service.dart';
+import '../l10n/app_localizations.dart';
+import '../utils/workout_helper.dart';
 
 class RoutineEditorScreen extends StatefulWidget {
   final String routineId;
@@ -57,7 +59,7 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
                     setState(() {});
                   }
                 }),
-            label: const Text("Add Exercise"),
+            label: Text(AppLocalizations.of(context)?.addExerciseBtn ?? "Add Exercise"),
             icon: const Icon(Icons.add),
             backgroundColor: const Color(0xFF39FF14),
             foregroundColor: Colors.black,
@@ -123,7 +125,7 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
               ),
             ),
             title: Text(
-              exercise.name,
+              getLocalizedExerciseName(context, exercise.name),
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
@@ -278,7 +280,7 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
     // State Variables (local to closure, but we need them in setState)
     // We will update these inside the StatefulBuilder
     int selectedTabIndex = 0;
-    String? selectedLibraryName;
+    Set<String> selectedLibraryNames = {};
 
     return showDialog<bool>(
       context: context,
@@ -376,8 +378,8 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
                                   TextField(
                                     controller: nameController,
                                     style: const TextStyle(color: Colors.white),
-                                    decoration: const InputDecoration(
-                                      labelText: "Exercise Name",
+                                    decoration: InputDecoration(
+                                      labelText: AppLocalizations.of(context)?.exerciseNameLabel ?? "Exercise Name",
                                       hintText: "e.g. Incline Bench Press",
                                       labelStyle: TextStyle(color: Colors.grey),
                                       enabledBorder: UnderlineInputBorder(
@@ -398,8 +400,8 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
                                     controller: targetSetsController,
                                     style: const TextStyle(color: Colors.white),
                                     keyboardType: TextInputType.number,
-                                    decoration: const InputDecoration(
-                                      labelText: "Target Sets",
+                                    decoration: InputDecoration(
+                                      labelText: AppLocalizations.of(context)?.targetSetsLabel ?? "Target Sets",
                                       hintText: "3",
                                       labelStyle: TextStyle(color: Colors.grey),
                                       enabledBorder: UnderlineInputBorder(
@@ -421,8 +423,8 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
                                     maxLines: null,
                                     keyboardType: TextInputType.multiline,
                                     textInputAction: TextInputAction.newline,
-                                    decoration: const InputDecoration(
-                                      labelText: "Setup Note (Optional)",
+                                    decoration: InputDecoration(
+                                      labelText: AppLocalizations.of(context)?.setupNoteOptionalLabel ?? "Setup Note (Optional)",
                                       hintText:
                                           "e.g. Seat 4, Pin 3\nGrip width: medium",
                                       labelStyle: TextStyle(color: Colors.grey),
@@ -455,32 +457,45 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
                                       color: Colors.white10,
                                     ),
                                     itemBuilder: (context, index) {
-                                      final name = libraryNames[index];
-                                      final isSelected =
-                                          selectedLibraryName == name;
+                                      final rawName = libraryNames[index];
+                                      final localizedName = getLocalizedExerciseName(context, rawName);
+                                      
+                                      final existingId = _db.findExerciseIdByName(rawName);
+                                      final isAlreadyInRoutine = existingId != null && routine.exerciseIds.contains(existingId);
+                                      
+                                      final isSelected = selectedLibraryNames.contains(rawName);
+                                      
                                       return ListTile(
                                         title: Text(
-                                          name,
+                                          localizedName,
                                           style: TextStyle(
-                                            color: isSelected
-                                                ? const Color(0xFF39FF14)
-                                                : Colors.white,
-                                            fontWeight: isSelected
+                                            color: isAlreadyInRoutine 
+                                                ? Colors.grey[700] 
+                                                : (isSelected ? const Color(0xFF39FF14) : Colors.white),
+                                            fontWeight: isSelected || isAlreadyInRoutine
                                                 ? FontWeight.bold
                                                 : FontWeight.normal,
                                           ),
                                         ),
-                                        trailing: isSelected
-                                            ? const Icon(
-                                                Icons.check,
-                                                color: Color(0xFF39FF14),
-                                              )
-                                            : null,
-                                        onTap: () {
-                                          setDialogState(() {
-                                            selectedLibraryName = name;
-                                          });
-                                        },
+                                        trailing: isAlreadyInRoutine
+                                            ? Text("Added ✓", style: TextStyle(color: Colors.grey[600], fontSize: 12))
+                                            : (isSelected
+                                                ? const Icon(
+                                                    Icons.check,
+                                                    color: Color(0xFF39FF14),
+                                                  )
+                                                : null),
+                                        onTap: isAlreadyInRoutine 
+                                            ? null 
+                                            : () {
+                                                setDialogState(() {
+                                                  if (isSelected) {
+                                                    selectedLibraryNames.remove(rawName);
+                                                  } else {
+                                                    selectedLibraryNames.add(rawName);
+                                                  }
+                                                });
+                                              },
                                       );
                                     },
                                   )),
@@ -500,35 +515,53 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
                         const SizedBox(width: 8),
                         ElevatedButton(
                           onPressed: () async {
+                            if (!isEditing && selectedTabIndex == 1) {
+                              // LIBRARY TAB (Multi-select)
+                              if (selectedLibraryNames.isEmpty) return;
+                              
+                              for (final name in selectedLibraryNames) {
+                                final existingId = _db.findExerciseIdByName(name);
+                                if (existingId != null) {
+                                  if (!routine.exerciseIds.contains(existingId)) {
+                                    routine.exerciseIds.add(existingId);
+                                  }
+                                }
+                              }
+                              await routine.save();
+                              
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text("Added ${selectedLibraryNames.length} exercises!"),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                                Navigator.pop(context, true);
+                              }
+                              return;
+                            }
+
+                            // NEW / EDIT TAB
                             String finalName = "";
                             int finalTargetSets = 3;
                             String? finalSetup;
 
-                            if (!isEditing && selectedTabIndex == 1) {
-                              // LIBRARY TAB
-                              if (selectedLibraryName == null) {
-                                return;
-                              }
-                              finalName = selectedLibraryName!;
-                            } else {
-                              // NEW / EDIT TAB
-                              if (!isEditing &&
-                                  nameController.text.trim().isEmpty) {
-                                return; // Validation
-                              }
-
-                              finalName = nameController.text.trim();
-                              if (finalName.isEmpty) {
-                                finalName = "Exercise";
-                              }
-
-                              finalTargetSets =
-                                  int.tryParse(targetSetsController.text) ?? 3;
-                              finalSetup =
-                                  setupController.text.trim().isNotEmpty
-                                  ? setupController.text.trim()
-                                  : null;
+                            if (!isEditing &&
+                                nameController.text.trim().isEmpty) {
+                              return; // Validation
                             }
+
+                            finalName = nameController.text.trim();
+                            if (finalName.isEmpty) {
+                              finalName = "Exercise";
+                            }
+
+                            finalTargetSets =
+                                int.tryParse(targetSetsController.text) ?? 3;
+                            finalSetup =
+                                setupController.text.trim().isNotEmpty
+                                ? setupController.text.trim()
+                                : null;
 
                             if (isEditing) {
                               // EDIT - existingExercise is guaranteed non-null here
@@ -541,7 +574,7 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
                               );
                               await _db.saveExercise(updatedExercise);
                             } else {
-                              // ADD / LINK
+                              // ADD NEW EXERCISE
                               final existingId = _db.findExerciseIdByName(
                                 finalName,
                               );
@@ -571,7 +604,6 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
                                       ),
                                     );
                                   }
-                                  // We can close or stay. Let's close.
                                 }
                               } else {
                                 final newExercise = Exercise(
@@ -592,7 +624,11 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
                             backgroundColor: const Color(0xFF39FF14),
                             foregroundColor: Colors.black,
                           ),
-                          child: Text(isEditing ? "Save" : "Add"),
+                          child: Text(isEditing 
+                              ? "Save" 
+                              : (selectedTabIndex == 1 && selectedLibraryNames.isNotEmpty
+                                  ? "Add (${selectedLibraryNames.length})"
+                                  : "Add")),
                         ),
                       ],
                     ),

@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import '../models/gym_models.dart';
 import '../services/database_service.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/workout_helper.dart';
 
 class ExerciseLibraryScreen extends StatefulWidget {
   const ExerciseLibraryScreen({super.key});
@@ -135,7 +136,7 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
                         ),
                       ),
                       title: Text(
-                        exercise.name,
+                        getLocalizedExerciseName(context, exercise.name),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
