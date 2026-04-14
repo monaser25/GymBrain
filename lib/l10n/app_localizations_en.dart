@@ -159,4 +159,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get drop => 'DROP';
+
+  @override
+  String get statistics => 'Statistics';
+
+  @override
+  String get kgUnit => 'kg';
+
+  @override
+  String get lbUnit => 'lb';
+
+  @override
+  String get exerciseLibrary => 'Exercise Library';
+
+  @override
+  String get weightName => 'Weight';
+
+  @override
+  String get smmLabel => 'Skeletal Muscle Mass (SMM)';
+
+  @override
+  String get pfmLabel => 'Percent Body Fat (PFM)';
+
+  @override
+  String get historyText => 'History';
+
+  @override
+  String get progressText => 'Progress';
 }

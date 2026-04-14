@@ -159,4 +159,31 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get drop => 'دروب';
+
+  @override
+  String get statistics => 'الإحصائيات';
+
+  @override
+  String get kgUnit => 'كجم';
+
+  @override
+  String get lbUnit => 'باوند';
+
+  @override
+  String get exerciseLibrary => 'مكتبة التمارين';
+
+  @override
+  String get weightName => 'الوزن';
+
+  @override
+  String get smmLabel => 'الكتلة العضلية (SMM)';
+
+  @override
+  String get pfmLabel => 'نسبة الدهون (PFM)';
+
+  @override
+  String get historyText => 'السجل';
+
+  @override
+  String get progressText => 'التقدم';
 }

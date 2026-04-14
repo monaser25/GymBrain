@@ -440,7 +440,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
                               borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                             ),
                             clipBehavior: Clip.antiAlias,
-                            child: const ToolsScreen(initialTab: 1),
+                            child: const ToolsScreen(initialTab: 0),
                           ),
                         );
                       },

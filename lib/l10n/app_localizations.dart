@@ -397,6 +397,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'DROP'**
   String get drop;
+
+  /// No description provided for @statistics.
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics'**
+  String get statistics;
+
+  /// No description provided for @kgUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'kg'**
+  String get kgUnit;
+
+  /// No description provided for @lbUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'lb'**
+  String get lbUnit;
+
+  /// No description provided for @exerciseLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Exercise Library'**
+  String get exerciseLibrary;
+
+  /// No description provided for @weightName.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get weightName;
+
+  /// No description provided for @smmLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Skeletal Muscle Mass (SMM)'**
+  String get smmLabel;
+
+  /// No description provided for @pfmLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Percent Body Fat (PFM)'**
+  String get pfmLabel;
+
+  /// No description provided for @historyText.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get historyText;
+
+  /// No description provided for @progressText.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress'**
+  String get progressText;
 }
 
 class _AppLocalizationsDelegate

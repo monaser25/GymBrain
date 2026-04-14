@@ -144,9 +144,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text(
-          "Settings",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        title: Text(
+          AppLocalizations.of(context)?.settings ?? "Settings",
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -244,7 +244,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             subtitle: Text(
-              "Current: ${_defaultIsKg ? 'KG (Kilograms)' : 'LB (Pounds)'}",
+              "Current: ${_defaultIsKg ? (AppLocalizations.of(context)?.kgUnit ?? 'KG').toUpperCase() : (AppLocalizations.of(context)?.lbUnit ?? 'LB').toUpperCase()}",
               style: TextStyle(color: Colors.grey[600]),
             ),
             value: _defaultIsKg,

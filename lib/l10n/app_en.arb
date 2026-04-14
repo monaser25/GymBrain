@@ -67,5 +67,14 @@
   "dropSet": "Drop Set?",
   "weightLowered": "Weight lowered immediately",
   "completeSet": "COMPLETE SET",
-  "drop": "DROP"
+  "drop": "DROP",
+  "statistics": "Statistics",
+  "kgUnit": "kg",
+  "lbUnit": "lb",
+  "exerciseLibrary": "Exercise Library",
+  "weightName": "Weight",
+  "smmLabel": "Skeletal Muscle Mass (SMM)",
+  "pfmLabel": "Percent Body Fat (PFM)",
+  "historyText": "History",
+  "progressText": "Progress"
 }

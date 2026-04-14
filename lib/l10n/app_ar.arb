@@ -49,5 +49,14 @@
   "dropSet": "دروب سيت؟",
   "weightLowered": "خفض الوزن مباشرة",
   "completeSet": "إكمال المجموعة",
-  "drop": "دروب"
+  "drop": "دروب",
+  "statistics": "الإحصائيات",
+  "kgUnit": "كجم",
+  "lbUnit": "باوند",
+  "exerciseLibrary": "مكتبة التمارين",
+  "weightName": "الوزن",
+  "smmLabel": "الكتلة العضلية (SMM)",
+  "pfmLabel": "نسبة الدهون (PFM)",
+  "historyText": "السجل",
+  "progressText": "التقدم"
 }

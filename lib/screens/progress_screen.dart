@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../models/gym_models.dart';
 import '../services/database_service.dart';
 import '../widgets/metric_toggle.dart';
+import '../l10n/app_localizations.dart';
 
 class ProgressScreen extends StatefulWidget {
   const ProgressScreen({super.key});
@@ -158,9 +159,9 @@ class _ProgressScreenState extends State<ProgressScreen>
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text(
-          "Progress",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        title: Text(
+          AppLocalizations.of(context)?.progressText ?? "Progress",
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         automaticallyImplyLeading: false,
         backgroundColor: Colors.transparent,
@@ -204,9 +205,9 @@ class _ProgressScreenState extends State<ProgressScreen>
                         children: [
                           Expanded(
                             child: _StatCard(
-                              label: "WEIGHT",
+                              label: AppLocalizations.of(context)!.weightName.toUpperCase(),
                               value: current?.weight.toString() ?? "--",
-                              unit: "kg",
+                              unit: AppLocalizations.of(context)?.kgUnit ?? "kg",
                               change: _calculateChange(
                                 current?.weight,
                                 previous?.weight,
@@ -227,9 +228,9 @@ class _ProgressScreenState extends State<ProgressScreen>
                           const SizedBox(width: 12),
                           Expanded(
                             child: _StatCard(
-                              label: "SMM",
+                              label: AppLocalizations.of(context)?.smmLabel ?? "SMM",
                               value: current?.smm.toString() ?? "--",
-                              unit: "kg",
+                              unit: AppLocalizations.of(context)?.kgUnit ?? "kg",
                               change: _calculateChange(
                                 current?.smm,
                                 previous?.smm,
@@ -257,7 +258,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                           const SizedBox(width: 12),
                           Expanded(
                             child: _StatCard(
-                              label: "PBF",
+                              label: AppLocalizations.of(context)?.pfmLabel ?? "PBF",
                               value: current?.pbf.toString() ?? "--",
                               unit: "%",
                               change: _calculateChange(
@@ -559,9 +560,9 @@ class _ProgressScreenState extends State<ProgressScreen>
                       const SizedBox(height: 32),
 
                       // 4. History Header
-                      const Text(
-                        "History",
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)?.historyText ?? "History",
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -667,7 +668,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                                           ),
                                           const SizedBox(width: 4),
                                           Text(
-                                            "${record.smm} (SMM)",
+                                            "${record.smm} (${AppLocalizations.of(context)?.smmLabel ?? "SMM"})",
                                             style: TextStyle(
                                               color: Colors.grey[500],
                                               fontSize: 12,
@@ -684,7 +685,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                                           ),
                                           const SizedBox(width: 4),
                                           Text(
-                                            "${record.pbf}% (PBF)",
+                                            "${record.pbf}% (${AppLocalizations.of(context)?.pfmLabel ?? "PBF"})",
                                             style: TextStyle(
                                               color: Colors.grey[500],
                                               fontSize: 12,
@@ -697,7 +698,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                                   Row(
                                     children: [
                                       Text(
-                                        "${record.weight} kg",
+                                        "${record.weight} ${AppLocalizations.of(context)?.kgUnit ?? "kg"}",
                                         style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 16,
