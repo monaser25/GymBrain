@@ -54,6 +54,15 @@ class GymDatabase extends ChangeNotifier {
   Box get settingsBox => _settingsBox;
 
   // Settings
+  String get languageCode =>
+      _settingsBox.get('language_code', defaultValue: 'en');
+  Future<void> setLanguageCode(String code) async {
+    await _settingsBox.put('language_code', code);
+    notifyListeners();
+  }
+
+  bool get hasLanguageSet => _settingsBox.containsKey('language_code');
+
   int get defaultRestSeconds =>
       _settingsBox.get('default_rest_seconds', defaultValue: 90);
   Future<void> setDefaultRestSeconds(int seconds) async =>

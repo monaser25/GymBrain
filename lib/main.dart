@@ -8,6 +8,9 @@ import 'package:provider/provider.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'providers/active_workout_provider.dart';
 
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'l10n/app_localizations.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -39,30 +42,45 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider.value(value: GymDatabase()),
         ChangeNotifierProvider(create: (_) => ActiveWorkoutProvider()),
       ],
-      child: MaterialApp(
-        title: 'Gym Brain',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          brightness: Brightness.dark,
-          scaffoldBackgroundColor: Colors.black,
-          primaryColor: const Color(0xFF39FF14), // Neon Green
-          cardColor: const Color(0xFF1E1E1E),
-          colorScheme: const ColorScheme.dark(
-            primary: Color(0xFF39FF14),
-            secondary: Colors.purpleAccent,
-            surface: Color(0xFF1E1E1E),
-          ),
-          // Cairo font for beautiful Arabic + English support
-          textTheme: GoogleFonts.cairoTextTheme(
-            ThemeData.dark().textTheme,
-          ).apply(bodyColor: Colors.white, displayColor: Colors.white),
-          useMaterial3: true,
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Colors.transparent,
-            systemOverlayStyle: SystemUiOverlayStyle.light,
-          ),
-        ),
-        home: const SplashScreen(),
+      child: Consumer<GymDatabase>(
+        builder: (context, db, child) {
+          return MaterialApp(
+            title: 'Gym Brain',
+            debugShowCheckedModeBanner: false,
+            localizationsDelegates: [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('en'), // English
+              Locale('ar'), // Arabic
+            ],
+            locale: Locale(db.languageCode), // Dynamic Locale
+            theme: ThemeData(
+              brightness: Brightness.dark,
+              scaffoldBackgroundColor: Colors.black,
+              primaryColor: const Color(0xFF39FF14), // Neon Green
+              cardColor: const Color(0xFF1E1E1E),
+              colorScheme: const ColorScheme.dark(
+                primary: Color(0xFF39FF14),
+                secondary: Colors.purpleAccent,
+                surface: Color(0xFF1E1E1E),
+              ),
+              // Cairo font for beautiful Arabic + English support
+              textTheme: GoogleFonts.cairoTextTheme(
+                ThemeData.dark().textTheme,
+              ).apply(bodyColor: Colors.white, displayColor: Colors.white),
+              useMaterial3: true,
+              appBarTheme: const AppBarTheme(
+                backgroundColor: Colors.transparent,
+                systemOverlayStyle: SystemUiOverlayStyle.light,
+              ),
+            ),
+            home: const SplashScreen(),
+          );
+        },
       ),
     );
   }

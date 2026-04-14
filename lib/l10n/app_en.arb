@@ -1,0 +1,27 @@
+{
+  "@@locale": "en",
+  "appName": "GYM BRAIN",
+  "@appName": {
+    "description": "The name of the application"
+  },
+  "language": "Language",
+  "@language": {
+    "description": "Label for language selection"
+  },
+  "english": "English",
+  "@english": {
+    "description": "English language name"
+  },
+  "arabic": "العربية",
+  "@arabic": {
+    "description": "Arabic language name"
+  },
+  "selectLanguage": "Select Language",
+  "@selectLanguage": {
+    "description": "Title for language selection screen"
+  },
+  "continueBtn": "Continue",
+  "@continueBtn": {
+    "description": "Continue button label"
+  }
+}

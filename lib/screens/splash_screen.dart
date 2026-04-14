@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/database_service.dart';
 import 'home_screen.dart';
+import 'language_selection_screen.dart';
 import 'onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -66,12 +67,18 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _navigateToNextScreen() {
+    final hasLanguageSet = GymDatabase().hasLanguageSet;
     final isFirstTime = GymDatabase().settingsBox.get(
       'is_first_time',
       defaultValue: true,
     );
 
-    if (isFirstTime == true) {
+    if (!hasLanguageSet) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LanguageSelectionScreen()),
+      );
+    } else if (isFirstTime == true) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const OnboardingScreen()),

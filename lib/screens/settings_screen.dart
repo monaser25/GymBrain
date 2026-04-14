@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../models/gym_models.dart';
 import '../services/database_service.dart';
 import '../services/backup_service.dart';
+import '../l10n/app_localizations.dart';
 import 'onboarding_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -21,6 +22,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late bool _notificationsEnabled;
   late bool _aiFeedbackEnabled;
   late bool _defaultIsKg;
+  late String _languageCode;
 
   bool _isBackingUp = false;
   bool _isRestoring = false;
@@ -32,7 +34,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _soundEnabled = _db.enableSound;
     _notificationsEnabled = _db.enableNotifications;
     _aiFeedbackEnabled = _db.enableAiFeedback;
+    _aiFeedbackEnabled = _db.enableAiFeedback;
     _defaultIsKg = _db.defaultIsKg;
+    _languageCode = _db.languageCode;
   }
 
   String _formatDuration(int seconds) {
@@ -152,14 +156,82 @@ class _SettingsScreenState extends State<SettingsScreen> {
         padding: const EdgeInsets.all(20.0),
         children: [
           // GENERAL SECTION
-          const Text(
-            "⚙️ General",
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context)?.language ?? "⚙️ General",
+            style: const TextStyle(
               color: Color(0xFF39FF14),
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
+          const SizedBox(height: 24),
+
+          // Custom Language Dropdown Selector
+          Row(
+            children: [
+              const Icon(Icons.language, color: Colors.white, size: 28),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context)?.language ?? "Language",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "App localization",
+                      style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E1E1E),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _languageCode,
+                    dropdownColor: const Color(0xFF1E1E1E),
+                    icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF39FF14)),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'en',
+                        child: Text("English"),
+                      ),
+                      DropdownMenuItem(
+                        value: 'ar',
+                        child: Text("العربية (Arabic)"),
+                      ),
+                    ],
+                    onChanged: (String? newValue) {
+                      if (newValue != null && newValue != _languageCode) {
+                        setState(() {
+                          _languageCode = newValue;
+                        });
+                        _db.setLanguageCode(newValue);
+                      }
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+          
           const SizedBox(height: 24),
 
           // Default Weight Unit Toggle
