@@ -943,6 +943,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Warm-up'**
   String get effortWarmup;
+
+  /// No description provided for @yearsOld.
+  ///
+  /// In en, this message translates to:
+  /// **'years'**
+  String get yearsOld;
+
+  /// No description provided for @restFinishedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest Finished! 🔔'**
+  String get restFinishedTitle;
+
+  /// No description provided for @timeToCrush.
+  ///
+  /// In en, this message translates to:
+  /// **'Time to crush your next set of'**
+  String get timeToCrush;
 }
 
 class _AppLocalizationsDelegate

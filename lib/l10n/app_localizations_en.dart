@@ -435,4 +435,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get effortWarmup => 'Warm-up';
+
+  @override
+  String get yearsOld => 'years';
+
+  @override
+  String get restFinishedTitle => 'Rest Finished! 🔔';
+
+  @override
+  String get timeToCrush => 'Time to crush your next set of';
 }

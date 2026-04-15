@@ -435,4 +435,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get effortWarmup => 'إحماء';
+
+  @override
+  String get yearsOld => 'سنة';
+
+  @override
+  String get restFinishedTitle => 'انتهت فترة الراحة! 🔔';
+
+  @override
+  String get timeToCrush => 'حان الوقت لمجموعتك القادمة من';
 }

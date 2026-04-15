@@ -159,5 +159,8 @@
   "effortHeavy": "Heavy",
   "effortHypertrophy": "Hypertrophy",
   "effortEndurance": "Strength-Endurance",
-  "effortWarmup": "Warm-up"
+  "effortWarmup": "Warm-up",
+  "yearsOld": "years",
+  "restFinishedTitle": "Rest Finished! 🔔",
+  "timeToCrush": "Time to crush your next set of"
 }
