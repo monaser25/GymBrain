@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/database_service.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/arabic_number_normalizer.dart';
 import 'progress_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -581,7 +582,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: GestureDetector(
                           onTap: () {
                             if (!isCm) {
-                              final val = double.tryParse(controller.text);
+                              final val = parseLocalizedDouble(controller.text);
                               if (val != null) controller.text = (val * 2.54).toStringAsFixed(1);
                             }
                             setStateDialog(() => isCm = true);
@@ -608,7 +609,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: GestureDetector(
                           onTap: () {
                             if (isCm) {
-                              final val = double.tryParse(controller.text);
+                              final val = parseLocalizedDouble(controller.text);
                               if (val != null) controller.text = (val / 2.54).toStringAsFixed(1);
                             }
                             setStateDialog(() => isCm = false);
@@ -663,7 +664,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  final val = double.tryParse(controller.text);
+                  final val = parseLocalizedDouble(controller.text);
                   if (val != null) {
                     // Always store in cm
                     final heightCm = isCm ? val : val * 2.54;

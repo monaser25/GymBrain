@@ -5,6 +5,7 @@ import '../models/gym_models.dart';
 import '../services/database_service.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/workout_helper.dart';
+import '../utils/arabic_number_normalizer.dart';
 
 class ExerciseLibraryScreen extends StatefulWidget {
   const ExerciseLibraryScreen({super.key});
@@ -325,7 +326,7 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
                 final newExercise = Exercise(
                   id: const Uuid().v4(),
                   name: name,
-                  targetSets: int.tryParse(setsController.text) ?? 3,
+                  targetSets: parseLocalizedInt(setsController.text) ?? 3,
                   setupNote: noteController.text.trim().isNotEmpty
                       ? noteController.text.trim()
                       : null,

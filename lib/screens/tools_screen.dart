@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/database_service.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/arabic_number_normalizer.dart';
 
 class ToolsScreen extends StatefulWidget {
   final int initialTab;
@@ -109,8 +110,8 @@ class _ToolsScreenState extends State<ToolsScreen>
 
   // Epley Formula: 1RM = Weight * (1 + Reps / 30)
   void _calculateOneRepMax() {
-    final weight = double.tryParse(_weightController.text);
-    final reps = int.tryParse(_repsController.text);
+    final weight = parseLocalizedDouble(_weightController.text);
+    final reps = parseLocalizedInt(_repsController.text);
 
     if (weight != null && weight > 0 && reps != null && reps > 0) {
       setState(() {
@@ -153,7 +154,7 @@ class _ToolsScreenState extends State<ToolsScreen>
 
   // Plate Calculator Logic
   void _calculatePlates(BuildContext context) {
-    final targetWeight = double.tryParse(_targetWeightController.text);
+    final targetWeight = parseLocalizedDouble(_targetWeightController.text);
 
     if (targetWeight == null || targetWeight <= _barWeight) {
       setState(() {

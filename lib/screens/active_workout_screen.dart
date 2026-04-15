@@ -7,6 +7,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:vibration/vibration.dart';
 import 'package:flutter/services.dart';
 import '../utils/timer_config.dart';
+import '../utils/duration_formatter.dart';
+import '../utils/arabic_number_normalizer.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:provider/provider.dart';
 import '../providers/active_workout_provider.dart';
@@ -36,15 +38,11 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
   Map<String, ExerciseSet?> _historyCache = {};
   bool _isLoadingHistory = true;
 
-  // Rest Timer State
-  Timer? _restTimer;
-  int _restSecondsRemaining = 0;
-  bool _isResting = false;
-  DateTime? _restEndTime;
-  DateTime? _timerEndTime;
-
   // Exercise Cache
   List<Exercise> _exercises = [];
+
+  // Track rest completion for sound/vibration feedback
+  bool _wasResting = false;
 
   @override
   void initState() {
@@ -55,12 +53,26 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
     // Initialize Provider State
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = context.read<ActiveWorkoutProvider>();
+
+      // Listen for rest completion to play sound/vibration feedback
+      _wasResting = provider.isResting;
+      provider.addListener(_onProviderChanged);
+
       if (provider.currentRoutine?.id == widget.routine.id) {
         // Resuming: Use provider data
       } else {
         // New Workout
         provider.startWorkout(widget.routine);
       }
+
+      // Fix zero-flicker: compute elapsed time immediately before first tick
+      if (provider.startTime != null) {
+        final elapsed = DateTime.now().difference(provider.startTime!);
+        setState(() {
+          _elapsedString = _formatDuration(elapsed);
+        });
+      }
+
       _startStopwatch();
       _loadExercisesAndHistory();
 
@@ -72,6 +84,20 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
 
     // Enable wakelock to keep screen on during workout
     WakelockPlus.enable();
+  }
+
+  /// Detects rest completion in the provider and plays sound/vibration feedback.
+  void _onProviderChanged() {
+    if (!mounted) return;
+    final provider = context.read<ActiveWorkoutProvider>();
+    if (_wasResting && !provider.isResting) {
+      // Rest just completed — play feedback
+      if (_db.enableSound) {
+        Vibration.vibrate();
+        SystemSound.play(SystemSoundType.click);
+      }
+    }
+    _wasResting = provider.isResting;
   }
 
   Future<void> _requestAndroidExactAlarmPermission() async {
@@ -87,25 +113,8 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused) {
-      if (_isResting) {
-        _timerEndTime = DateTime.now().add(
-          Duration(seconds: _restSecondsRemaining),
-        );
-      }
-    } else if (state == AppLifecycleState.resumed) {
-      if (_isResting && _timerEndTime != null) {
-        final remaining = _timerEndTime!.difference(DateTime.now()).inSeconds;
-        if (remaining > 0) {
-          setState(() {
-            _restSecondsRemaining = remaining;
-          });
-          NotificationService().cancelAll();
-        } else {
-          _skipRest();
-        }
-      }
-    }
+    // Rest timer lifecycle is now handled by ActiveWorkoutProvider.
+    // This observer is kept for potential future screen-level lifecycle needs.
   }
 
   // Removed _checkActiveSession as it is handled by Provider initialization
@@ -115,8 +124,8 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
       if (mounted) {
         final provider = context.read<ActiveWorkoutProvider>();
         if (provider.startTime != null) {
+          final elapsed = DateTime.now().difference(provider.startTime!);
           setState(() {
-            final elapsed = DateTime.now().difference(provider.startTime!);
             _elapsedString = _formatDuration(elapsed);
           });
         }
@@ -147,13 +156,13 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
 
   @override
   void dispose() {
+    // Remove provider listener
+    try {
+      context.read<ActiveWorkoutProvider>().removeListener(_onProviderChanged);
+    } catch (_) {}
     WidgetsBinding.instance.removeObserver(this);
     _stopwatchTimer?.cancel();
-    _restTimer?.cancel();
     _stopwatch.stop();
-    NotificationService().cancelNotification(
-      0,
-    ); // Cancel timer notification on dispose
     _scrollController.dispose();
     // Disable wakelock when leaving workout screen
     WakelockPlus.disable();
@@ -161,81 +170,34 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
   }
 
   String _formatDuration(Duration d) {
-    String twoDigits(int n) => n.toString().padLeft(2, "0");
-    String twoDigitMinutes = twoDigits(d.inMinutes.remainder(60));
-    String twoDigitSeconds = twoDigits(d.inSeconds.remainder(60));
-    if (d.inHours > 0) {
-      return "${twoDigits(d.inHours)}:$twoDigitMinutes:$twoDigitSeconds";
-    }
-    return "$twoDigitMinutes:$twoDigitSeconds";
+    final locale = Localizations.localeOf(context).languageCode;
+    return formatLocalizedDuration(d, locale);
   }
 
   // --- Rest Timer Logic ---
-  // Uses timestamp-based calculation to survive iOS background throttling
+  // All rest timer state is now managed by ActiveWorkoutProvider.
+  // These methods are thin wrappers that also handle notifications.
   void _startRestTimer([int? duration]) {
-    _restTimer?.cancel();
     final targetSeconds = duration ?? _db.defaultRestSeconds;
-
-    // Calculate the target end time using timestamp delta approach
-    _restEndTime = DateTime.now().add(Duration(seconds: targetSeconds));
-
-    setState(() {
-      _isResting = true;
-      _restSecondsRemaining = targetSeconds;
-    });
-
+    final provider = context.read<ActiveWorkoutProvider>();
+    provider.startRest(targetSeconds);
     _scheduleNotification(targetSeconds);
-
-    _restTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
-
-      // Calculate remaining time from timestamp delta (not tick counting!)
-      // This fixes iOS timer freeze when phone locks
-      final remaining = _restEndTime!.difference(DateTime.now()).inSeconds;
-
-      setState(() {
-        if (remaining > 0) {
-          _restSecondsRemaining = remaining;
-        } else {
-          _restSecondsRemaining = 0;
-          _isResting = false;
-          _restEndTime = null;
-          timer.cancel();
-          // Sound & Vibration Feedback
-          if (_db.enableSound) {
-            Vibration.vibrate();
-            SystemSound.play(SystemSoundType.click);
-          }
-        }
-      });
-    });
+    _scheduleRestOverNotification(targetSeconds);
   }
 
   void _skipRest() {
-    _restTimer?.cancel();
-    _restEndTime = null;
-    NotificationService().cancelNotification(0);
-    setState(() {
-      _isResting = false;
-    });
+    context.read<ActiveWorkoutProvider>().skipRest();
   }
 
   void _add30Seconds() {
-    // Extend the end time by 30 seconds
-    if (_restEndTime != null) {
-      _restEndTime = _restEndTime!.add(const Duration(seconds: 30));
-      setState(() {
-        _restSecondsRemaining = _restEndTime!
-            .difference(DateTime.now())
-            .inSeconds;
-      });
-      // Reschedule notification
-      NotificationService().cancelNotification(0);
-      _scheduleNotification(_restSecondsRemaining);
-    }
+    final provider = context.read<ActiveWorkoutProvider>();
+    provider.add30Seconds();
+    // Reschedule notifications with the new remaining time
+    final remaining = provider.restSecondsRemaining;
+    NotificationService().cancelNotification(0);
+    NotificationService().cancelRestNotification();
+    _scheduleNotification(remaining);
+    _scheduleRestOverNotification(remaining);
   }
 
   void _scrollToIndex(int index) {
@@ -298,7 +260,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
       );
     } catch (e) {
       Future.delayed(Duration(seconds: seconds), () async {
-        if (!mounted || !_isResting) return;
+        if (!mounted || !context.read<ActiveWorkoutProvider>().isResting) return;
 
         final String titleStr = AppLocalizations.of(context)?.restFinishedTitle ?? "Rest Finished! 🔔";
         final String bodyBase = AppLocalizations.of(context)?.timeToCrush ?? "Time to crush your next set of";
@@ -329,6 +291,24 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
   }
 
   // _saveProgress removed (handled by provider)
+
+  /// Schedule a rest-over push notification for background use.
+  void _scheduleRestOverNotification(int seconds) {
+    if (!_db.enableNotifications) return;
+
+    final locale = Localizations.localeOf(context).languageCode;
+    final title = locale == 'ar' ? 'جيم برين ⏱️' : 'GymBrain ⏱️';
+    final body = locale == 'ar'
+        ? 'وقت الاستراحة انتهى! يلا نكمل 💪'
+        : 'Rest is over! Let\'s get back to work 💪';
+
+    NotificationService().scheduleRestOverNotification(
+      title: title,
+      body: body,
+      seconds: seconds,
+      playSound: _db.enableSound,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -615,7 +595,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (_isResting)
+                    if (provider.isResting)
                       Container(
                         width: double.infinity,
                         color: const Color(0xFF39FF14),
@@ -633,7 +613,7 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              "${AppLocalizations.of(context)!.restTimeStr} ${_restSecondsRemaining}s",
+                              "${AppLocalizations.of(context)!.restTimeStr} ${provider.restSecondsRemaining}s",
                               style: const TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.w900,
@@ -1549,8 +1529,8 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
   }
 
   void _submitSet() {
-    final weight = double.tryParse(_weightController.text);
-    final reps = int.tryParse(_repsController.text);
+    final weight = parseLocalizedDouble(_weightController.text);
+    final reps = parseLocalizedInt(_repsController.text);
 
     if (weight != null && reps != null) {
       // Map rpeValue to string for legacy compatibility
@@ -1876,8 +1856,8 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
               ),
             ),
             onPressed: () {
-              final newWeight = double.tryParse(weightCtrl.text) ?? set.weight;
-              final newReps = int.tryParse(repsCtrl.text) ?? set.reps;
+              final newWeight = parseLocalizedDouble(weightCtrl.text) ?? set.weight;
+              final newReps = parseLocalizedInt(repsCtrl.text) ?? set.reps;
 
               String legacyRpe;
               if (rpe <= 6) {

@@ -162,4 +162,48 @@ class NotificationService {
   Future<void> cancelReminderNotification() async {
     await flutterLocalNotificationsPlugin.cancel(id: _reminderId);
   }
+
+  // === Rest-Over Notification ===
+  static const int _restOverId = 100;
+
+  /// Schedules a notification to fire after [seconds] to tell the user rest is over.
+  /// Uses the locale-aware body provided by the caller.
+  Future<void> scheduleRestOverNotification({
+    required String title,
+    required String body,
+    required int seconds,
+    required bool playSound,
+  }) async {
+    final String channelId = playSound ? 'gym_brain_sound' : 'gym_brain_silent';
+
+    await flutterLocalNotificationsPlugin.zonedSchedule(
+      id: _restOverId,
+      title: title,
+      body: body,
+      scheduledDate: tz.TZDateTime.now(
+        tz.local,
+      ).add(Duration(seconds: seconds)),
+      notificationDetails: NotificationDetails(
+        android: AndroidNotificationDetails(
+          channelId,
+          playSound ? 'Timer (Sound)' : 'Timer (Silent)',
+          channelDescription: 'Rest timer notifications',
+          importance: playSound ? Importance.max : Importance.high,
+          priority: Priority.high,
+          ticker: 'ticker',
+          playSound: playSound,
+          icon: '@drawable/ic_notification',
+          vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
+        ),
+        iOS: DarwinNotificationDetails(presentSound: playSound),
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    );
+  }
+
+  /// Cancels a previously scheduled rest-over notification.
+  /// MUST be called when the user skips rest or rest completes while app is active.
+  Future<void> cancelRestNotification() async {
+    await flutterLocalNotificationsPlugin.cancel(id: _restOverId);
+  }
 }

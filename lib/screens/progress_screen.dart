@@ -5,6 +5,7 @@ import '../models/gym_models.dart';
 import '../services/database_service.dart';
 import '../widgets/metric_toggle.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/arabic_number_normalizer.dart';
 
 class ProgressScreen extends StatefulWidget {
   const ProgressScreen({super.key});
@@ -1428,8 +1429,8 @@ class _ProgressScreenState extends State<ProgressScreen>
                           onTap: () {
                             if (!isEntryKg) {
                               // Convert current LB values to KG for display
-                              final w = double.tryParse(weightCtrl.text);
-                              final s = double.tryParse(smmCtrl.text);
+                              final w = parseLocalizedDouble(weightCtrl.text);
+                              final s = parseLocalizedDouble(smmCtrl.text);
                               if (w != null) weightCtrl.text = (w * 0.453592).toStringAsFixed(1);
                               if (s != null) smmCtrl.text = (s * 0.453592).toStringAsFixed(1);
                             }
@@ -1461,8 +1462,8 @@ class _ProgressScreenState extends State<ProgressScreen>
                           onTap: () {
                             if (isEntryKg) {
                               // Convert current KG values to LB for display
-                              final w = double.tryParse(weightCtrl.text);
-                              final s = double.tryParse(smmCtrl.text);
+                              final w = parseLocalizedDouble(weightCtrl.text);
+                              final s = parseLocalizedDouble(smmCtrl.text);
                               if (w != null) weightCtrl.text = (w * 2.20462).toStringAsFixed(1);
                               if (s != null) smmCtrl.text = (s * 2.20462).toStringAsFixed(1);
                             }
@@ -1512,11 +1513,11 @@ class _ProgressScreenState extends State<ProgressScreen>
               ),
               ElevatedButton(
                 onPressed: () async {
-                  final w = double.tryParse(weightCtrl.text);
+                  final w = parseLocalizedDouble(weightCtrl.text);
                   if (w != null) {
                     // SMM and PBF are optional — default to 0
-                    final s = double.tryParse(smmCtrl.text) ?? 0;
-                    final p = double.tryParse(pbfCtrl.text) ?? 0;
+                    final s = parseLocalizedDouble(smmCtrl.text) ?? 0;
+                    final p = parseLocalizedDouble(pbfCtrl.text) ?? 0;
                     // Convert to KG if entered in LB (always store in KG)
                     final weightKg = isEntryKg ? w : w * 0.453592;
                     final smmKg = s == 0 ? 0.0 : (isEntryKg ? s : s * 0.453592);
@@ -1661,8 +1662,8 @@ class _StatCard extends StatelessWidget {
           color: const Color(0xFF1C1C1E),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? color : color.withValues(alpha: 0.1),
-            width: isSelected ? 2 : 1,
+            color: isSelected ? color : Colors.transparent,
+            width: 2,
           ),
           boxShadow: isSelected
               ? [
@@ -1689,15 +1690,19 @@ class _StatCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 Expanded(
-                  child: Text(
-                    label,
-                    style: TextStyle(
-                      color: Colors.grey[500],
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: AlignmentDirectional.centerStart,
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        color: Colors.grey[500],
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 2,
                   ),
                 ),
               ],

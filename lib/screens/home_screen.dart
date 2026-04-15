@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/live_timer_text.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 import '../models/gym_models.dart';
@@ -51,13 +52,6 @@ class _HomeScreenState extends State<HomeScreen> {
             builder: (context, provider, child) {
               if (!provider.hasActiveWorkout) return const SizedBox.shrink();
 
-              // Calculate duration string (helper)
-              String durationStr = AppLocalizations.of(context)!.inProgress;
-              if (provider.startTime != null) {
-                final diff = DateTime.now().difference(provider.startTime!);
-                durationStr = "${diff.inMinutes}m ${diff.inSeconds % 60}s";
-              }
-
               return Positioned(
                 bottom: 16,
                 left: 16,
@@ -98,38 +92,65 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: [
-                            const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                color: Color(0xFF39FF14),
+                        Expanded(
+                          child: Row(
+                            children: [
+                              const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: Color(0xFF39FF14),
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  AppLocalizations.of(context)!.resumeWorkout,
-                                  style: const TextStyle(
-                                    color: Color(0xFF39FF14),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      AppLocalizations.of(context)!.resumeWorkout,
+                                      style: const TextStyle(
+                                        color: Color(0xFF39FF14),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    Row(
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            '${provider.currentRoutine?.name ?? 'Unknown'} • ',
+                                            style: TextStyle(
+                                              color: Colors.grey[400],
+                                              fontSize: 12,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        if (provider.startTime != null)
+                                          LiveTimerText(
+                                            startTime: provider.startTime!,
+                                            style: TextStyle(
+                                              color: Colors.grey[400],
+                                              fontSize: 12,
+                                            ),
+                                          )
+                                        else
+                                          Text(
+                                            AppLocalizations.of(context)!.inProgress,
+                                            style: TextStyle(
+                                              color: Colors.grey[400],
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
-                                Text(
-                                  "${provider.currentRoutine?.name ?? 'Unknown'} • $durationStr",
-                                  style: TextStyle(
-                                    color: Colors.grey[400],
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                              ),
+                            ],
+                          ),
                         ),
                         const Icon(
                           Icons.arrow_forward,
@@ -463,54 +484,53 @@ class _DashboardView extends StatelessWidget {
                   const SizedBox(height: 32),
 
                   // 2. Data Cards
-                  Row(
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            // Use full path or need import. I'll add import in next step or assume user's compilation.
-                            // I will add the import at top of file in a separate call if needed, but I can't do two ranges.
-                            // I will assume the user wants me to fix navigation.
-                            // I'll use a dynamic route or just the class name and fix import later.
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const HistoryScreen(),
-                              ),
-                            );
-                          },
-                          child: _SummaryCard(
-                            title: AppLocalizations.of(context)!.lastWorkout,
-                            value: lastWorkoutTitle,
-                            subtitle: lastWorkoutTime,
-                            icon: Icons.history,
-                            color: const Color(0xFF39FF14), // Neon Green
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const HistoryScreen(),
+                                ),
+                              );
+                            },
+                            child: _SummaryCard(
+                              title: AppLocalizations.of(context)!.lastWorkout,
+                              value: lastWorkoutTitle,
+                              subtitle: lastWorkoutTime,
+                              icon: Icons.history,
+                              color: const Color(0xFF39FF14), // Neon Green
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const ProgressScreen(),
-                              ),
-                            );
-                          },
-                          child: _SummaryCard(
-                            title: AppLocalizations.of(context)!.currentWeight,
-                            value: weightString,
-                            subtitle: lastInBody != null
-                                ? DateFormat.MMMd(locale).format(lastInBody.date)
-                                : "",
-                            icon: Icons.monitor_weight_outlined,
-                            color: Colors.white,
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const ProgressScreen(),
+                                ),
+                              );
+                            },
+                            child: _SummaryCard(
+                              title: AppLocalizations.of(context)!.currentWeight,
+                              value: weightString,
+                              subtitle: lastInBody != null
+                                  ? DateFormat.MMMd(locale).format(lastInBody.date)
+                                  : "",
+                              icon: Icons.monitor_weight_outlined,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
 
                   const SizedBox(height: 50),

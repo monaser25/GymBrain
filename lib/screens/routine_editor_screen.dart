@@ -5,6 +5,7 @@ import '../models/gym_models.dart';
 import '../services/database_service.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/workout_helper.dart';
+import '../utils/arabic_number_normalizer.dart';
 
 class RoutineEditorScreen extends StatefulWidget {
   final String routineId;
@@ -557,7 +558,7 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
                             }
 
                             finalTargetSets =
-                                int.tryParse(targetSetsController.text) ?? 3;
+                                parseLocalizedInt(targetSetsController.text) ?? 3;
                             finalSetup =
                                 setupController.text.trim().isNotEmpty
                                 ? setupController.text.trim()

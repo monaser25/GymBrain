@@ -1,10 +1,12 @@
-import 'package:flutter/foundation.dart';
+import 'dart:async';
+import 'package:flutter/widgets.dart';
 import '../models/gym_models.dart';
 import '../services/database_service.dart';
 import '../services/notification_service.dart';
 import 'package:uuid/uuid.dart';
 
-class ActiveWorkoutProvider extends ChangeNotifier {
+class ActiveWorkoutProvider extends ChangeNotifier
+    with WidgetsBindingObserver {
   final _db = GymDatabase();
 
   Routine? _currentRoutine;
@@ -12,15 +14,58 @@ class ActiveWorkoutProvider extends ChangeNotifier {
   DateTime? _startTime;
   int _focusedIndex = 0;
 
+  // === Rest Timer State (lives in provider so it survives widget disposal) ===
+  Timer? _restTimer;
+  int _restSecondsRemaining = 0;
+  bool _isResting = false;
+  DateTime? _restEndTime;
+
   Routine? get currentRoutine => _currentRoutine;
   List<ExerciseSet> get completedSets => _completedSets;
   DateTime? get startTime => _startTime;
   int get focusedIndex => _focusedIndex;
 
+  // Rest Timer Getters
+  bool get isResting => _isResting;
+  int get restSecondsRemaining => _restSecondsRemaining;
+  DateTime? get restEndTime => _restEndTime;
+
   bool get hasActiveWorkout => _currentRoutine != null;
 
   ActiveWorkoutProvider() {
+    WidgetsBinding.instance.addObserver(this);
     _checkActiveSession();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _restTimer?.cancel();
+    super.dispose();
+  }
+
+  // === App Lifecycle: Recover rest timer on resume ===
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      if (_isResting && _restEndTime != null) {
+        final remaining = _restEndTime!.difference(DateTime.now());
+        if (remaining.isNegative) {
+          // Rest finished while in background — auto-complete
+          _restTimer?.cancel();
+          _isResting = false;
+          _restSecondsRemaining = 0;
+          _restEndTime = null;
+          notifyListeners();
+        } else {
+          // Rest is still ongoing — sync remaining time & restart tick
+          _restSecondsRemaining = remaining.inSeconds;
+          NotificationService().cancelRestNotification();
+          _startRestTimerTick();
+          notifyListeners();
+        }
+      }
+    }
   }
 
   Future<void> _checkActiveSession() async {
@@ -107,8 +152,75 @@ class ActiveWorkoutProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // === Rest Timer Methods ===
+
+  /// Starts a rest timer for the given duration (in seconds).
+  /// Called by the active workout screen after each set.
+  void startRest(int seconds) {
+    _restTimer?.cancel();
+    _restEndTime = DateTime.now().add(Duration(seconds: seconds));
+    _isResting = true;
+    _restSecondsRemaining = seconds;
+    _startRestTimerTick();
+    notifyListeners();
+  }
+
+  /// Internal: starts (or restarts) the periodic UI tick.
+  /// Uses _restEndTime as the single source of truth.
+  void _startRestTimerTick() {
+    _restTimer?.cancel();
+    _restTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_restEndTime == null) {
+        timer.cancel();
+        return;
+      }
+      final remaining = _restEndTime!.difference(DateTime.now()).inSeconds;
+      if (remaining > 0) {
+        _restSecondsRemaining = remaining;
+        notifyListeners();
+      } else {
+        timer.cancel();
+        completeRest();
+      }
+    });
+  }
+
+  /// Called when rest finishes naturally (timer reached zero).
+  /// Also callable from outside (screen) to trigger completion feedback.
+  void completeRest() {
+    _restTimer?.cancel();
+    _isResting = false;
+    _restSecondsRemaining = 0;
+    _restEndTime = null;
+    NotificationService().cancelRestNotification();
+    notifyListeners();
+  }
+
+  /// Skips the rest timer immediately.
+  void skipRest() {
+    _restTimer?.cancel();
+    _isResting = false;
+    _restSecondsRemaining = 0;
+    _restEndTime = null;
+    NotificationService().cancelNotification(0);
+    NotificationService().cancelRestNotification();
+    notifyListeners();
+  }
+
+  /// Adds 30 seconds to the current rest timer.
+  void add30Seconds() {
+    if (_restEndTime != null) {
+      _restEndTime = _restEndTime!.add(const Duration(seconds: 30));
+      _restSecondsRemaining = _restEndTime!.difference(DateTime.now()).inSeconds;
+      notifyListeners();
+    }
+  }
+
   Future<void> finishWorkout() async {
     if (_startTime == null || _currentRoutine == null) return;
+
+    // Clean up rest timer
+    skipRest();
 
     final session = WorkoutSession(
       id: const Uuid().v4(),
@@ -141,6 +253,7 @@ class ActiveWorkoutProvider extends ChangeNotifier {
   }
 
   Future<void> clearData() async {
+    skipRest();
     await _db.clearActiveSession();
     _currentRoutine = null;
     _completedSets = [];
@@ -160,3 +273,4 @@ class ActiveWorkoutProvider extends ChangeNotifier {
     }
   }
 }
+
