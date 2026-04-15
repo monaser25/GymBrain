@@ -853,6 +853,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add New Exercise'**
   String get addNewExerciseTitle;
+
+  /// No description provided for @trend.
+  ///
+  /// In en, this message translates to:
+  /// **'Trend'**
+  String get trend;
+
+  /// No description provided for @exerciseProgram.
+  ///
+  /// In en, this message translates to:
+  /// **'Exercise'**
+  String get exerciseProgram;
+
+  /// No description provided for @addLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get addLabel;
+
+  /// No description provided for @newLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get newLabel;
+
+  /// No description provided for @libraryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Library'**
+  String get libraryLabel;
+
+  /// No description provided for @setupLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Setup'**
+  String get setupLabel;
+
+  /// No description provided for @targetLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Target'**
+  String get targetLabel;
+
+  /// No description provided for @kgLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'kg'**
+  String get kgLabel;
+
+  /// No description provided for @lbLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'lb'**
+  String get lbLabel;
+
+  /// No description provided for @effortMax.
+  ///
+  /// In en, this message translates to:
+  /// **'Max Effort'**
+  String get effortMax;
+
+  /// No description provided for @effortNearMax.
+  ///
+  /// In en, this message translates to:
+  /// **'Near Max'**
+  String get effortNearMax;
+
+  /// No description provided for @effortHeavy.
+  ///
+  /// In en, this message translates to:
+  /// **'Heavy'**
+  String get effortHeavy;
+
+  /// No description provided for @effortHypertrophy.
+  ///
+  /// In en, this message translates to:
+  /// **'Hypertrophy'**
+  String get effortHypertrophy;
+
+  /// No description provided for @effortEndurance.
+  ///
+  /// In en, this message translates to:
+  /// **'Strength-Endurance'**
+  String get effortEndurance;
+
+  /// No description provided for @effortWarmup.
+  ///
+  /// In en, this message translates to:
+  /// **'Warm-up'**
+  String get effortWarmup;
 }
 
 class _AppLocalizationsDelegate

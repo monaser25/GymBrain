@@ -390,4 +390,49 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addNewExerciseTitle => 'Add New Exercise';
+
+  @override
+  String get trend => 'Trend';
+
+  @override
+  String get exerciseProgram => 'Exercise';
+
+  @override
+  String get addLabel => 'Add';
+
+  @override
+  String get newLabel => 'New';
+
+  @override
+  String get libraryLabel => 'Library';
+
+  @override
+  String get setupLabel => 'Setup';
+
+  @override
+  String get targetLabel => 'Target';
+
+  @override
+  String get kgLabel => 'kg';
+
+  @override
+  String get lbLabel => 'lb';
+
+  @override
+  String get effortMax => 'Max Effort';
+
+  @override
+  String get effortNearMax => 'Near Max';
+
+  @override
+  String get effortHeavy => 'Heavy';
+
+  @override
+  String get effortHypertrophy => 'Hypertrophy';
+
+  @override
+  String get effortEndurance => 'Strength-Endurance';
+
+  @override
+  String get effortWarmup => 'Warm-up';
 }

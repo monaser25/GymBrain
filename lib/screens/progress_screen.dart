@@ -146,7 +146,7 @@ class _ProgressScreenState extends State<ProgressScreen>
 
     if (minY < 0) minY = 0;
 
-    double interval = (maxY - minY) / 5;
+    double interval = (maxY - minY) == 0 ? 1 : (maxY - minY) / 5;
     if (interval <= 0) interval = 1;
 
     // Sort newest first for the list/stats
@@ -178,9 +178,9 @@ class _ProgressScreenState extends State<ProgressScreen>
           labelColor: const Color(0xFF39FF14),
           unselectedLabelColor: Colors.grey,
           onTap: (index) => setState(() {}),
-          tabs: const [
-            Tab(text: "Body Stats"),
-            Tab(text: "Exercise Progress"),
+          tabs: [
+            Tab(text: AppLocalizations.of(context)?.bodyStats ?? "Body Stats"),
+            Tab(text: AppLocalizations.of(context)?.exerciseProgram ?? "Exercise Progress"),
           ],
         ),
       ),
@@ -207,7 +207,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                             child: _StatCard(
                               label: AppLocalizations.of(context)!.weightName.toUpperCase(),
                               value: current?.weight.toString() ?? "--",
-                              unit: AppLocalizations.of(context)?.kgUnit ?? "kg",
+                              unit: AppLocalizations.of(context)?.kgLabel ?? "kg",
                               change: _calculateChange(
                                 current?.weight,
                                 previous?.weight,
@@ -230,7 +230,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                             child: _StatCard(
                               label: AppLocalizations.of(context)?.smmLabel ?? "SMM",
                               value: current?.smm.toString() ?? "--",
-                              unit: AppLocalizations.of(context)?.kgUnit ?? "kg",
+                              unit: AppLocalizations.of(context)?.kgLabel ?? "kg",
                               change: _calculateChange(
                                 current?.smm,
                                 previous?.smm,
@@ -717,7 +717,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                                   Row(
                                     children: [
                                       Text(
-                                        "${record.weight} ${AppLocalizations.of(context)?.kgUnit ?? "kg"}",
+                                        "${record.weight} ${AppLocalizations.of(context)?.kgLabel ?? 'kg'}",
                                         style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 16,
@@ -807,9 +807,9 @@ class _ProgressScreenState extends State<ProgressScreen>
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
-                              "Trend",
-                              style: TextStyle(
+                            Text(
+                              AppLocalizations.of(context)?.trend ?? "Trend",
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -1038,7 +1038,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                                 if (minVal < 0) minVal = 0;
                               }
 
-                              double exInterval = (maxVal - minVal) / 5;
+                              double exInterval = (maxVal - minVal) == 0 ? 1 : (maxVal - minVal) / 5;
                               if (exInterval <= 0) exInterval = 1;
 
                               return LineChart(
@@ -1218,8 +1218,8 @@ class _ProgressScreenState extends State<ProgressScreen>
                             const SizedBox(width: 8),
                             Text(
                               _selectedMetric == ChartMetric.maxWeight
-                                  ? "Max Weight (${_displayInKg ? 'kg' : 'lb'})"
-                                  : "Volume",
+                                  ? "${AppLocalizations.of(context)?.maxWeight ?? 'Max Weight'} (${_displayInKg ? (AppLocalizations.of(context)?.kgLabel ?? 'kg') : (AppLocalizations.of(context)?.lbLabel ?? 'lb')})"
+                                  : (AppLocalizations.of(context)?.volume ?? "Volume"),
                               style: const TextStyle(
                                 color: Colors.white70,
                                 fontWeight: FontWeight.bold,

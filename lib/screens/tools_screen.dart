@@ -120,21 +120,22 @@ class _ToolsScreenState extends State<ToolsScreen>
   }
 
   // Get unit string based on current system
-  String get _unitLabel => _isMetric ? 'kg' : 'lb';
+  // Get unit string logically
+  String _getUnitLabel(BuildContext context) => _isMetric ? (AppLocalizations.of(context)?.kgLabel ?? 'kg') : (AppLocalizations.of(context)?.lbLabel ?? 'lb');
 
   // Get bar weight options based on unit system
-  List<Map<String, dynamic>> get _barWeightOptions {
+  List<Map<String, dynamic>> _getBarWeightOptions(BuildContext context) {
     if (_isMetric) {
       return [
-        {'value': 20.0, 'label': '20 kg (Olympic Standard)'},
-        {'value': 15.0, 'label': '15 kg (Women\'s Olympic)'},
-        {'value': 10.0, 'label': '10 kg (Training Bar)'},
+        {'value': 20.0, 'label': '20 ${_getUnitLabel(context)} (Olympic Standard)'},
+        {'value': 15.0, 'label': '15 ${_getUnitLabel(context)} (Women\'s Olympic)'},
+        {'value': 10.0, 'label': '10 ${_getUnitLabel(context)} (Training Bar)'},
       ];
     } else {
       return [
-        {'value': 45.0, 'label': '45 lb (Standard)'},
-        {'value': 35.0, 'label': '35 lb (Women\'s)'},
-        {'value': 15.0, 'label': '15 lb (Training Bar)'},
+        {'value': 45.0, 'label': '45 ${_getUnitLabel(context)} (Standard)'},
+        {'value': 35.0, 'label': '35 ${_getUnitLabel(context)} (Women\'s)'},
+        {'value': 15.0, 'label': '15 ${_getUnitLabel(context)} (Training Bar)'},
       ];
     }
   }
@@ -150,13 +151,13 @@ class _ToolsScreenState extends State<ToolsScreen>
   }
 
   // Plate Calculator Logic
-  void _calculatePlates() {
+  void _calculatePlates(BuildContext context) {
     final targetWeight = double.tryParse(_targetWeightController.text);
 
     if (targetWeight == null || targetWeight <= _barWeight) {
       setState(() {
         _plateError =
-            "Target must be greater than bar weight (${_formatWeight(_barWeight)} $_unitLabel)";
+            "Target must be greater than bar weight (${_formatWeight(_barWeight)} ${_getUnitLabel(context)})";
         _platesPerSide = [];
       });
       return;
@@ -182,7 +183,7 @@ class _ToolsScreenState extends State<ToolsScreen>
       // Small tolerance for floating point
       setState(() {
         _plateError =
-            "Cannot make exact weight with available plates. ${remainingPerSide.toStringAsFixed(2)} $_unitLabel remaining.";
+            "Cannot make exact weight with available plates. ${remainingPerSide.toStringAsFixed(2)} ${_getUnitLabel(context)} remaining.";
         _platesPerSide = result;
       });
     } else {
@@ -723,42 +724,42 @@ class _ToolsScreenState extends State<ToolsScreen>
                 children: [
                   _buildPercentageRow(
                     "100%",
-                    "Max Effort",
+                    AppLocalizations.of(context)?.effortMax ?? "Max Effort",
                     _oneRepMax!,
                     Colors.redAccent,
                   ),
                   _buildDivider(),
                   _buildPercentageRow(
                     "95%",
-                    "Near Max",
+                    AppLocalizations.of(context)?.effortNearMax ?? "Near Max",
                     _oneRepMax! * 0.95,
                     Colors.orange,
                   ),
                   _buildDivider(),
                   _buildPercentageRow(
                     "90%",
-                    "Heavy",
+                    AppLocalizations.of(context)?.effortHeavy ?? "Heavy",
                     _oneRepMax! * 0.90,
                     Colors.orangeAccent,
                   ),
                   _buildDivider(),
                   _buildPercentageRow(
                     "80%",
-                    "Hypertrophy",
+                    AppLocalizations.of(context)?.effortHypertrophy ?? "Hypertrophy",
                     _oneRepMax! * 0.80,
                     const Color(0xFF39FF14),
                   ),
                   _buildDivider(),
                   _buildPercentageRow(
                     "70%",
-                    "Strength-Endurance",
+                    AppLocalizations.of(context)?.effortEndurance ?? "Strength-Endurance",
                     _oneRepMax! * 0.70,
                     Colors.cyanAccent,
                   ),
                   _buildDivider(),
                   _buildPercentageRow(
                     "50%",
-                    "Warm-up",
+                    AppLocalizations.of(context)?.effortWarmup ?? "Warm-up",
                     _oneRepMax! * 0.50,
                     Colors.grey,
                   ),
@@ -978,7 +979,7 @@ class _ToolsScreenState extends State<ToolsScreen>
             controller: _targetWeightController,
             label: "TARGET WEIGHT",
             hint: _isMetric ? "100" : "225",
-            suffix: _unitLabel,
+            suffix: _getUnitLabel(context),
             actionIcon: IconButton(
               icon: const Icon(Icons.tune, color: Color(0xFF39FF14), size: 22),
               tooltip: "Plate Inventory",
@@ -1022,7 +1023,7 @@ class _ToolsScreenState extends State<ToolsScreen>
                       Icons.arrow_drop_down,
                       color: Color(0xFF39FF14),
                     ),
-                    items: _barWeightOptions.map((option) {
+                    items: _getBarWeightOptions(context).map((option) {
                       return DropdownMenuItem<double>(
                         value: option['value'] as double,
                         child: Text(option['label'] as String),
@@ -1045,7 +1046,7 @@ class _ToolsScreenState extends State<ToolsScreen>
           SizedBox(
             height: 56,
             child: ElevatedButton(
-              onPressed: _calculatePlates,
+              onPressed: () => _calculatePlates(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF39FF14),
                 foregroundColor: Colors.black,
@@ -1172,7 +1173,7 @@ class _ToolsScreenState extends State<ToolsScreen>
                           ),
                           const SizedBox(width: 16),
                           Text(
-                            "${_formatWeight(weight)} $_unitLabel plate${count > 1 ? 's' : ''}",
+                            "${_formatWeight(weight)} ${_getUnitLabel(context)} plate${count > 1 ? 's' : ''}",
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 16,

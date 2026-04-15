@@ -143,5 +143,21 @@
   "restoreConfirmTitle": "Restore Backup?",
   "restoreConfirmDesc": "This will REPLACE all current data:\n\n• Exercises\n• Routines\n• Workout History\n• InBody Records\n• Settings\n\nThis action CANNOT be undone!",
   "editExerciseTitle": "Edit Exercise",
-  "addNewExerciseTitle": "Add New Exercise"
+  "addNewExerciseTitle": "Add New Exercise",
+  "trend": "Trend",
+  "exerciseProgram": "Exercise",
+  "maxWeight": "Max Weight",
+  "addLabel": "Add",
+  "newLabel": "New",
+  "libraryLabel": "Library",
+  "setupLabel": "Setup",
+  "targetLabel": "Target",
+  "kgLabel": "kg",
+  "lbLabel": "lb",
+  "effortMax": "Max Effort",
+  "effortNearMax": "Near Max",
+  "effortHeavy": "Heavy",
+  "effortHypertrophy": "Hypertrophy",
+  "effortEndurance": "Strength-Endurance",
+  "effortWarmup": "Warm-up"
 }

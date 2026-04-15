@@ -390,4 +390,49 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get addNewExerciseTitle => 'إضافة تمرين جديد';
+
+  @override
+  String get trend => 'الاتجاه';
+
+  @override
+  String get exerciseProgram => 'برنامج التمرين';
+
+  @override
+  String get addLabel => 'إضافة';
+
+  @override
+  String get newLabel => 'جديد';
+
+  @override
+  String get libraryLabel => 'المكتبة';
+
+  @override
+  String get setupLabel => 'إعداد';
+
+  @override
+  String get targetLabel => 'الهدف';
+
+  @override
+  String get kgLabel => 'كجم';
+
+  @override
+  String get lbLabel => 'رطل';
+
+  @override
+  String get effortMax => 'أقصى مجهود';
+
+  @override
+  String get effortNearMax => 'شبه أقصى';
+
+  @override
+  String get effortHeavy => 'ثقيل';
+
+  @override
+  String get effortHypertrophy => 'تضخيم';
+
+  @override
+  String get effortEndurance => 'قوة-تحمل';
+
+  @override
+  String get effortWarmup => 'إحماء';
 }

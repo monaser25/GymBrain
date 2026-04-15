@@ -140,14 +140,14 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
                   Padding(
                     padding: const EdgeInsets.only(top: 4.0),
                     child: Text(
-                      "Setup: ${getLocalizedExerciseNote(context, exercise.setupNote)}",
+                      "${AppLocalizations.of(context)?.setupLabel ?? 'Setup'}: ${getLocalizedExerciseNote(context, exercise.setupNote)}",
                       style: TextStyle(color: Colors.grey[400], fontSize: 13),
                     ),
                   ),
                 Padding(
                   padding: const EdgeInsets.only(top: 4.0),
                   child: Text(
-                    "Target: ${exercise.targetSets} Sets",
+                    "${AppLocalizations.of(context)?.targetLabel ?? 'Target'}: ${exercise.targetSets}",
                     style: const TextStyle(
                       color: Color(0xFF39FF14),
                       fontSize: 12,
@@ -317,7 +317,7 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
                                     ),
                                   ),
                                   child: Text(
-                                    "New",
+                                    AppLocalizations.of(context)?.newLabel ?? "New",
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       color: selectedTabIndex == 0
@@ -348,7 +348,7 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
                                     ),
                                   ),
                                   child: Text(
-                                    "Library",
+                                    AppLocalizations.of(context)?.libraryLabel ?? "Library",
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
                                       color: selectedTabIndex == 1
@@ -380,7 +380,7 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
                                     style: const TextStyle(color: Colors.white),
                                     decoration: InputDecoration(
                                       labelText: AppLocalizations.of(context)?.exerciseNameLabel ?? "Exercise Name",
-                                      hintText: "e.g. Incline Bench Press",
+                                      hintText: Localizations.localeOf(context).languageCode == 'ar' ? "مثال: بنش برس مائل" : "e.g. Incline Bench Press",
                                       labelStyle: TextStyle(color: Colors.grey),
                                       enabledBorder: UnderlineInputBorder(
                                         borderSide: BorderSide(
@@ -627,8 +627,8 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
                           child: Text(isEditing 
                               ? (AppLocalizations.of(context)?.save ?? "Save") 
                               : (selectedTabIndex == 1 && selectedLibraryNames.isNotEmpty
-                                  ? "Add (${selectedLibraryNames.length})"
-                                  : "Add")),
+                                  ? "${AppLocalizations.of(context)?.addLabel ?? 'Add'} (${selectedLibraryNames.length})"
+                                  : (AppLocalizations.of(context)?.addLabel ?? "Add"))),
                         ),
                       ],
                     ),

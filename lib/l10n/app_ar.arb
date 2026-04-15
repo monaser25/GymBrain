@@ -125,5 +125,20 @@
   "restoreConfirmTitle": "استعادة النسخة الاحتياطية؟",
   "restoreConfirmDesc": "هذا سيستبدل جميع البيانات الحالية:\n\n• التمارين\n• البرامج\n• سجل التمارين\n• بيانات InBody\n• الإعدادات\n\nهذا الإجراء لا يمكن التراجع عنه!",
   "editExerciseTitle": "تعديل التمرين",
-  "addNewExerciseTitle": "إضافة تمرين جديد"
+  "addNewExerciseTitle": "إضافة تمرين جديد",
+  "trend": "الاتجاه",
+  "exerciseProgram": "برنامج التمرين",
+  "addLabel": "إضافة",
+  "newLabel": "جديد",
+  "libraryLabel": "المكتبة",
+  "setupLabel": "إعداد",
+  "targetLabel": "الهدف",
+  "kgLabel": "كجم",
+  "lbLabel": "رطل",
+  "effortMax": "أقصى مجهود",
+  "effortNearMax": "شبه أقصى",
+  "effortHeavy": "ثقيل",
+  "effortHypertrophy": "تضخيم",
+  "effortEndurance": "قوة-تحمل",
+  "effortWarmup": "إحماء"
 }
