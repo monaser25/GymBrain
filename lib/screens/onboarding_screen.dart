@@ -468,6 +468,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
               ),
 
+              const SizedBox(height: 16),
+
+              // Medical/AI Disclaimer
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Text(
+                  AppLocalizations.of(context)?.disclaimerOnboarding ??
+                      "GymBrain provides algorithmic and AI-based fitness estimates. It is not a substitute for professional medical or coaching advice.",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.35),
+                    fontSize: 11,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+
               const SizedBox(height: 32),
             ],
           ),

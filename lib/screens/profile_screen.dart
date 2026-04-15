@@ -174,7 +174,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               icon: Icons.height,
               label: AppLocalizations.of(context)?.height ?? "Height",
               value: _userHeightCm != null
-                  ? "${_userHeightCm!.toStringAsFixed(1)} ${AppLocalizations.of(context)?.cmLabel ?? 'cm'}"
+                  ? _db.isBodyWeightKg
+                      ? "${_userHeightCm!.toStringAsFixed(1)} ${AppLocalizations.of(context)?.cmLabel ?? 'cm'}"
+                      : "${(_userHeightCm! / 2.54).toStringAsFixed(1)} ${AppLocalizations.of(context)?.inchLabel ?? 'in'}"
                   : "Tap to set",
               onTap: () => _editHeight(),
             ),
@@ -213,7 +215,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               icon: Icons.monitor_weight_outlined,
               label: AppLocalizations.of(context)?.currentWeight ?? "Current Weight",
               value: _currentWeight != null
-                  ? "${_currentWeight!.toStringAsFixed(1)} ${AppLocalizations.of(context)?.kgLabel ?? 'kg'}"
+                  ? _db.isBodyWeightKg
+                      ? "${_currentWeight!.toStringAsFixed(1)} ${AppLocalizations.of(context)?.kgLabel ?? 'kg'}"
+                      : "${(_currentWeight! * 2.20462).toStringAsFixed(1)} ${AppLocalizations.of(context)?.lbLabel ?? 'lb'}"
                   : "Add in Stats tab",
               onTap: () {
                 Navigator.push(
@@ -394,9 +398,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     color: Colors.orange.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Text(
-                    "Missing data",
-                    style: TextStyle(
+                  child: Text(
+                    AppLocalizations.of(context)?.missingData ?? "Missing data",
+                    style: const TextStyle(
                       color: Colors.orange,
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
@@ -546,53 +550,138 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _editHeight() {
+    bool isCm = _db.isBodyWeightKg;
     final controller = TextEditingController(
-      text: _userHeightCm?.toStringAsFixed(1) ?? "",
+      text: _userHeightCm != null
+          ? (isCm ? _userHeightCm!.toStringAsFixed(1) : (_userHeightCm! / 2.54).toStringAsFixed(1))
+          : "",
     );
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1C1C1E),
-        title: Text(AppLocalizations.of(context)?.editHeightTitle ?? "Edit Height", style: const TextStyle(color: Colors.white)),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          style: const TextStyle(color: Colors.white),
-          cursorColor: const Color(0xFF39FF14),
-          decoration: InputDecoration(
-            hintText: "Height in ${AppLocalizations.of(context)?.cmLabel ?? 'cm'}",
-            hintStyle: const TextStyle(color: Colors.grey),
-            suffixText: AppLocalizations.of(context)?.cmLabel ?? "cm",
-            suffixStyle: const TextStyle(color: Colors.grey),
-            enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.grey),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setStateDialog) {
+          final l10n = AppLocalizations.of(context);
+          final unitLabel = isCm ? (l10n?.cmLabel ?? 'cm') : (l10n?.inchLabel ?? 'in');
+          return AlertDialog(
+            backgroundColor: const Color(0xFF1C1C1E),
+            title: Text(l10n?.editHeightTitle ?? "Edit Height", style: const TextStyle(color: Colors.white)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // CM / IN Toggle
+                Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2C2C2E),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: const EdgeInsets.all(2),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            if (!isCm) {
+                              final val = double.tryParse(controller.text);
+                              if (val != null) controller.text = (val * 2.54).toStringAsFixed(1);
+                            }
+                            setStateDialog(() => isCm = true);
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            decoration: BoxDecoration(
+                              color: isCm ? const Color(0xFF39FF14) : Colors.transparent,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              l10n?.cmLabel ?? "cm",
+                              style: TextStyle(
+                                color: isCm ? Colors.black : Colors.grey,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            if (isCm) {
+                              final val = double.tryParse(controller.text);
+                              if (val != null) controller.text = (val / 2.54).toStringAsFixed(1);
+                            }
+                            setStateDialog(() => isCm = false);
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            decoration: BoxDecoration(
+                              color: !isCm ? const Color(0xFF39FF14) : Colors.transparent,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              l10n?.inchLabel ?? "in",
+                              style: TextStyle(
+                                color: !isCm ? Colors.black : Colors.grey,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: controller,
+                  autofocus: true,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  style: const TextStyle(color: Colors.white),
+                  cursorColor: const Color(0xFF39FF14),
+                  decoration: InputDecoration(
+                    hintText: "${l10n?.height ?? 'Height'} ($unitLabel)",
+                    hintStyle: const TextStyle(color: Colors.grey),
+                    suffixText: unitLabel,
+                    suffixStyle: const TextStyle(color: Colors.grey),
+                    enabledBorder: const UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey),
+                    ),
+                    focusedBorder: const UnderlineInputBorder(
+                      borderSide: BorderSide(color: Color(0xFF39FF14)),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            focusedBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: Color(0xFF39FF14)),
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(AppLocalizations.of(context)?.cancelBtn ?? "Cancel", style: const TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final height = double.tryParse(controller.text);
-              if (height != null && height > 50 && height < 300) {
-                _saveField('user_height_cm', height);
-              }
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF39FF14),
-              foregroundColor: Colors.black,
-            ),
-            child: Text(AppLocalizations.of(context)?.save ?? "Save"),
-          ),
-        ],
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(l10n?.cancelBtn ?? "Cancel", style: const TextStyle(color: Colors.grey)),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final val = double.tryParse(controller.text);
+                  if (val != null) {
+                    // Always store in cm
+                    final heightCm = isCm ? val : val * 2.54;
+                    if (heightCm > 50 && heightCm < 300) {
+                      _saveField('user_height_cm', heightCm);
+                    }
+                  }
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF39FF14),
+                  foregroundColor: Colors.black,
+                ),
+                child: Text(l10n?.save ?? "Save"),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

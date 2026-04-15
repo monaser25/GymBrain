@@ -431,13 +431,13 @@ abstract class AppLocalizations {
   /// No description provided for @smmLabel.
   ///
   /// In en, this message translates to:
-  /// **'Skeletal Muscle Mass (SMM)'**
+  /// **'SMM'**
   String get smmLabel;
 
   /// No description provided for @pfmLabel.
   ///
   /// In en, this message translates to:
-  /// **'Percent Body Fat (PFM)'**
+  /// **'PBF'**
   String get pfmLabel;
 
   /// No description provided for @historyText.
@@ -1543,6 +1543,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'LOAD PER SIDE'**
   String get loadPerSide;
+
+  /// No description provided for @logInBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Log InBody'**
+  String get logInBody;
+
+  /// No description provided for @editInBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit InBody'**
+  String get editInBody;
+
+  /// No description provided for @weightWithUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight ({unit})'**
+  String weightWithUnit(String unit);
+
+  /// No description provided for @smmWithUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'SMM ({unit})'**
+  String smmWithUnit(String unit);
+
+  /// No description provided for @pbfPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'PBF (%)'**
+  String get pbfPercent;
+
+  /// No description provided for @bodyWeightUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Body Weight Unit'**
+  String get bodyWeightUnit;
+
+  /// No description provided for @noHistoryExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'No history for this exercise yet.'**
+  String get noHistoryExercise;
+
+  /// No description provided for @selectExercisePrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Select an exercise above to see progress.'**
+  String get selectExercisePrompt;
+
+  /// No description provided for @missingData.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing data'**
+  String get missingData;
+
+  /// No description provided for @inchLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'in'**
+  String get inchLabel;
+
+  /// No description provided for @disclaimerOnboarding.
+  ///
+  /// In en, this message translates to:
+  /// **'GymBrain provides algorithmic and AI-based fitness estimates. It is not a substitute for professional medical or coaching advice.'**
+  String get disclaimerOnboarding;
+
+  /// No description provided for @disclaimerSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Disclaimer: Use these workout suggestions at your own risk. Always consult a physician before starting a new exercise program.'**
+  String get disclaimerSettings;
+
+  /// No description provided for @disclaimerEstimated.
+  ///
+  /// In en, this message translates to:
+  /// **'These are estimated values based on standard formulas.'**
+  String get disclaimerEstimated;
+
+  /// No description provided for @performanceAnalysis.
+  ///
+  /// In en, this message translates to:
+  /// **'Performance Analysis'**
+  String get performanceAnalysis;
+
+  /// No description provided for @okGotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'OK 👍'**
+  String get okGotIt;
+
+  /// No description provided for @aiAssisted.
+  ///
+  /// In en, this message translates to:
+  /// **'⚠️ This set was assisted.. Keep the weight ({weight} {unit}) next time to master your form.'**
+  String aiAssisted(Object weight, Object unit);
+
+  /// No description provided for @aiTooEasyBig.
+  ///
+  /// In en, this message translates to:
+  /// **'🚀 Beast mode! That was easy.. Add {suggestion} next time.'**
+  String aiTooEasyBig(Object suggestion);
+
+  /// No description provided for @aiTooEasySmall.
+  ///
+  /// In en, this message translates to:
+  /// **'🚀 Nice! That was easy.. Add {suggestion} next time.'**
+  String aiTooEasySmall(Object suggestion);
+
+  /// No description provided for @aiPerfectZone.
+  ///
+  /// In en, this message translates to:
+  /// **'✅ Great work! Weight ({weight} {unit}) is perfect.. Keep it and focus on technique.'**
+  String aiPerfectZone(Object weight, Object unit);
+
+  /// No description provided for @aiMaxEffort.
+  ///
+  /// In en, this message translates to:
+  /// **'🔥 Strong effort! Rest well and keep the weight ({weight} {unit}) until it feels comfortable.'**
+  String aiMaxEffort(Object weight, Object unit);
+
+  /// No description provided for @aiFallback.
+  ///
+  /// In en, this message translates to:
+  /// **'💪 Good set! Keep it up.'**
+  String get aiFallback;
 }
 
 class _AppLocalizationsDelegate

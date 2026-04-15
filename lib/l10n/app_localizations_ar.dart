@@ -176,10 +176,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get weightName => 'الوزن';
 
   @override
-  String get smmLabel => 'الكتلة العضلية (SMM)';
+  String get smmLabel => 'الكتلة العضلية';
 
   @override
-  String get pfmLabel => 'نسبة الدهون (PFM)';
+  String get pfmLabel => 'نسبة الدهون';
 
   @override
   String get historyText => 'السجل';
@@ -758,4 +758,83 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get loadPerSide => 'الأوزان لكل جانب';
+
+  @override
+  String get logInBody => 'تسجيل بيانات الجسم';
+
+  @override
+  String get editInBody => 'تعديل بيانات الجسم';
+
+  @override
+  String weightWithUnit(String unit) {
+    return 'الوزن ($unit)';
+  }
+
+  @override
+  String smmWithUnit(String unit) {
+    return 'الكتلة العضلية ($unit)';
+  }
+
+  @override
+  String get pbfPercent => 'نسبة الدهون (%)';
+
+  @override
+  String get bodyWeightUnit => 'وحدة وزن الجسم';
+
+  @override
+  String get noHistoryExercise => 'لا يوجد سجل لهذا التمرين بعد.';
+
+  @override
+  String get selectExercisePrompt => 'اختر تمريناً أعلاه لرؤية التقدم.';
+
+  @override
+  String get missingData => 'بيانات ناقصة';
+
+  @override
+  String get inchLabel => 'بوصة';
+
+  @override
+  String get disclaimerOnboarding =>
+      'تطبيق GymBrain يقدم تقديرات لياقة بدنية خوارزمية وقائمة على الذكاء الاصطناعي. وهو ليس بديلاً عن الاستشارة الطبية أو التدريبية المهنية.';
+
+  @override
+  String get disclaimerSettings =>
+      'إخلاء مسؤولية: استخدم اقتراحات التمرين على مسؤوليتك الخاصة. استشر طبيبًا دائمًا قبل البدء في برنامج تمارين جديد.';
+
+  @override
+  String get disclaimerEstimated => 'هذه قيم تقديرية بناءً على معادلات قياسية.';
+
+  @override
+  String get performanceAnalysis => 'تحليل الأداء';
+
+  @override
+  String get okGotIt => 'تمام 👍';
+
+  @override
+  String aiAssisted(Object weight, Object unit) {
+    return '⚠️ المرة دي بمساعدة.. ثبت الوزن ($weight $unit) المرة الجاية عشان تتقن الأداء.';
+  }
+
+  @override
+  String aiTooEasyBig(Object suggestion) {
+    return '🚀 عاش يا وحش! التمرين سهل.. زود $suggestion المرة الجاية.';
+  }
+
+  @override
+  String aiTooEasySmall(Object suggestion) {
+    return '🚀 عاش! التمرين سهل.. زود $suggestion المرة الجاية.';
+  }
+
+  @override
+  String aiPerfectZone(Object weight, Object unit) {
+    return '✅ الله ينور! الوزن ($weight $unit) ممتاز.. حافظ عليه وركز في التكنيك.';
+  }
+
+  @override
+  String aiMaxEffort(Object weight, Object unit) {
+    return '🔥 أداء عالي! ريح كويس وثبت الوزن ($weight $unit) لحد ما تجيبه مرتاح.';
+  }
+
+  @override
+  String get aiFallback => '💪 سيت كويس! كمّل كده.';
 }

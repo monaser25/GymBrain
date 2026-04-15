@@ -35,6 +35,15 @@ class _ProgressScreenState extends State<ProgressScreen>
   // For Body Stats Tab
   BodyMetric? _selectedBodyMetric; // Null means "Show All"
 
+  // Convert body weight/SMM from stored KG to display unit
+  double _convertBodyWeight(double kgValue) {
+    return _db.isBodyWeightKg ? kgValue : kgValue * 2.20462;
+  }
+
+  String _formatBodyWeight(double kgValue) {
+    return _convertBodyWeight(kgValue).toStringAsFixed(1);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -209,11 +218,11 @@ class _ProgressScreenState extends State<ProgressScreen>
                           Expanded(
                             child: _StatCard(
                               label: AppLocalizations.of(context)!.weightName.toUpperCase(),
-                              value: current?.weight.toString() ?? "--",
-                              unit: AppLocalizations.of(context)?.kgLabel ?? "kg",
+                              value: current != null ? _formatBodyWeight(current.weight) : "--",
+                              unit: _db.isBodyWeightKg ? (AppLocalizations.of(context)?.kgLabel ?? "kg") : (AppLocalizations.of(context)?.lbLabel ?? "lb"),
                               change: _calculateChange(
-                                current?.weight,
-                                previous?.weight,
+                                current != null ? _convertBodyWeight(current.weight) : null,
+                                previous != null ? _convertBodyWeight(previous.weight) : null,
                               ),
                               trendColor: Colors.white,
                               color: Colors.white,
@@ -232,11 +241,11 @@ class _ProgressScreenState extends State<ProgressScreen>
                           Expanded(
                             child: _StatCard(
                               label: AppLocalizations.of(context)?.smmLabel ?? "SMM",
-                              value: current?.smm.toString() ?? "--",
-                              unit: AppLocalizations.of(context)?.kgLabel ?? "kg",
+                              value: current != null ? _formatBodyWeight(current.smm) : "--",
+                              unit: _db.isBodyWeightKg ? (AppLocalizations.of(context)?.kgLabel ?? "kg") : (AppLocalizations.of(context)?.lbLabel ?? "lb"),
                               change: _calculateChange(
-                                current?.smm,
-                                previous?.smm,
+                                current != null ? _convertBodyWeight(current.smm) : null,
+                                previous != null ? _convertBodyWeight(previous.smm) : null,
                               ),
                               trendColor:
                                   (_calculateChange(
@@ -504,13 +513,13 @@ class _ProgressScreenState extends State<ProgressScreen>
                                         },
                                     touchTooltipData: LineTouchTooltipData(
                                       getTooltipItems: (touchedSpots) {
-                                        return touchedSpots.map((spot) {
+                                         return touchedSpots.map((spot) {
                                           final val = spot.y;
                                           final metricName = spot.barIndex == 0
-                                              ? "Weight"
+                                              ? (AppLocalizations.of(context)?.weightName ?? "Weight")
                                               : spot.barIndex == 1
-                                              ? "SMM"
-                                              : "PBF";
+                                              ? (AppLocalizations.of(context)?.smmLabel ?? "SMM")
+                                              : (AppLocalizations.of(context)?.pfmLabel ?? "PBF");
 
                                           final dateIndex = spot.x.toInt();
                                           String dateStr = "";
@@ -545,16 +554,16 @@ class _ProgressScreenState extends State<ProgressScreen>
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            _LegendItem(color: Colors.white, text: "Weight"),
+                            _LegendItem(color: Colors.white, text: AppLocalizations.of(context)?.weightName ?? "Weight"),
                             const SizedBox(width: 16),
                             _LegendItem(
                               color: const Color(0xFF39FF14),
-                              text: "SMM",
+                              text: AppLocalizations.of(context)?.smmLabel ?? "SMM",
                             ),
                             const SizedBox(width: 16),
                             _LegendItem(
                               color: Colors.orangeAccent,
-                              text: "PBF",
+                              text: AppLocalizations.of(context)?.pfmLabel ?? "PBF",
                             ),
                           ],
                         ),
@@ -650,8 +659,8 @@ class _ProgressScreenState extends State<ProgressScreen>
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        DateFormat(
-                                          'MMM d, yyyy',
+                                        DateFormat.yMMMd(
+                                          Localizations.localeOf(context).languageCode,
                                         ).format(record.date),
                                         style: const TextStyle(
                                           color: Colors.white,
@@ -719,7 +728,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                                   Row(
                                     children: [
                                       Text(
-                                        "${record.weight} ${AppLocalizations.of(context)?.kgLabel ?? 'kg'}",
+                                        "${_formatBodyWeight(record.weight)} ${_db.isBodyWeightKg ? (AppLocalizations.of(context)?.kgLabel ?? 'kg') : (AppLocalizations.of(context)?.lbLabel ?? 'lb')}",
                                         style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 16,
@@ -943,7 +952,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                                             ),
                                           ),
                                           child: Text(
-                                            "KG",
+                                            AppLocalizations.of(context)?.kgLabel ?? "KG",
                                             style: TextStyle(
                                               color: _displayInKg
                                                   ? Colors.black
@@ -975,7 +984,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                                             ),
                                           ),
                                           child: Text(
-                                            "LB",
+                                            AppLocalizations.of(context)?.lbLabel ?? "LB",
                                             style: TextStyle(
                                               color: !_displayInKg
                                                   ? Colors.black
@@ -1236,19 +1245,19 @@ class _ProgressScreenState extends State<ProgressScreen>
                     ),
                   )
                 else if (_selectedExerciseName != null)
-                  const Expanded(
+                  Expanded(
                     child: Center(
                       child: Text(
-                        "No history for this exercise yet.",
+                        AppLocalizations.of(context)?.noHistoryExercise ?? "No history for this exercise yet.",
                         style: TextStyle(color: Colors.grey),
                       ),
                     ),
                   )
                 else
-                  const Expanded(
+                  Expanded(
                     child: Center(
                       child: Text(
-                        "Select an exercise above to see progress.",
+                        AppLocalizations.of(context)?.selectExercisePrompt ?? "Select an exercise above to see progress.",
                         style: TextStyle(color: Colors.grey),
                       ),
                     ),
@@ -1315,10 +1324,18 @@ class _ProgressScreenState extends State<ProgressScreen>
   }
 
   void _showAddDialog(BuildContext context, {InBodyRecord? existingRecord}) {
+    // If editing, convert stored KG to display unit
+    bool isEntryKg = _db.isBodyWeightKg;
     final weightCtrl = TextEditingController(
-      text: existingRecord?.weight.toString(),
+      text: existingRecord != null
+          ? (isEntryKg ? existingRecord.weight : existingRecord.weight * 2.20462).toStringAsFixed(1)
+          : null,
     );
-    final smmCtrl = TextEditingController(text: existingRecord?.smm.toString());
+    final smmCtrl = TextEditingController(
+      text: existingRecord != null
+          ? (isEntryKg ? existingRecord.smm : existingRecord.smm * 2.20462).toStringAsFixed(1)
+          : null,
+    );
     final pbfCtrl = TextEditingController(text: existingRecord?.pbf.toString());
     DateTime selectedDate = existingRecord?.date ?? DateTime.now();
 
@@ -1326,13 +1343,20 @@ class _ProgressScreenState extends State<ProgressScreen>
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setStateDialog) {
+          final l10n = AppLocalizations.of(context);
+          final locale = Localizations.localeOf(context).languageCode;
+          final unitLabel = isEntryKg ? (l10n?.kgLabel ?? 'kg') : (l10n?.lbLabel ?? 'lb');
+
           return AlertDialog(
             backgroundColor: const Color(0xFF1C1C1E),
             title: Text(
-              existingRecord == null ? "Log InBody" : "Edit InBody",
+              existingRecord == null
+                  ? (l10n?.logInBody ?? "Log InBody")
+                  : (l10n?.editInBody ?? "Edit InBody"),
               style: const TextStyle(color: Colors.white),
             ),
-            content: Column(
+            content: SingleChildScrollView(
+              child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Date Picker
@@ -1379,7 +1403,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          DateFormat('MMM d, yyyy').format(selectedDate),
+                          DateFormat.yMMMd(locale).format(selectedDate),
                           style: const TextStyle(color: Colors.white),
                         ),
                         const Spacer(),
@@ -1389,32 +1413,118 @@ class _ProgressScreenState extends State<ProgressScreen>
                   ),
                 ),
                 const SizedBox(height: 12),
-                _buildInput(weightCtrl, "Weight (kg)"),
+
+                // KG / LB Toggle for body weight entry
+                Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2C2C2E),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: const EdgeInsets.all(2),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            if (!isEntryKg) {
+                              // Convert current LB values to KG for display
+                              final w = double.tryParse(weightCtrl.text);
+                              final s = double.tryParse(smmCtrl.text);
+                              if (w != null) weightCtrl.text = (w * 0.453592).toStringAsFixed(1);
+                              if (s != null) smmCtrl.text = (s * 0.453592).toStringAsFixed(1);
+                            }
+                            setStateDialog(() => isEntryKg = true);
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            decoration: BoxDecoration(
+                              color: isEntryKg
+                                  ? const Color(0xFF39FF14)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              l10n?.kgLabel ?? "kg",
+                              style: TextStyle(
+                                color: isEntryKg ? Colors.black : Colors.grey,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () {
+                            if (isEntryKg) {
+                              // Convert current KG values to LB for display
+                              final w = double.tryParse(weightCtrl.text);
+                              final s = double.tryParse(smmCtrl.text);
+                              if (w != null) weightCtrl.text = (w * 2.20462).toStringAsFixed(1);
+                              if (s != null) smmCtrl.text = (s * 2.20462).toStringAsFixed(1);
+                            }
+                            setStateDialog(() => isEntryKg = false);
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            decoration: BoxDecoration(
+                              color: !isEntryKg
+                                  ? const Color(0xFF39FF14)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              l10n?.lbLabel ?? "lb",
+                              style: TextStyle(
+                                color: !isEntryKg ? Colors.black : Colors.grey,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 const SizedBox(height: 12),
-                _buildInput(smmCtrl, "SMM (kg)"),
+
+                _buildInput(weightCtrl, l10n?.weightWithUnit(unitLabel) ?? "Weight ($unitLabel)"),
                 const SizedBox(height: 12),
-                _buildInput(pbfCtrl, "PBF (%)"),
+                _buildInput(smmCtrl, l10n?.smmWithUnit(unitLabel) ?? "SMM ($unitLabel)"),
+                const SizedBox(height: 12),
+                _buildInput(pbfCtrl, l10n?.pbfPercent ?? "PBF (%)"),
               ],
+            ),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text(
-                  "Cancel",
-                  style: TextStyle(color: Colors.grey),
+                child: Text(
+                  l10n?.cancelBtn ?? "Cancel",
+                  style: const TextStyle(color: Colors.grey),
                 ),
               ),
               ElevatedButton(
                 onPressed: () async {
                   final w = double.tryParse(weightCtrl.text);
-                  final s = double.tryParse(smmCtrl.text);
-                  final p = double.tryParse(pbfCtrl.text);
+                  if (w != null) {
+                    // SMM and PBF are optional — default to 0
+                    final s = double.tryParse(smmCtrl.text) ?? 0;
+                    final p = double.tryParse(pbfCtrl.text) ?? 0;
+                    // Convert to KG if entered in LB (always store in KG)
+                    final weightKg = isEntryKg ? w : w * 0.453592;
+                    final smmKg = s == 0 ? 0.0 : (isEntryKg ? s : s * 0.453592);
 
-                  if (w != null && s != null && p != null) {
                     final newRecord = InBodyRecord(
                       date: selectedDate,
-                      weight: w,
-                      smm: s,
+                      weight: double.parse(weightKg.toStringAsFixed(2)),
+                      smm: double.parse(smmKg.toStringAsFixed(2)),
                       pbf: p,
                     );
 
@@ -1429,6 +1539,9 @@ class _ProgressScreenState extends State<ProgressScreen>
                       await _db.addInBodyRecord(newRecord);
                     }
 
+                    // Save the user's body weight preference
+                    await _db.setIsBodyWeightKg(isEntryKg);
+
                     if (!context.mounted) return;
                     Navigator.pop(context);
                     setState(() {}); // Refresh parent
@@ -1438,7 +1551,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                   backgroundColor: const Color(0xFF39FF14),
                   foregroundColor: Colors.black,
                 ),
-                child: const Text("Save"),
+                child: Text(l10n?.save ?? "Save"),
               ),
             ],
           );
@@ -1590,27 +1703,28 @@ class _StatCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
-                Flexible(
-                  child: Text(
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: AlignmentDirectional.centerStart,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Text(
                     value,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
-                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                if (value != "--")
-                  Text(
-                    unit,
-                    style: TextStyle(color: Colors.grey[500], fontSize: 12),
-                  ),
-              ],
+                  if (value != "--")
+                    Text(
+                      unit,
+                      style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                    ),
+                ],
+              ),
             ),
             if (change != null && change != 0) ...[
               const SizedBox(height: 4),

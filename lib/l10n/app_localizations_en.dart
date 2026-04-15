@@ -176,10 +176,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weightName => 'Weight';
 
   @override
-  String get smmLabel => 'Skeletal Muscle Mass (SMM)';
+  String get smmLabel => 'SMM';
 
   @override
-  String get pfmLabel => 'Percent Body Fat (PFM)';
+  String get pfmLabel => 'PBF';
 
   @override
   String get historyText => 'History';
@@ -761,4 +761,85 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loadPerSide => 'LOAD PER SIDE';
+
+  @override
+  String get logInBody => 'Log InBody';
+
+  @override
+  String get editInBody => 'Edit InBody';
+
+  @override
+  String weightWithUnit(String unit) {
+    return 'Weight ($unit)';
+  }
+
+  @override
+  String smmWithUnit(String unit) {
+    return 'SMM ($unit)';
+  }
+
+  @override
+  String get pbfPercent => 'PBF (%)';
+
+  @override
+  String get bodyWeightUnit => 'Body Weight Unit';
+
+  @override
+  String get noHistoryExercise => 'No history for this exercise yet.';
+
+  @override
+  String get selectExercisePrompt =>
+      'Select an exercise above to see progress.';
+
+  @override
+  String get missingData => 'Missing data';
+
+  @override
+  String get inchLabel => 'in';
+
+  @override
+  String get disclaimerOnboarding =>
+      'GymBrain provides algorithmic and AI-based fitness estimates. It is not a substitute for professional medical or coaching advice.';
+
+  @override
+  String get disclaimerSettings =>
+      'Disclaimer: Use these workout suggestions at your own risk. Always consult a physician before starting a new exercise program.';
+
+  @override
+  String get disclaimerEstimated =>
+      'These are estimated values based on standard formulas.';
+
+  @override
+  String get performanceAnalysis => 'Performance Analysis';
+
+  @override
+  String get okGotIt => 'OK 👍';
+
+  @override
+  String aiAssisted(Object weight, Object unit) {
+    return '⚠️ This set was assisted.. Keep the weight ($weight $unit) next time to master your form.';
+  }
+
+  @override
+  String aiTooEasyBig(Object suggestion) {
+    return '🚀 Beast mode! That was easy.. Add $suggestion next time.';
+  }
+
+  @override
+  String aiTooEasySmall(Object suggestion) {
+    return '🚀 Nice! That was easy.. Add $suggestion next time.';
+  }
+
+  @override
+  String aiPerfectZone(Object weight, Object unit) {
+    return '✅ Great work! Weight ($weight $unit) is perfect.. Keep it and focus on technique.';
+  }
+
+  @override
+  String aiMaxEffort(Object weight, Object unit) {
+    return '🔥 Strong effort! Rest well and keep the weight ($weight $unit) until it feels comfortable.';
+  }
+
+  @override
+  String get aiFallback => '💪 Good set! Keep it up.';
 }

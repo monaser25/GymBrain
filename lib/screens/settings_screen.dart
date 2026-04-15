@@ -485,6 +485,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: () => _showResetConfirmationDialog(context),
           ),
 
+          const SizedBox(height: 32),
+
+          // Medical/Workout Disclaimer
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Text(
+              AppLocalizations.of(context)?.disclaimerSettings ??
+                  "Disclaimer: Use these workout suggestions at your own risk. Always consult a physician before starting a new exercise program.",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 11,
+                height: 1.4,
+              ),
+            ),
+          ),
+
           const SizedBox(height: 40), // Bottom padding
         ],
       ),

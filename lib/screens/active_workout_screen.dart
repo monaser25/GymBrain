@@ -1451,7 +1451,7 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
     }
   }
 
-  // 🧠 THE GYM BRAIN ALGORITHM (Arabic with Gym Math)
+  // 🧠 THE GYM BRAIN ALGORITHM
   String _generateRecommendation({
     required int reps,
     required double weight,
@@ -1460,6 +1460,8 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
     required bool isAssisted,
     required bool isKg,
   }) {
+    final l10n = AppLocalizations.of(context);
+
     // Helper for number formatting (5.0 -> 5, 2.5 -> 2.5)
     String formatNum(double w) {
       return w.toStringAsFixed(1).replaceAll('.0', '');
@@ -1470,53 +1472,52 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
       required double small,
       required double large,
     }) {
-      if (isKg) {
-        // KG suggestions: 2.5 - 5 kg
-        return "${formatNum(small)} - ${formatNum(large)} كجم";
-      } else {
-        // LB suggestions: 5 - 10 lb
-        return "${formatNum(small)} - ${formatNum(large)} lb";
-      }
+      final unitLabel = isKg ? (l10n?.kgLabel ?? 'kg') : (l10n?.lbLabel ?? 'lb');
+      return "${formatNum(small)} - ${formatNum(large)} $unitLabel";
     }
 
-    final unitStr = isKg ? "كجم" : "lb";
+    final unitStr = isKg ? (l10n?.kgLabel ?? 'kg') : (l10n?.lbLabel ?? 'lb');
     final weightStr = formatNum(weight);
 
     // Case 1: Assisted
     if (isAssisted) {
-      return "⚠️ المرة دي بمساعدة.. ثبت الوزن ($weightStr $unitStr) المرة الجاية عشان تتقن الأداء.";
+      return l10n?.aiAssisted(weightStr, unitStr) ??
+          "⚠️ This set was assisted.. Keep the weight ($weightStr $unitStr) next time to master your form.";
     }
 
     // Case 2: Too Easy - Suggest increasing weight
     if (rpe <= 7 && reps >= targetReps) {
-      // Suggest increase based on RPE and unit
       if (rpe <= 5) {
         // Very easy, suggest bigger jump
         final suggestion = isKg
             ? formatIncrementSuggestion(small: 5, large: 7.5)
             : formatIncrementSuggestion(small: 10, large: 15);
-        return "🚀 عاش يا وحش! التمرين سهل.. زود $suggestion المرة الجاية.";
+        return l10n?.aiTooEasyBig(suggestion) ??
+            "🚀 Beast mode! That was easy.. Add $suggestion next time.";
       } else {
         // Moderately easy, suggest smaller jump
         final suggestion = isKg
             ? formatIncrementSuggestion(small: 2.5, large: 5)
             : formatIncrementSuggestion(small: 5, large: 10);
-        return "🚀 عاش! التمرين سهل.. زود $suggestion المرة الجاية.";
+        return l10n?.aiTooEasySmall(suggestion) ??
+            "🚀 Nice! That was easy.. Add $suggestion next time.";
       }
     }
 
     // Case 3: Perfect Zone
     if (rpe == 8 || rpe == 9) {
-      return "✅ الله ينور! الوزن ($weightStr $unitStr) ممتاز.. حافظ عليه وركز في التكنيك.";
+      return l10n?.aiPerfectZone(weightStr, unitStr) ??
+          "✅ Great work! Weight ($weightStr $unitStr) is perfect.. Keep it and focus on technique.";
     }
 
     // Case 4: Failure/Max Effort
     if (rpe == 10 || reps < targetReps) {
-      return "🔥 أداء عالي! ريح كويس وثبت الوزن ($weightStr $unitStr) لحد ما تجيبه مرتاح.";
+      return l10n?.aiMaxEffort(weightStr, unitStr) ??
+          "🔥 Strong effort! Rest well and keep the weight ($weightStr $unitStr) until it feels comfortable.";
     }
 
     // Fallback
-    return "💪 سيت كويس! كمّل كده.";
+    return l10n?.aiFallback ?? "💪 Good set! Keep it up.";
   }
 
   Widget _buildSetProgressText() {
@@ -1646,9 +1647,9 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Text(
-                    "تحليل الأداء",
-                    style: TextStyle(
+                  Text(
+                    AppLocalizations.of(context)?.performanceAnalysis ?? "Performance Analysis",
+                    style: const TextStyle(
                       color: Color(0xFF39FF14),
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -1659,9 +1660,9 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
 
               const SizedBox(height: 24),
 
-              // Recommendation Text (Arabic - RTL)
+              // Recommendation Text
               Directionality(
-                textDirection: TextDirection.rtl,
+                textDirection: Directionality.of(context),
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
@@ -1699,9 +1700,9 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
                       side: BorderSide(color: Colors.grey[700]!),
                     ),
                   ),
-                  child: const Text(
-                    "تمام 👍",
-                    style: TextStyle(
+                  child: Text(
+                    AppLocalizations.of(context)?.okGotIt ?? "OK 👍",
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,

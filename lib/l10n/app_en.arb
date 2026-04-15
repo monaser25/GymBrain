@@ -73,8 +73,8 @@
   "lbUnit": "lb",
   "exerciseLibrary": "Exercise Library",
   "weightName": "Weight",
-  "smmLabel": "Skeletal Muscle Mass (SMM)",
-  "pfmLabel": "Percent Body Fat (PFM)",
+  "smmLabel": "SMM",
+  "pfmLabel": "PBF",
   "historyText": "History",
   "progressText": "Progress",
   "chartAll": "All",
@@ -313,5 +313,41 @@
   "permanentlyDelete": "Permanently Delete (Wipe History)",
   "renameLabel": "Rename",
   "deleteLabel": "Delete",
-  "loadPerSide": "LOAD PER SIDE"
+  "loadPerSide": "LOAD PER SIDE",
+  "logInBody": "Log InBody",
+  "editInBody": "Edit InBody",
+  "weightWithUnit": "Weight ({unit})",
+  "@weightWithUnit": {
+    "placeholders": {
+      "unit": { "type": "String" }
+    }
+  },
+  "smmWithUnit": "SMM ({unit})",
+  "@smmWithUnit": {
+    "placeholders": {
+      "unit": { "type": "String" }
+    }
+  },
+  "pbfPercent": "PBF (%)",
+  "bodyWeightUnit": "Body Weight Unit",
+  "noHistoryExercise": "No history for this exercise yet.",
+  "selectExercisePrompt": "Select an exercise above to see progress.",
+  "missingData": "Missing data",
+  "inchLabel": "in",
+  "disclaimerOnboarding": "GymBrain provides algorithmic and AI-based fitness estimates. It is not a substitute for professional medical or coaching advice.",
+  "disclaimerSettings": "Disclaimer: Use these workout suggestions at your own risk. Always consult a physician before starting a new exercise program.",
+  "disclaimerEstimated": "These are estimated values based on standard formulas.",
+  "performanceAnalysis": "Performance Analysis",
+  "okGotIt": "OK 👍",
+  "aiAssisted": "⚠️ This set was assisted.. Keep the weight ({weight} {unit}) next time to master your form.",
+  "@aiAssisted": { "placeholders": { "weight": {}, "unit": {} } },
+  "aiTooEasyBig": "🚀 Beast mode! That was easy.. Add {suggestion} next time.",
+  "@aiTooEasyBig": { "placeholders": { "suggestion": {} } },
+  "aiTooEasySmall": "🚀 Nice! That was easy.. Add {suggestion} next time.",
+  "@aiTooEasySmall": { "placeholders": { "suggestion": {} } },
+  "aiPerfectZone": "✅ Great work! Weight ({weight} {unit}) is perfect.. Keep it and focus on technique.",
+  "@aiPerfectZone": { "placeholders": { "weight": {}, "unit": {} } },
+  "aiMaxEffort": "🔥 Strong effort! Rest well and keep the weight ({weight} {unit}) until it feels comfortable.",
+  "@aiMaxEffort": { "placeholders": { "weight": {}, "unit": {} } },
+  "aiFallback": "💪 Good set! Keep it up."
 }

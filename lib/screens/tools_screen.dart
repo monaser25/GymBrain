@@ -773,6 +773,20 @@ class _ToolsScreenState extends State<ToolsScreen>
                 ],
               ),
             ),
+
+            const SizedBox(height: 12),
+
+            // Estimated values disclaimer
+            Text(
+              AppLocalizations.of(context)?.disclaimerEstimated ??
+                  "These are estimated values based on standard formulas.",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 11,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
           ],
         ],
       ),

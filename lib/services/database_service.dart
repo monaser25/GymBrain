@@ -82,11 +82,15 @@ class GymDatabase extends ChangeNotifier {
   Future<void> setEnableAiFeedback(bool enable) async =>
       _settingsBox.put('enable_ai_feedback', enable);
 
-  // Default Weight Unit Setting (true = KG, false = LB)
+  // Default Weight Unit Setting (true = KG, false = LB) - for GYM weights
   bool get defaultIsKg => _settingsBox.get('default_is_kg', defaultValue: true);
   Future<void> setDefaultIsKg(bool isKg) async =>
       _settingsBox.put('default_is_kg', isKg);
 
+  // Body Weight Unit Setting (true = KG, false = LB) - separate from gym weights
+  bool get isBodyWeightKg => _settingsBox.get('is_body_weight_kg', defaultValue: true);
+  Future<void> setIsBodyWeightKg(bool isKg) async =>
+      _settingsBox.put('is_body_weight_kg', isKg);
   // Workout Reminder Setting
   bool get enableWorkoutReminder =>
       _settingsBox.get('enable_workout_reminder', defaultValue: true);
