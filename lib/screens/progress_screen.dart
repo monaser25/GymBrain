@@ -136,18 +136,21 @@ class _ProgressScreenState extends State<ProgressScreen>
     // Single Views (Zoomed) vs Combined (0-based)
     if (_selectedBodyMetric == null) {
       minY = 0;
-    } else {
-      // Avoid flat line in zoomed view
-      if (maxY == minY) {
-        maxY += 2.5;
-        minY -= 2.5;
-      }
+    }
+
+    if (maxY <= minY) {
+      maxY += 5;
+      minY -= 5;
     }
 
     if (minY < 0) minY = 0;
+    if (maxY <= minY) maxY = minY + 5; // Second check bounds safety
 
-    double interval = (maxY - minY) == 0 ? 1 : (maxY - minY) / 5;
+    double interval = (maxY - minY) / 5;
     if (interval <= 0) interval = 1;
+
+    double xInterval = (chartData.length / 4).ceilToDouble();
+    if (xInterval <= 0) xInterval = 1;
 
     // Sort newest first for the list/stats
     final recentRecords = List<InBodyRecord>.from(records)
@@ -372,8 +375,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                                       sideTitles: SideTitles(
                                         showTitles: true,
                                         reservedSize: 22,
-                                        interval: (chartData.length / 4)
-                                            .ceilToDouble(),
+                                        interval: xInterval,
                                         getTitlesWidget: (value, meta) {
                                           final index = value.toInt();
                                           if (index >= 0 &&
@@ -1032,14 +1034,18 @@ class _ProgressScreenState extends State<ProgressScreen>
                                 minVal = 0;
                               }
 
-                              if (maxVal == minVal) {
+                              if (maxVal <= minVal) {
                                 maxVal += 5;
                                 minVal -= 5;
                                 if (minVal < 0) minVal = 0;
+                                if (maxVal <= minVal) maxVal = minVal + 5; // Second check bounds safety
                               }
 
-                              double exInterval = (maxVal - minVal) == 0 ? 1 : (maxVal - minVal) / 5;
+                              double exInterval = (maxVal - minVal) / 5;
                               if (exInterval <= 0) exInterval = 1;
+                              
+                              double exXInterval = (filteredHistory.length / 4).ceilToDouble();
+                              if (exXInterval <= 0) exXInterval = 1;
 
                               return LineChart(
                                 LineChartData(
@@ -1055,8 +1061,7 @@ class _ProgressScreenState extends State<ProgressScreen>
                                       sideTitles: SideTitles(
                                         showTitles: true,
                                         reservedSize: 22,
-                                        interval: (filteredHistory.length / 4)
-                                            .ceilToDouble(),
+                                        interval: exXInterval,
                                         getTitlesWidget: (value, meta) {
                                           final index = value.toInt();
                                           if (index >= 0 &&
