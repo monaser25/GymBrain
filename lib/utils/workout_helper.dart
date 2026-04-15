@@ -124,3 +124,14 @@ String? getLocalizedExerciseNote(BuildContext context, String? englishNote) {
     default: return englishNote;
   }
 }
+
+String formatDuration(Duration duration, String locale) {
+  if (locale == 'ar') {
+    return duration.inHours > 0
+        ? "${duration.inHours} س ${duration.inMinutes.remainder(60)} د"
+        : "${duration.inMinutes} د ${duration.inSeconds.remainder(60)} ث";
+  }
+  return duration.inHours > 0
+      ? "${duration.inHours}h ${duration.inMinutes.remainder(60)}m"
+      : "${duration.inMinutes}m ${duration.inSeconds.remainder(60)}s";
+}

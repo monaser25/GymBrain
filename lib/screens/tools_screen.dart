@@ -127,15 +127,15 @@ class _ToolsScreenState extends State<ToolsScreen>
   List<Map<String, dynamic>> _getBarWeightOptions(BuildContext context) {
     if (_isMetric) {
       return [
-        {'value': 20.0, 'label': '20 ${_getUnitLabel(context)} (Olympic Standard)'},
-        {'value': 15.0, 'label': '15 ${_getUnitLabel(context)} (Women\'s Olympic)'},
-        {'value': 10.0, 'label': '10 ${_getUnitLabel(context)} (Training Bar)'},
+        {'value': 20.0, 'label': '20 ${_getUnitLabel(context)} (${AppLocalizations.of(context)?.olympicStandard ?? 'Olympic Standard'})'},
+        {'value': 15.0, 'label': '15 ${_getUnitLabel(context)} (${AppLocalizations.of(context)?.womensPrefix ?? 'Women\'s'} Bar)'},
+        {'value': 10.0, 'label': '10 ${_getUnitLabel(context)} (${AppLocalizations.of(context)?.trainingPrefix ?? 'Training'} Bar)'},
       ];
     } else {
       return [
-        {'value': 45.0, 'label': '45 ${_getUnitLabel(context)} (Standard)'},
-        {'value': 35.0, 'label': '35 ${_getUnitLabel(context)} (Women\'s)'},
-        {'value': 15.0, 'label': '15 ${_getUnitLabel(context)} (Training Bar)'},
+        {'value': 45.0, 'label': '45 ${_getUnitLabel(context)} (${AppLocalizations.of(context)?.standardPrefix ?? 'Standard'})'},
+        {'value': 35.0, 'label': '35 ${_getUnitLabel(context)} (${AppLocalizations.of(context)?.womensPrefix ?? 'Women\'s'})'},
+        {'value': 15.0, 'label': '15 ${_getUnitLabel(context)} (${AppLocalizations.of(context)?.trainingPrefix ?? 'Training'} Bar)'},
       ];
     }
   }
@@ -230,13 +230,13 @@ class _ToolsScreenState extends State<ToolsScreen>
           builder: (context, setDialogState) {
             return AlertDialog(
               backgroundColor: const Color(0xFF1C1C1E),
-              title: const Row(
+              title: Row(
                 children: [
-                  Icon(Icons.tune, color: Color(0xFF39FF14), size: 24),
-                  SizedBox(width: 12),
+                  const Icon(Icons.tune, color: Color(0xFF39FF14), size: 24),
+                  const SizedBox(width: 12),
                   Text(
-                    "Plate Inventory",
-                    style: TextStyle(color: Colors.white),
+                    AppLocalizations.of(context)?.plateInventory ?? "Plate Inventory",
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ],
               ),
@@ -248,7 +248,7 @@ class _ToolsScreenState extends State<ToolsScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Uncheck plates you don't have at your gym.",
+                        AppLocalizations.of(context)?.plateInventoryDesc ?? "Uncheck plates you don't have at your gym.",
                         style: TextStyle(color: Colors.grey[400], fontSize: 13),
                       ),
                       const SizedBox(height: 20),
@@ -343,9 +343,9 @@ class _ToolsScreenState extends State<ToolsScreen>
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    "Cancel",
-                    style: TextStyle(color: Colors.grey),
+                  child: Text(
+                    AppLocalizations.of(context)?.cancelBtn ?? "Cancel",
+                    style: const TextStyle(color: Colors.grey),
                   ),
                 ),
                 ElevatedButton(
@@ -378,7 +378,7 @@ class _ToolsScreenState extends State<ToolsScreen>
                     backgroundColor: const Color(0xFF39FF14),
                     foregroundColor: Colors.black,
                   ),
-                  child: const Text("Save"),
+                  child: Text(AppLocalizations.of(context)?.save ?? "Save"),
                 ),
               ],
             );
@@ -466,7 +466,7 @@ class _ToolsScreenState extends State<ToolsScreen>
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  "Calculate your estimated 1RM using the Epley formula",
+                  AppLocalizations.of(context)?.calculateEstimated1rm ?? "Calculate your estimated 1RM using the Epley formula",
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Colors.grey[500], fontSize: 13),
                 ),
@@ -982,7 +982,7 @@ class _ToolsScreenState extends State<ToolsScreen>
             suffix: _getUnitLabel(context),
             actionIcon: IconButton(
               icon: const Icon(Icons.tune, color: Color(0xFF39FF14), size: 22),
-              tooltip: "Plate Inventory",
+              tooltip: AppLocalizations.of(context)?.plateInventory ?? "Plate Inventory",
               onPressed: _showPlateInventoryDialog,
             ),
           ),

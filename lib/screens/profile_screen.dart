@@ -16,19 +16,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // Profile Data
   String? _userName;
-  int? _userAge;
+  DateTime? _userDob;
+  int? get _userAge => _userDob != null ? calculateAge(_userDob!) : null;
+
+  int calculateAge(DateTime dob) {
+    final now = DateTime.now();
+    int age = now.year - dob.year;
+    if (now.month < dob.month || (now.month == dob.month && now.day < dob.day)) {
+      age--;
+    }
+    return age;
+  }
   double? _userHeightCm;
   String? _userGender;
   double? _activityLevel;
 
   // Activity Level Options
-  static final Map<double, String> activityLevels = {
-    1.2: "Sedentary (little or no exercise)",
-    1.375: "Lightly active (1-3 days/week)",
-    1.55: "Moderately active (3-5 days/week)",
-    1.725: "Very active (6-7 days/week)",
-    1.9: "Extra active (very hard exercise)",
-  };
+  Map<double, String> _getActivityLevels(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return {
+      1.2: l10n?.activitySedentary ?? "Sedentary (little or no exercise)",
+      1.375: l10n?.activityLightly ?? "Lightly active (1-3 days/week)",
+      1.55: l10n?.activityModerately ?? "Moderately active (3-5 days/week)",
+      1.725: l10n?.activityVery ?? "Very active (6-7 days/week)",
+      1.9: l10n?.activityExtra ?? "Extra active (very hard exercise)",
+    };
+  }
 
   @override
   void initState() {
@@ -40,7 +53,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final settingsBox = _db.settingsBox;
     setState(() {
       _userName = settingsBox.get('user_name');
-      _userAge = settingsBox.get('user_age');
+      final dobStr = settingsBox.get('user_dob');
+      if (dobStr != null) {
+        _userDob = DateTime.tryParse(dobStr);
+      } else if (settingsBox.containsKey('user_age')) {
+        final age = settingsBox.get('user_age');
+        if (age is int) {
+          _userDob = DateTime.now().subtract(Duration(days: age * 365));
+          _db.settingsBox.put('user_dob', _userDob!.toIso8601String());
+        }
+      }
       _userHeightCm = settingsBox.get('user_height_cm');
       _userGender = settingsBox.get('user_gender');
       _activityLevel = settingsBox.get('activity_level');
@@ -65,11 +87,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return weight / ((height / 100) * (height / 100));
   }
 
-  String _getBmiCategory(double bmi) {
-    if (bmi < 18.5) return "Underweight";
-    if (bmi < 25) return "Normal";
-    if (bmi < 30) return "Overweight";
-    return "Obese";
+  String _getBmiCategory(BuildContext context, double bmi) {
+    if (bmi < 18.5) return AppLocalizations.of(context)?.bmiUnderweight ?? "Underweight";
+    if (bmi < 25) return AppLocalizations.of(context)?.bmiNormal ?? "Normal";
+    if (bmi < 30) return AppLocalizations.of(context)?.bmiOverweight ?? "Overweight";
+    return AppLocalizations.of(context)?.bmiObese ?? "Obese";
   }
 
   Color _getBmiColor(double bmi) {
@@ -145,28 +167,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _buildInfoTile(
               icon: Icons.cake_outlined,
               label: AppLocalizations.of(context)?.age ?? "Age",
-              value: _userAge != null ? "$_userAge years" : "Tap to set",
-              onTap: () => _editAge(),
+              value: _userAge != null ? "$_userAge ${AppLocalizations.of(context)?.yearsOld ?? 'years'}" : "Tap to set",
+              onTap: () => _editDob(),
             ),
             _buildInfoTile(
               icon: Icons.height,
               label: AppLocalizations.of(context)?.height ?? "Height",
               value: _userHeightCm != null
-                  ? "${_userHeightCm!.toStringAsFixed(1)} cm"
+                  ? "${_userHeightCm!.toStringAsFixed(1)} ${AppLocalizations.of(context)?.cmLabel ?? 'cm'}"
                   : "Tap to set",
               onTap: () => _editHeight(),
             ),
             _buildInfoTile(
               icon: Icons.wc_outlined,
               label: AppLocalizations.of(context)?.gender ?? "Gender",
-              value: _userGender ?? "Tap to set",
+              value: _userGender != null 
+                  ? (_userGender == 'Male' ? (AppLocalizations.of(context)?.male ?? 'Male') : (AppLocalizations.of(context)?.female ?? 'Female'))
+                  : "Tap to set",
               onTap: () => _editGender(),
             ),
             _buildInfoTile(
               icon: Icons.directions_run,
               label: AppLocalizations.of(context)?.activityLevel ?? "Activity Level",
               value: _activityLevel != null
-                  ? activityLevels[_activityLevel] ?? "Custom"
+                  ? _getActivityLevels(context)[_activityLevel] ?? "Custom"
                   : "Tap to set",
               onTap: () => _editActivityLevel(),
             ),
@@ -189,7 +213,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               icon: Icons.monitor_weight_outlined,
               label: AppLocalizations.of(context)?.currentWeight ?? "Current Weight",
               value: _currentWeight != null
-                  ? "${_currentWeight!.toStringAsFixed(1)} kg"
+                  ? "${_currentWeight!.toStringAsFixed(1)} ${AppLocalizations.of(context)?.kgLabel ?? 'kg'}"
                   : "Add in Stats tab",
               onTap: () {
                 Navigator.push(
@@ -277,7 +301,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    _getBmiCategory(bmi),
+                    _getBmiCategory(context, bmi),
                     style: TextStyle(
                       color: _getBmiColor(bmi),
                       fontSize: 12,
@@ -345,10 +369,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
                         if (tdee != null)
-                          const Padding(
-                            padding: EdgeInsets.only(bottom: 6, left: 4),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 6, left: 4),
                             child: Text(
-                              "kcal",
+                              AppLocalizations.of(context)?.kcalLabel ?? "kcal",
                               style: TextStyle(
                                 color: Colors.grey,
                                 fontSize: 14,
@@ -474,7 +498,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+            child: Text(AppLocalizations.of(context)?.cancelBtn ?? "Cancel", style: const TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -488,60 +512,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
               backgroundColor: const Color(0xFF39FF14),
               foregroundColor: Colors.black,
             ),
-            child: const Text("Save"),
+            child: Text(AppLocalizations.of(context)?.save ?? "Save"),
           ),
         ],
       ),
     );
   }
 
-  void _editAge() {
-    final controller = TextEditingController(text: _userAge?.toString() ?? "");
-    showDialog(
+  Future<void> _editDob() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1C1C1E),
-        title: Text(AppLocalizations.of(context)?.editAgeTitle ?? "Edit Age", style: const TextStyle(color: Colors.white)),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          style: const TextStyle(color: Colors.white),
-          cursorColor: const Color(0xFF39FF14),
-          decoration: const InputDecoration(
-            hintText: "Age in years",
-            hintStyle: TextStyle(color: Colors.grey),
-            enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.grey),
-            ),
-            focusedBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: Color(0xFF39FF14)),
+      initialDate: _userDob ?? now.subtract(const Duration(days: 365 * 25)),
+      firstDate: DateTime(1900),
+      lastDate: now,
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFF39FF14),
+              onPrimary: Colors.black,
+              surface: Color(0xFF1C1C1E),
+              onSurface: Colors.white,
             ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final age = int.tryParse(controller.text);
-              if (age != null && age > 0 && age < 150) {
-                _saveField('user_age', age);
-              }
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF39FF14),
-              foregroundColor: Colors.black,
-            ),
-            child: const Text("Save"),
-          ),
-        ],
-      ),
+          child: child!,
+        );
+      },
     );
+    if (picked != null && picked != _userDob) {
+      await _saveField('user_dob', picked.toIso8601String());
+    }
   }
 
   void _editHeight() {
@@ -559,11 +560,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           style: const TextStyle(color: Colors.white),
           cursorColor: const Color(0xFF39FF14),
-          decoration: const InputDecoration(
-            hintText: "Height in cm",
-            hintStyle: TextStyle(color: Colors.grey),
-            suffixText: "cm",
-            suffixStyle: TextStyle(color: Colors.grey),
+          decoration: InputDecoration(
+            hintText: "Height in ${AppLocalizations.of(context)?.cmLabel ?? 'cm'}",
+            hintStyle: const TextStyle(color: Colors.grey),
+            suffixText: AppLocalizations.of(context)?.cmLabel ?? "cm",
+            suffixStyle: const TextStyle(color: Colors.grey),
             enabledBorder: UnderlineInputBorder(
               borderSide: BorderSide(color: Colors.grey),
             ),
@@ -575,7 +576,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+            child: Text(AppLocalizations.of(context)?.cancelBtn ?? "Cancel", style: const TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -589,7 +590,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               backgroundColor: const Color(0xFF39FF14),
               foregroundColor: Colors.black,
             ),
-            child: const Text("Save"),
+            child: Text(AppLocalizations.of(context)?.save ?? "Save"),
           ),
         ],
       ),
@@ -669,12 +670,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         backgroundColor: const Color(0xFF1C1C1E),
         title: Text(
           AppLocalizations.of(context)?.activityLevelTitle ?? "Activity Level",
-          style: TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white),
         ),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: activityLevels.entries.map((entry) {
+            children: _getActivityLevels(context).entries.map((entry) {
               final isSelected = _activityLevel == entry.key;
               return GestureDetector(
                 onTap: () {

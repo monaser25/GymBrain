@@ -110,7 +110,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               backgroundColor: Colors.orange,
               foregroundColor: Colors.white,
             ),
-            child: const Text("Restore"),
+            child: Text(AppLocalizations.of(context)?.restoreBackup ?? "Restore"),
           ),
         ],
       ),
@@ -188,7 +188,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      "App localization",
+                      AppLocalizations.of(context)?.languageDesc ?? "App localization",
                       style: TextStyle(color: Colors.grey[600], fontSize: 13),
                     ),
                   ],
@@ -331,7 +331,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             subtitle: Text(
-              "Play a beep when the timer ends",
+              AppLocalizations.of(context)?.timerDesc ?? "Play a beep when the timer ends",
               style: TextStyle(color: Colors.grey[600]),
             ),
             value: _soundEnabled,
@@ -355,7 +355,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             subtitle: Text(
-              "Send a notification if app is in background",
+              AppLocalizations.of(context)?.alertsDesc ?? "Send a notification if app is in background",
               style: TextStyle(color: Colors.grey[600]),
             ),
             value: _notificationsEnabled,
@@ -379,7 +379,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             subtitle: Text(
-              "Display performance tips after each set",
+              AppLocalizations.of(context)?.feedbackDesc ?? "Display performance tips after each set",
               style: TextStyle(color: Colors.grey[600]),
             ),
             value: _aiFeedbackEnabled,
@@ -406,7 +406,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            "Backup your data to keep it safe or transfer to another device.",
+            AppLocalizations.of(context)?.dataManDesc ?? "Backup your data to keep it safe or transfer to another device.",
             style: TextStyle(color: Colors.grey[600], fontSize: 13),
           ),
           const SizedBox(height: 24),

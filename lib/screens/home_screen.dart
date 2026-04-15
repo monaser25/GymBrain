@@ -362,7 +362,7 @@ class _DashboardView extends StatelessWidget {
 
         if (lastSession != null) {
           lastWorkoutTitle = lastSession.routineName;
-          lastWorkoutTime = _timeAgo(lastSession.date);
+          lastWorkoutTime = _timeAgo(context, lastSession.date);
         }
 
         // Fetch Weight
@@ -503,7 +503,7 @@ class _DashboardView extends StatelessWidget {
                             title: AppLocalizations.of(context)!.currentWeight,
                             value: weightString,
                             subtitle: lastInBody != null
-                                ? DateFormat('MMM d').format(lastInBody.date)
+                                ? DateFormat.MMMd(locale).format(lastInBody.date)
                                 : "",
                             icon: Icons.monitor_weight_outlined,
                             color: Colors.white,
@@ -696,13 +696,14 @@ class _DashboardView extends StatelessWidget {
     );
   }
 
-  String _timeAgo(DateTime d) {
+  String _timeAgo(BuildContext context, DateTime d) {
     final diff = DateTime.now().difference(d);
-    if (diff.inDays > 365) return "${(diff.inDays / 365).floor()}y ago";
-    if (diff.inDays > 30) return "${(diff.inDays / 30).floor()}mo ago";
-    if (diff.inDays > 0) return "${diff.inDays}d ago";
-    if (diff.inHours > 0) return "${diff.inHours}h ago";
-    if (diff.inMinutes > 0) return "${diff.inMinutes}m ago";
+    final loc = AppLocalizations.of(context);
+    if (diff.inDays > 365) return loc?.yearsAgo((diff.inDays / 365).floor()) ?? "${(diff.inDays / 365).floor()}y ago";
+    if (diff.inDays > 30) return loc?.monthsAgo((diff.inDays / 30).floor()) ?? "${(diff.inDays / 30).floor()}mo ago";
+    if (diff.inDays > 0) return loc?.daysAgo(diff.inDays) ?? "${diff.inDays}d ago";
+    if (diff.inHours > 0) return loc?.hoursAgo(diff.inHours) ?? "${diff.inHours}h ago";
+    if (diff.inMinutes > 0) return loc?.minsAgo(diff.inMinutes) ?? "${diff.inMinutes}m ago";
     return "Just now";
   }
 

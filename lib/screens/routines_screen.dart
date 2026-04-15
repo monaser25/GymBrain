@@ -7,6 +7,7 @@ import 'routine_editor_screen.dart';
 import 'exercise_library_screen.dart';
 import '../utils/workout_helper.dart';
 import 'active_workout_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class RoutinesScreen extends StatelessWidget {
   const RoutinesScreen({super.key});
@@ -16,9 +17,9 @@ class RoutinesScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text(
-          "My Routines",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        title: Text(
+          AppLocalizations.of(context)?.myRoutines ?? "My Routines",
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -78,7 +79,7 @@ class RoutinesScreen extends StatelessWidget {
                     ),
                   ),
                   subtitle: Text(
-                    "${routine.exerciseIds.length} Exercises",
+                    "${routine.exerciseIds.length} ${AppLocalizations.of(context)?.exercises ?? 'Exercises'}",
                     style: TextStyle(color: Colors.grey[500], fontSize: 13),
                   ),
                   trailing: Row(
@@ -150,7 +151,7 @@ class RoutinesScreen extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+              child: Text(AppLocalizations.of(context)?.cancelBtn ?? "Cancel", style: const TextStyle(color: Colors.grey)),
             ),
             TextButton(
               onPressed: () async {
@@ -176,24 +177,24 @@ class RoutinesScreen extends StatelessWidget {
       builder: (context) {
         return AlertDialog(
           backgroundColor: const Color(0xFF1C1C1E),
-          title: const Text(
-            "New Routine",
-            style: TextStyle(color: Colors.white),
+          title: Text(
+            AppLocalizations.of(context)?.newRoutine ?? "New Routine",
+            style: const TextStyle(color: Colors.white),
           ),
           content: SingleChildScrollView(
             child: TextField(
               controller: nameController,
               style: const TextStyle(color: Colors.white),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 filled: true,
-                fillColor: Color(0xFF2C2C2E),
-                hintText: "e.g., Push Day",
-                hintStyle: TextStyle(color: Colors.grey),
-                border: OutlineInputBorder(
+                fillColor: const Color(0xFF2C2C2E),
+                hintText: AppLocalizations.of(context)?.egPushDay ?? "e.g., Push Day",
+                hintStyle: const TextStyle(color: Colors.grey),
+                border: const OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(12)),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: EdgeInsets.symmetric(
+                contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 14,
                 ),
@@ -204,7 +205,7 @@ class RoutinesScreen extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+              child: Text(AppLocalizations.of(context)?.cancelBtn ?? "Cancel", style: const TextStyle(color: Colors.grey)),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -224,9 +225,9 @@ class RoutinesScreen extends StatelessWidget {
                 backgroundColor: const Color(0xFF39FF14),
                 foregroundColor: Colors.black,
               ),
-              child: const Text(
-                "Create",
-                style: TextStyle(fontWeight: FontWeight.bold),
+              child: Text(
+                AppLocalizations.of(context)?.save ?? "Create",
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
           ],

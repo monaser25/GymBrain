@@ -162,5 +162,85 @@
   "effortWarmup": "Warm-up",
   "yearsOld": "years",
   "restFinishedTitle": "Rest Finished! 🔔",
-  "timeToCrush": "Time to crush your next set of"
+  "timeToCrush": "Time to crush your next set of",
+  "yearsAgo": "{count}y ago",
+  "@yearsAgo": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "monthsAgo": "{count}mo ago",
+  "@monthsAgo": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "daysAgo": "{count}d ago",
+  "@daysAgo": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "hoursAgo": "{count}h ago",
+  "@hoursAgo": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "minsAgo": "{count}m ago",
+  "@minsAgo": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "setOf": "set {current} of {total}",
+  "@setOf": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "myRoutines": "My Routines",
+  "newRoutine": "new routine",
+  "addedLabel": "Added",
+  "calculateEstimated1rm": "Calculate estimated 1RM",
+  "plateInventory": "Plate Inventory",
+  "timerDesc": "Play a beep when the timer ends",
+  "alertsDesc": "Send a notification if app is in background",
+  "feedbackDesc": "Display performance tips after each set",
+  "dataManDesc": "Backup your data to keep it safe or transfer to another device.",
+  "egPushDay": "e.g., Push Day",
+  "standardPrefix": "Standard",
+  "olympicStandard": "Olympic Standard",
+  "womensPrefix": "Women's",
+  "trainingPrefix": "Training",
+  "bmiUnderweight": "Underweight",
+  "bmiNormal": "Normal",
+  "bmiOverweight": "Overweight",
+  "bmiObese": "Obese",
+  "plateInventory": "Plate Inventory",
+  "plateInventoryDesc": "Uncheck plates you don't have at your gym.",
+  "calculateEstimated1rm": "Calculate your estimated 1RM using the Epley formula",
+  "noBodyStats": "No stats yet. Add your data with the + button!",
+  "addDataToSeeChart": "Add data to see chart",
+  "delete": "Delete",
+  "selectExOrRoutine": "Select Exercise or Routine",
+  "languageDesc": "Choose your preferred language",
+  "workoutHistory": "Workout History",
+  "noWorkouts": "No workouts recorded yet.",
+  "deleteWorkout": "Delete Workout?",
+  "deleteUndone": "This action cannot be undone.",
+  "durationLabel": "Duration",
+  "volumeLabel": "Volume",
+  "setsLabel": "Sets",
+  "workoutDeleted": "Workout deleted",
+  "noExercisesFound": "No exercises found",
+  "activitySedentary": "Sedentary (little or no exercise)",
+  "activityLightly": "Lightly active (1-3 days/week)",
+  "activityModerately": "Moderately active (3-5 days/week)",
+  "activityVery": "Very active (6-7 days/week)",
+  "activityExtra": "Extra active (very hard exercise)",
+  "cmLabel": "cm",
+  "kcalLabel": "kcal",
+  "sessionBreakdown": "Session Breakdown"
 }

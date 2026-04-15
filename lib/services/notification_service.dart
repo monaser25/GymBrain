@@ -102,6 +102,7 @@ class NotificationService {
           priority: Priority.high,
           ticker: 'ticker',
           playSound: playSound,
+          icon: '@mipmap/ic_launcher',
           // Vibration pattern for both (optional, but good for silent)
           vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
         ),

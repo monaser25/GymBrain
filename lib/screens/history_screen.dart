@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import '../models/gym_models.dart';
 import '../services/database_service.dart';
 import 'workout_detail_screen.dart';
+import '../l10n/app_localizations.dart';
+import '../utils/workout_helper.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -34,9 +36,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text(
-          "Workout History",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        title: Text(
+          AppLocalizations.of(context)?.workoutHistory ?? "Workout History",
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -52,9 +54,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 children: [
                   Icon(Icons.history, size: 60, color: Colors.grey[800]),
                   const SizedBox(height: 16),
-                  const Text(
-                    "No workouts recorded yet.",
-                    style: TextStyle(color: Colors.grey),
+                  Text(
+                    AppLocalizations.of(context)?.noWorkouts ?? "No workouts recorded yet.",
+                    style: const TextStyle(color: Colors.grey),
                   ),
                 ],
               ),
@@ -86,27 +88,27 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       context: context,
                       builder: (ctx) => AlertDialog(
                         backgroundColor: const Color(0xFF1C1C1E),
-                        title: const Text(
-                          "Delete Workout?",
-                          style: TextStyle(color: Colors.white),
+                        title: Text(
+                          AppLocalizations.of(context)?.deleteWorkout ?? "Delete Workout?",
+                          style: const TextStyle(color: Colors.white),
                         ),
-                        content: const Text(
-                          "This action cannot be undone.",
-                          style: TextStyle(color: Colors.white70),
+                        content: Text(
+                          AppLocalizations.of(context)?.deleteUndone ?? "This action cannot be undone.",
+                          style: const TextStyle(color: Colors.white70),
                         ),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(ctx, false),
-                            child: const Text(
-                              "Cancel",
-                              style: TextStyle(color: Colors.grey),
+                            child: Text(
+                              AppLocalizations.of(context)?.cancelBtn ?? "Cancel",
+                              style: const TextStyle(color: Colors.grey),
                             ),
                           ),
                           TextButton(
                             onPressed: () => Navigator.pop(ctx, true),
-                            child: const Text(
-                              "Delete",
-                              style: TextStyle(color: Colors.redAccent),
+                            child: Text(
+                              AppLocalizations.of(context)?.delete ?? "Delete",
+                              style: const TextStyle(color: Colors.redAccent),
                             ),
                           ),
                         ],
@@ -133,16 +135,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       );
                     }
                   },
-                  child: _buildHistoryCard(session),
+                  child: _buildHistoryCard(context, session),
                 );
               },
             ),
     );
   }
 
-  Widget _buildHistoryCard(WorkoutSession session) {
-    final dateFormat = DateFormat('EEE, MMM d');
-    final timeFormat = DateFormat('h:mm a');
+  Widget _buildHistoryCard(BuildContext context, WorkoutSession session) {
+    final langCode = Localizations.localeOf(context).languageCode;
+    final localeName = langCode == 'ar' ? 'ar' : 'en_US';
+    final dateFormat = DateFormat.MMMd(localeName);
+    final timeFormat = DateFormat.jm(localeName);
 
     // Calculate Volume (Normalized to KG)
     double totalVolume = 0;
@@ -157,12 +161,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
     // Format Duration
     final duration = Duration(seconds: session.durationInSeconds);
-    String durationString =
-        "${duration.inMinutes}m ${duration.inSeconds.remainder(60)}s";
-    if (duration.inHours > 0) {
-      durationString =
-          "${duration.inHours}h ${duration.inMinutes.remainder(60)}m";
-    }
+    String durationString = formatDuration(duration, langCode);
 
     return GestureDetector(
       onTap: () async {
@@ -218,12 +217,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildStatItem("DURATION", durationString),
+                _buildStatItem(AppLocalizations.of(context)?.durationLabel.toUpperCase() ?? "DURATION", durationString),
                 _buildStatItem(
-                  "VOLUME",
-                  "${totalVolume.toStringAsFixed(1)} kg",
+                  AppLocalizations.of(context)?.volumeLabel.toUpperCase() ?? "VOLUME",
+                  "${totalVolume.toStringAsFixed(1)} ${AppLocalizations.of(context)?.kgLabel ?? 'kg'}",
                 ),
-                _buildStatItem("SETS", "${session.sets.length}"),
+                _buildStatItem(AppLocalizations.of(context)?.setsLabel.toUpperCase() ?? "SETS", "${session.sets.length}"),
               ],
             ),
           ],

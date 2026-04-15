@@ -218,7 +218,7 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+              child: Text(AppLocalizations.of(context)?.cancelBtn ?? "Cancel", style: const TextStyle(color: Colors.grey)),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -478,7 +478,7 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
                                           ),
                                         ),
                                         trailing: isAlreadyInRoutine
-                                            ? Text("Added ✓", style: TextStyle(color: Colors.grey[600], fontSize: 12))
+                                            ? Text("${AppLocalizations.of(context)?.addedLabel ?? 'Added'} ✓", style: TextStyle(color: Colors.grey[600], fontSize: 12))
                                             : (isSelected
                                                 ? const Icon(
                                                     Icons.check,

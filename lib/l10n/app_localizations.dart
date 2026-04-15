@@ -503,7 +503,7 @@ abstract class AppLocalizations {
   /// No description provided for @deleteWorkout.
   ///
   /// In en, this message translates to:
-  /// **'Delete Workout'**
+  /// **'Delete Workout?'**
   String get deleteWorkout;
 
   /// No description provided for @myProfile.
@@ -961,6 +961,282 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Time to crush your next set of'**
   String get timeToCrush;
+
+  /// No description provided for @yearsAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}y ago'**
+  String yearsAgo(int count);
+
+  /// No description provided for @monthsAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}mo ago'**
+  String monthsAgo(int count);
+
+  /// No description provided for @daysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}d ago'**
+  String daysAgo(int count);
+
+  /// No description provided for @hoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}h ago'**
+  String hoursAgo(int count);
+
+  /// No description provided for @minsAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}m ago'**
+  String minsAgo(int count);
+
+  /// No description provided for @setOf.
+  ///
+  /// In en, this message translates to:
+  /// **'set {current} of {total}'**
+  String setOf(int current, int total);
+
+  /// No description provided for @myRoutines.
+  ///
+  /// In en, this message translates to:
+  /// **'My Routines'**
+  String get myRoutines;
+
+  /// No description provided for @newRoutine.
+  ///
+  /// In en, this message translates to:
+  /// **'new routine'**
+  String get newRoutine;
+
+  /// No description provided for @addedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Added'**
+  String get addedLabel;
+
+  /// No description provided for @calculateEstimated1rm.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculate your estimated 1RM using the Epley formula'**
+  String get calculateEstimated1rm;
+
+  /// No description provided for @plateInventory.
+  ///
+  /// In en, this message translates to:
+  /// **'Plate Inventory'**
+  String get plateInventory;
+
+  /// No description provided for @timerDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Play a beep when the timer ends'**
+  String get timerDesc;
+
+  /// No description provided for @alertsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Send a notification if app is in background'**
+  String get alertsDesc;
+
+  /// No description provided for @feedbackDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Display performance tips after each set'**
+  String get feedbackDesc;
+
+  /// No description provided for @dataManDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup your data to keep it safe or transfer to another device.'**
+  String get dataManDesc;
+
+  /// No description provided for @egPushDay.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Push Day'**
+  String get egPushDay;
+
+  /// No description provided for @standardPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Standard'**
+  String get standardPrefix;
+
+  /// No description provided for @olympicStandard.
+  ///
+  /// In en, this message translates to:
+  /// **'Olympic Standard'**
+  String get olympicStandard;
+
+  /// No description provided for @womensPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Women\'s'**
+  String get womensPrefix;
+
+  /// No description provided for @trainingPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Training'**
+  String get trainingPrefix;
+
+  /// No description provided for @bmiUnderweight.
+  ///
+  /// In en, this message translates to:
+  /// **'Underweight'**
+  String get bmiUnderweight;
+
+  /// No description provided for @bmiNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get bmiNormal;
+
+  /// No description provided for @bmiOverweight.
+  ///
+  /// In en, this message translates to:
+  /// **'Overweight'**
+  String get bmiOverweight;
+
+  /// No description provided for @bmiObese.
+  ///
+  /// In en, this message translates to:
+  /// **'Obese'**
+  String get bmiObese;
+
+  /// No description provided for @plateInventoryDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Uncheck plates you don\'t have at your gym.'**
+  String get plateInventoryDesc;
+
+  /// No description provided for @noBodyStats.
+  ///
+  /// In en, this message translates to:
+  /// **'No stats yet. Add your data with the + button!'**
+  String get noBodyStats;
+
+  /// No description provided for @addDataToSeeChart.
+  ///
+  /// In en, this message translates to:
+  /// **'Add data to see chart'**
+  String get addDataToSeeChart;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @selectExOrRoutine.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Exercise or Routine'**
+  String get selectExOrRoutine;
+
+  /// No description provided for @languageDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your preferred language'**
+  String get languageDesc;
+
+  /// No description provided for @workoutHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout History'**
+  String get workoutHistory;
+
+  /// No description provided for @noWorkouts.
+  ///
+  /// In en, this message translates to:
+  /// **'No workouts recorded yet.'**
+  String get noWorkouts;
+
+  /// No description provided for @deleteUndone.
+  ///
+  /// In en, this message translates to:
+  /// **'This action cannot be undone.'**
+  String get deleteUndone;
+
+  /// No description provided for @durationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get durationLabel;
+
+  /// No description provided for @volumeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume'**
+  String get volumeLabel;
+
+  /// No description provided for @setsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sets'**
+  String get setsLabel;
+
+  /// No description provided for @workoutDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout deleted'**
+  String get workoutDeleted;
+
+  /// No description provided for @noExercisesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No exercises found'**
+  String get noExercisesFound;
+
+  /// No description provided for @activitySedentary.
+  ///
+  /// In en, this message translates to:
+  /// **'Sedentary (little or no exercise)'**
+  String get activitySedentary;
+
+  /// No description provided for @activityLightly.
+  ///
+  /// In en, this message translates to:
+  /// **'Lightly active (1-3 days/week)'**
+  String get activityLightly;
+
+  /// No description provided for @activityModerately.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderately active (3-5 days/week)'**
+  String get activityModerately;
+
+  /// No description provided for @activityVery.
+  ///
+  /// In en, this message translates to:
+  /// **'Very active (6-7 days/week)'**
+  String get activityVery;
+
+  /// No description provided for @activityExtra.
+  ///
+  /// In en, this message translates to:
+  /// **'Extra active (very hard exercise)'**
+  String get activityExtra;
+
+  /// No description provided for @cmLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'cm'**
+  String get cmLabel;
+
+  /// No description provided for @kcalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'kcal'**
+  String get kcalLabel;
+
+  /// No description provided for @sessionBreakdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Session Breakdown'**
+  String get sessionBreakdown;
 }
 
 class _AppLocalizationsDelegate

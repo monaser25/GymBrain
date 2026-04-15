@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/gym_models.dart';
-
 import '../services/database_service.dart';
+import '../l10n/app_localizations.dart';
+import '../utils/workout_helper.dart';
 
 class WorkoutDetailScreen extends StatelessWidget {
   final WorkoutSession session;
@@ -20,7 +21,9 @@ class WorkoutDetailScreen extends StatelessWidget {
       groupedSets[set.exerciseName]!.add(set);
     }
 
-    final dateFormat = DateFormat('EEE, MMM d, yyyy');
+    final langCode = Localizations.localeOf(context).languageCode;
+    final localeName = langCode == 'ar' ? 'ar' : 'en_US';
+    final dateFormat = DateFormat.yMMMd(localeName);
     // ... rest of setup
 
     return Scaffold(
@@ -57,27 +60,27 @@ class WorkoutDetailScreen extends StatelessWidget {
                 context: context,
                 builder: (ctx) => AlertDialog(
                   backgroundColor: const Color(0xFF1C1C1E),
-                  title: const Text(
-                    "Delete Workout?",
-                    style: TextStyle(color: Colors.white),
+                  title: Text(
+                    AppLocalizations.of(context)?.deleteWorkout ?? "Delete Workout?",
+                    style: const TextStyle(color: Colors.white),
                   ),
-                  content: const Text(
-                    "This action cannot be undone.",
-                    style: TextStyle(color: Colors.white70),
+                  content: Text(
+                    AppLocalizations.of(context)?.deleteUndone ?? "This action cannot be undone.",
+                    style: const TextStyle(color: Colors.white70),
                   ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(ctx, false),
-                      child: const Text(
-                        "Cancel",
-                        style: TextStyle(color: Colors.grey),
+                      child: Text(
+                        AppLocalizations.of(context)?.cancelBtn ?? "Cancel",
+                        style: const TextStyle(color: Colors.grey),
                       ),
                     ),
                     TextButton(
                       onPressed: () => Navigator.pop(ctx, true),
-                      child: const Text(
-                        "Delete",
-                        style: TextStyle(color: Colors.redAccent),
+                      child: Text(
+                        AppLocalizations.of(context)?.delete ?? "Delete",
+                        style: const TextStyle(color: Colors.redAccent),
                       ),
                     ),
                   ],
@@ -89,8 +92,8 @@ class WorkoutDetailScreen extends StatelessWidget {
                 if (context.mounted) {
                   Navigator.pop(context, true); // Go back to history
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Workout deleted"),
+                    SnackBar(
+                      content: Text(AppLocalizations.of(context)?.workoutDeleted ?? "Workout deleted"),
                       backgroundColor: Colors.redAccent,
                     ),
                   );
@@ -104,11 +107,11 @@ class WorkoutDetailScreen extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         children: [
           // Stats Header
-          _buildStatsHeader(session),
+          _buildStatsHeader(context, session),
           const SizedBox(height: 24),
-          const Text(
-            "Session Breakdown",
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context)?.sessionBreakdown ?? "Session Breakdown",
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -124,7 +127,7 @@ class WorkoutDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsHeader(WorkoutSession session) {
+  Widget _buildStatsHeader(BuildContext context, WorkoutSession session) {
     // Calculate Volume (Normalized to KG)
     double totalVolume = 0;
     for (var set in session.sets) {
@@ -136,13 +139,9 @@ class WorkoutDetailScreen extends StatelessWidget {
     }
 
     // Format Duration
+    final langCode = Localizations.localeOf(context).languageCode;
     final duration = Duration(seconds: session.durationInSeconds);
-    String durationString =
-        "${duration.inMinutes}m ${duration.inSeconds.remainder(60)}s";
-    if (duration.inHours > 0) {
-      durationString =
-          "${duration.inHours}h ${duration.inMinutes.remainder(60)}m";
-    }
+    String durationString = formatDuration(duration, langCode);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -154,15 +153,15 @@ class WorkoutDetailScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildStatItem("DURATION", durationString, Icons.timer),
+          _buildStatItem(AppLocalizations.of(context)?.durationLabel.toUpperCase() ?? "DURATION", durationString, Icons.timer),
           Container(width: 1, height: 40, color: Colors.white10),
           _buildStatItem(
-            "VOLUME",
-            "${totalVolume.toStringAsFixed(1)} kg",
+            AppLocalizations.of(context)?.volumeLabel.toUpperCase() ?? "VOLUME",
+            "${totalVolume.toStringAsFixed(1)} ${AppLocalizations.of(context)?.kgLabel ?? 'kg'}",
             Icons.fitness_center,
           ),
           Container(width: 1, height: 40, color: Colors.white10),
-          _buildStatItem("SETS", "${session.sets.length}", Icons.layers),
+          _buildStatItem(AppLocalizations.of(context)?.setsLabel.toUpperCase() ?? "SETS", "${session.sets.length}", Icons.layers),
         ],
       ),
     );

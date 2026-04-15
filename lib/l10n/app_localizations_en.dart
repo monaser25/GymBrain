@@ -212,7 +212,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bodyWeight => 'Body Weight';
 
   @override
-  String get deleteWorkout => 'Delete Workout';
+  String get deleteWorkout => 'Delete Workout?';
 
   @override
   String get myProfile => 'My Profile';
@@ -444,4 +444,157 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timeToCrush => 'Time to crush your next set of';
+
+  @override
+  String yearsAgo(int count) {
+    return '${count}y ago';
+  }
+
+  @override
+  String monthsAgo(int count) {
+    return '${count}mo ago';
+  }
+
+  @override
+  String daysAgo(int count) {
+    return '${count}d ago';
+  }
+
+  @override
+  String hoursAgo(int count) {
+    return '${count}h ago';
+  }
+
+  @override
+  String minsAgo(int count) {
+    return '${count}m ago';
+  }
+
+  @override
+  String setOf(int current, int total) {
+    return 'set $current of $total';
+  }
+
+  @override
+  String get myRoutines => 'My Routines';
+
+  @override
+  String get newRoutine => 'new routine';
+
+  @override
+  String get addedLabel => 'Added';
+
+  @override
+  String get calculateEstimated1rm =>
+      'Calculate your estimated 1RM using the Epley formula';
+
+  @override
+  String get plateInventory => 'Plate Inventory';
+
+  @override
+  String get timerDesc => 'Play a beep when the timer ends';
+
+  @override
+  String get alertsDesc => 'Send a notification if app is in background';
+
+  @override
+  String get feedbackDesc => 'Display performance tips after each set';
+
+  @override
+  String get dataManDesc =>
+      'Backup your data to keep it safe or transfer to another device.';
+
+  @override
+  String get egPushDay => 'e.g., Push Day';
+
+  @override
+  String get standardPrefix => 'Standard';
+
+  @override
+  String get olympicStandard => 'Olympic Standard';
+
+  @override
+  String get womensPrefix => 'Women\'s';
+
+  @override
+  String get trainingPrefix => 'Training';
+
+  @override
+  String get bmiUnderweight => 'Underweight';
+
+  @override
+  String get bmiNormal => 'Normal';
+
+  @override
+  String get bmiOverweight => 'Overweight';
+
+  @override
+  String get bmiObese => 'Obese';
+
+  @override
+  String get plateInventoryDesc =>
+      'Uncheck plates you don\'t have at your gym.';
+
+  @override
+  String get noBodyStats => 'No stats yet. Add your data with the + button!';
+
+  @override
+  String get addDataToSeeChart => 'Add data to see chart';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get selectExOrRoutine => 'Select Exercise or Routine';
+
+  @override
+  String get languageDesc => 'Choose your preferred language';
+
+  @override
+  String get workoutHistory => 'Workout History';
+
+  @override
+  String get noWorkouts => 'No workouts recorded yet.';
+
+  @override
+  String get deleteUndone => 'This action cannot be undone.';
+
+  @override
+  String get durationLabel => 'Duration';
+
+  @override
+  String get volumeLabel => 'Volume';
+
+  @override
+  String get setsLabel => 'Sets';
+
+  @override
+  String get workoutDeleted => 'Workout deleted';
+
+  @override
+  String get noExercisesFound => 'No exercises found';
+
+  @override
+  String get activitySedentary => 'Sedentary (little or no exercise)';
+
+  @override
+  String get activityLightly => 'Lightly active (1-3 days/week)';
+
+  @override
+  String get activityModerately => 'Moderately active (3-5 days/week)';
+
+  @override
+  String get activityVery => 'Very active (6-7 days/week)';
+
+  @override
+  String get activityExtra => 'Extra active (very hard exercise)';
+
+  @override
+  String get cmLabel => 'cm';
+
+  @override
+  String get kcalLabel => 'kcal';
+
+  @override
+  String get sessionBreakdown => 'Session Breakdown';
 }

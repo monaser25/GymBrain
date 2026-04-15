@@ -192,10 +192,10 @@ class _ProgressScreenState extends State<ProgressScreen>
         children: [
           // TAB 1: BODY STATS (Full Page Scroll with ShrinkWrap Solution)
           recentRecords.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text(
-                    "No stats yet. Add your data with the + button!",
-                    style: TextStyle(color: Colors.grey, fontSize: 16),
+                    AppLocalizations.of(context)?.noBodyStats ?? "No stats yet. Add your data with the + button!",
+                    style: const TextStyle(color: Colors.grey, fontSize: 16),
                   ),
                 )
               : SingleChildScrollView(
@@ -355,10 +355,10 @@ class _ProgressScreenState extends State<ProgressScreen>
                           borderRadius: BorderRadius.circular(24),
                         ),
                         child: chartData.isEmpty
-                            ? const Center(
+                            ? Center(
                                 child: Text(
-                                  "Add data to see chart",
-                                  style: TextStyle(color: Colors.grey),
+                                  AppLocalizations.of(context)?.addDataToSeeChart ?? "Add data to see chart",
+                                  style: const TextStyle(color: Colors.grey),
                                 ),
                               )
                             : LineChart(
@@ -602,25 +602,25 @@ class _ProgressScreenState extends State<ProgressScreen>
                                 context: context,
                                 builder: (context) => AlertDialog(
                                   backgroundColor: const Color(0xFF1C1C1E),
-                                  title: const Text(
-                                    "Delete Record?",
-                                    style: TextStyle(color: Colors.white),
+                                  title: Text(
+                                    AppLocalizations.of(context)?.delete ?? "Delete Record?",
+                                    style: const TextStyle(color: Colors.white),
                                   ),
                                   actions: [
                                     TextButton(
                                       onPressed: () =>
                                           Navigator.pop(context, false),
-                                      child: const Text(
-                                        "Cancel",
-                                        style: TextStyle(color: Colors.grey),
+                                      child: Text(
+                                        AppLocalizations.of(context)?.cancelBtn ?? "Cancel",
+                                        style: const TextStyle(color: Colors.grey),
                                       ),
                                     ),
                                     TextButton(
                                       onPressed: () =>
                                           Navigator.pop(context, true),
-                                      child: const Text(
-                                        "Delete",
-                                        style: TextStyle(
+                                      child: Text(
+                                        AppLocalizations.of(context)?.delete ?? "Delete",
+                                        style: const TextStyle(
                                           color: Colors.redAccent,
                                         ),
                                       ),
@@ -765,9 +765,9 @@ class _ProgressScreenState extends State<ProgressScreen>
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
                       value: _selectedExerciseName,
-                      hint: const Text(
-                        "Select Exercise or Routine",
-                        style: TextStyle(color: Colors.grey),
+                      hint: Text(
+                        AppLocalizations.of(context)?.selectExOrRoutine ?? "Select Exercise or Routine",
+                        style: const TextStyle(color: Colors.grey),
                       ),
                       isExpanded: true,
                       dropdownColor: const Color(0xFF1C1C1E),

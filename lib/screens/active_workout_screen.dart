@@ -285,16 +285,24 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
     }
 
     try {
+      final String titleStr = AppLocalizations.of(context)?.restFinishedTitle ?? "Rest Finished! 🔔";
+      final String bodyBase = AppLocalizations.of(context)?.timeToCrush ?? "Time to crush your next set of";
+      final String bodyStr = "$bodyBase $currentExerciseName!";
+
       await NotificationService().scheduleNotification(
         id: 0,
-        title: "Rest Finished! 🔔",
-        body: "Time to crush your next set of $currentExerciseName!",
+        title: titleStr,
+        body: bodyStr,
         seconds: seconds,
         playSound: _db.enableSound,
       );
     } catch (e) {
       Future.delayed(Duration(seconds: seconds), () async {
         if (!mounted || !_isResting) return;
+
+        final String titleStr = AppLocalizations.of(context)?.restFinishedTitle ?? "Rest Finished! 🔔";
+        final String bodyBase = AppLocalizations.of(context)?.timeToCrush ?? "Time to crush your next set of";
+        final String bodyStr = "$bodyBase $currentExerciseName!";
 
         const AndroidNotificationDetails androidNotificationDetails =
             AndroidNotificationDetails(
@@ -312,8 +320,8 @@ class _ActiveWorkoutScreenState extends State<ActiveWorkoutScreen>
 
         await flutterLocalNotificationsPlugin.show(
           id: 0,
-          title: "Rest Finished! 🔔",
-          body: "Time to crush your next set of $currentExerciseName!",
+          title: titleStr,
+          body: bodyStr,
           notificationDetails: notificationDetails,
         );
       });
@@ -1509,7 +1517,7 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
     }
 
     return Text(
-      "Set $currentSet of $target",
+      AppLocalizations.of(context)?.setOf(currentSet, target) ?? "Set $currentSet of $target",
       style: const TextStyle(
         color: Color(0xFF39FF14),
         fontSize: 12,
@@ -1723,9 +1731,9 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(
-                "Close",
-                style: TextStyle(color: Color(0xFF39FF14)),
+              child: Text(
+                AppLocalizations.of(context)?.cancelBtn ?? "Close",
+                style: const TextStyle(color: Color(0xFF39FF14)),
               ),
             ),
           ],
@@ -1818,9 +1826,9 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
                   onChanged: (v) => setState(() => rpe = v.round()),
                 ),
                 CheckboxListTile(
-                  title: const Text(
-                    "Drop Set?",
-                    style: TextStyle(color: Colors.white, fontSize: 14),
+                  title: Text(
+                    AppLocalizations.of(context)?.dropSet ?? "Drop Set?",
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
                   ),
                   value: isDrop,
                   activeColor: Colors.amber,
@@ -1834,13 +1842,13 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
         ),
         actions: [
           TextButton(
-            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+            child: Text(AppLocalizations.of(context)?.cancelBtn ?? "Cancel", style: const TextStyle(color: Colors.grey)),
             onPressed: () => Navigator.pop(ctx),
           ),
           TextButton(
-            child: const Text(
-              "Save",
-              style: TextStyle(
+            child: Text(
+              AppLocalizations.of(context)?.save ?? "Save",
+              style: const TextStyle(
                 color: Color(0xFF39FF14),
                 fontWeight: FontWeight.bold,
               ),

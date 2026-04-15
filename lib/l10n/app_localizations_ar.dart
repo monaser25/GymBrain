@@ -212,7 +212,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get bodyWeight => 'وزن الجسم';
 
   @override
-  String get deleteWorkout => 'حذف التمرين';
+  String get deleteWorkout => 'هل تريد حذف التمرين؟';
 
   @override
   String get myProfile => 'ملفي الشخصي';
@@ -287,7 +287,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get bodyMassIndex => 'مؤشر كتلة الجسم';
 
   @override
-  String get dailyCalories => 'السعرات الحرارية اليومية';
+  String get dailyCalories => 'السعرات اليومية';
 
   @override
   String get editNameTitle => 'تعديل الاسم';
@@ -416,7 +416,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get kgLabel => 'كجم';
 
   @override
-  String get lbLabel => 'رطل';
+  String get lbLabel => 'باوند';
 
   @override
   String get effortMax => 'أقصى مجهود';
@@ -444,4 +444,157 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get timeToCrush => 'حان الوقت لمجموعتك القادمة من';
+
+  @override
+  String yearsAgo(int count) {
+    return 'منذ $count سنوات';
+  }
+
+  @override
+  String monthsAgo(int count) {
+    return 'منذ $count شهور';
+  }
+
+  @override
+  String daysAgo(int count) {
+    return 'منذ $count أيام';
+  }
+
+  @override
+  String hoursAgo(int count) {
+    return 'منذ $count ساعات';
+  }
+
+  @override
+  String minsAgo(int count) {
+    return 'منذ $count دقائق';
+  }
+
+  @override
+  String setOf(int current, int total) {
+    return 'المجموعة $current من $total';
+  }
+
+  @override
+  String get myRoutines => 'برامجي التدريبية';
+
+  @override
+  String get newRoutine => 'روتين جديد';
+
+  @override
+  String get addedLabel => 'تمت الإضافة';
+
+  @override
+  String get calculateEstimated1rm =>
+      'احسب الـ 1RM التقديري باستخدام معادلة Epley';
+
+  @override
+  String get plateInventory => 'خزينة الأوزان';
+
+  @override
+  String get timerDesc => 'تشغيل صوت عند انتهاء المؤقت';
+
+  @override
+  String get alertsDesc => 'إرسال إشعار في حال كان التطبيق بالخلفية';
+
+  @override
+  String get feedbackDesc => 'إظهار نصائح الأداء بعد كل مجموعة';
+
+  @override
+  String get dataManDesc =>
+      'النسخ الاحتياطي لبياناتك لنقلها أو حفظها بشكل آمن.';
+
+  @override
+  String get egPushDay => 'مثال: تمرين دفع';
+
+  @override
+  String get standardPrefix => 'قياسي';
+
+  @override
+  String get olympicStandard => 'أولمبي قياسي';
+
+  @override
+  String get womensPrefix => 'نسائي';
+
+  @override
+  String get trainingPrefix => 'تدريبي';
+
+  @override
+  String get bmiUnderweight => 'نحافة';
+
+  @override
+  String get bmiNormal => 'طبيعي';
+
+  @override
+  String get bmiOverweight => 'وزن زائد';
+
+  @override
+  String get bmiObese => 'سمنة';
+
+  @override
+  String get plateInventoryDesc =>
+      'قم بإلغاء تحديد الأوزان غير المتوفرة في ناديك.';
+
+  @override
+  String get noBodyStats => 'لا توجد إحصائيات بعد. أضف بياناتك من خلال الزر +';
+
+  @override
+  String get addDataToSeeChart => 'أضف بيانات لرؤية الرسم البياني';
+
+  @override
+  String get delete => 'حذف';
+
+  @override
+  String get selectExOrRoutine => 'اختر تمرين أو برنامج';
+
+  @override
+  String get languageDesc => 'اختر لغتك المفضلة';
+
+  @override
+  String get workoutHistory => 'سجل التمارين';
+
+  @override
+  String get noWorkouts => 'لم يتم تسجيل أي تمارين حتى الآن.';
+
+  @override
+  String get deleteUndone => 'لا يمكن التراجع عن هذا الإجراء.';
+
+  @override
+  String get durationLabel => 'المدة';
+
+  @override
+  String get volumeLabel => 'الحجم الكلي';
+
+  @override
+  String get setsLabel => 'المجموعات';
+
+  @override
+  String get workoutDeleted => 'تم حذف التمرين';
+
+  @override
+  String get noExercisesFound => 'لم يتم العثور على تمارين';
+
+  @override
+  String get activitySedentary => 'خامل (قليل أو بدون تمرين)';
+
+  @override
+  String get activityLightly => 'نشاط خفيف (١-٣ أيام/أسبوع)';
+
+  @override
+  String get activityModerately => 'نشاط متوسط (٣-٥ أيام/أسبوع)';
+
+  @override
+  String get activityVery => 'نشاط عالي (٦-٧ أيام/أسبوع)';
+
+  @override
+  String get activityExtra => 'نشاط مفرط (تمرين شاق جداً)';
+
+  @override
+  String get cmLabel => 'سم';
+
+  @override
+  String get kcalLabel => 'سعرة حرارية';
+
+  @override
+  String get sessionBreakdown => 'تفاصيل المجموعة';
 }
