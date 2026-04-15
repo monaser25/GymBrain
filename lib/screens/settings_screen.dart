@@ -249,7 +249,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             subtitle: Text(
-              "Current: ${_defaultIsKg ? (AppLocalizations.of(context)?.kgUnit ?? 'KG').toUpperCase() : (AppLocalizations.of(context)?.lbUnit ?? 'LB').toUpperCase()}",
+              "${AppLocalizations.of(context)?.currentLabel ?? 'Current'}: ${_defaultIsKg ? (AppLocalizations.of(context)?.kgUnit ?? 'KG').toUpperCase() : (AppLocalizations.of(context)?.lbUnit ?? 'LB').toUpperCase()}",
               style: TextStyle(color: Colors.grey[600]),
             ),
             value: _defaultIsKg,
@@ -266,9 +266,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 24),
 
           // TIMER & FEEDBACK SECTION
-          const Text(
-            "⏱️ Timer & Feedback",
-            style: TextStyle(
+          Text(
+            "⏱️ ${AppLocalizations.of(context)?.timerAndFeedback ?? 'Timer & Feedback'}",
+            style: const TextStyle(
               color: Color(0xFF39FF14),
               fontSize: 18,
               fontWeight: FontWeight.bold,

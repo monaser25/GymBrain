@@ -1345,6 +1345,204 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'It\'s been a while! Time to crush your next workout. 💪'**
   String get reminderBody;
+
+  /// No description provided for @gymTools.
+  ///
+  /// In en, this message translates to:
+  /// **'Gym Tools'**
+  String get gymTools;
+
+  /// No description provided for @repsUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'reps'**
+  String get repsUnit;
+
+  /// No description provided for @metricKg.
+  ///
+  /// In en, this message translates to:
+  /// **'METRIC (KG)'**
+  String get metricKg;
+
+  /// No description provided for @imperialLb.
+  ///
+  /// In en, this message translates to:
+  /// **'IMPERIAL (LB)'**
+  String get imperialLb;
+
+  /// No description provided for @plateCalcTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Plate Calculator'**
+  String get plateCalcTitle;
+
+  /// No description provided for @plateCalcDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Find out which plates to load on each side'**
+  String get plateCalcDesc;
+
+  /// No description provided for @calculatePlates.
+  ///
+  /// In en, this message translates to:
+  /// **'CALCULATE PLATES'**
+  String get calculatePlates;
+
+  /// No description provided for @barWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'BAR WEIGHT'**
+  String get barWeight;
+
+  /// No description provided for @targetWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'TARGET WEIGHT'**
+  String get targetWeight;
+
+  /// No description provided for @unitSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'UNIT SYSTEM'**
+  String get unitSystem;
+
+  /// No description provided for @selectFromHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'SELECT FROM HISTORY'**
+  String get selectFromHistory;
+
+  /// No description provided for @chooseExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an exercise...'**
+  String get chooseExercise;
+
+  /// No description provided for @basedOnLift.
+  ///
+  /// In en, this message translates to:
+  /// **'Based on your lift on {date}'**
+  String basedOnLift(String date);
+
+  /// No description provided for @estimated1rmLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'ESTIMATED 1RM'**
+  String get estimated1rmLabel;
+
+  /// No description provided for @barLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Bar'**
+  String get barLabel;
+
+  /// No description provided for @currentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get currentLabel;
+
+  /// No description provided for @timerAndFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Timer & Feedback'**
+  String get timerAndFeedback;
+
+  /// No description provided for @searchExercises.
+  ///
+  /// In en, this message translates to:
+  /// **'Search exercises...'**
+  String get searchExercises;
+
+  /// No description provided for @totalSetsPerformed.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Sets Performed: {count}'**
+  String totalSetsPerformed(int count);
+
+  /// No description provided for @egBenchPress.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Bench Press'**
+  String get egBenchPress;
+
+  /// No description provided for @egSeatPin.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Seat 4, Pin 3'**
+  String get egSeatPin;
+
+  /// No description provided for @deleteRoutineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Routine?'**
+  String get deleteRoutineTitle;
+
+  /// No description provided for @deleteRoutineMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete \'{name}\'?'**
+  String deleteRoutineMsg(String name);
+
+  /// No description provided for @noRoutinesCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'No routines found.\nCreate one to get started!'**
+  String get noRoutinesCreate;
+
+  /// No description provided for @renameExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename Exercise'**
+  String get renameExercise;
+
+  /// No description provided for @newName.
+  ///
+  /// In en, this message translates to:
+  /// **'New Name'**
+  String get newName;
+
+  /// No description provided for @deleteExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Exercise?'**
+  String get deleteExercise;
+
+  /// No description provided for @deleteExerciseMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'What would you like to delete for \'{name}\'?'**
+  String deleteExerciseMsg(String name);
+
+  /// No description provided for @hideFromList.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide from List (Keep History)'**
+  String get hideFromList;
+
+  /// No description provided for @permanentlyDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanently Delete (Wipe History)'**
+  String get permanentlyDelete;
+
+  /// No description provided for @renameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get renameLabel;
+
+  /// No description provided for @deleteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get deleteLabel;
+
+  /// No description provided for @loadPerSide.
+  ///
+  /// In en, this message translates to:
+  /// **'LOAD PER SIDE'**
+  String get loadPerSide;
 }
 
 class _AppLocalizationsDelegate

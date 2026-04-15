@@ -50,7 +50,7 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
               style: const TextStyle(color: Colors.white),
               cursorColor: const Color(0xFF39FF14),
               decoration: InputDecoration(
-                hintText: "Search exercises...",
+                hintText: AppLocalizations.of(context)?.searchExercises ?? "Search exercises...",
                 hintStyle: TextStyle(color: Colors.grey[600]),
                 prefixIcon: const Icon(Icons.search, color: Color(0xFF39FF14)),
                 suffixIcon: _searchQuery.isNotEmpty
@@ -144,7 +144,7 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
                         ),
                       ),
                       subtitle: Text(
-                        "Total Sets Performed: $historyCount",
+                        AppLocalizations.of(context)?.totalSetsPerformed(historyCount) ?? "Total Sets Performed: $historyCount",
                         style: TextStyle(color: Colors.grey[500], fontSize: 12),
                       ),
                       trailing: PopupMenuButton<String>(
@@ -158,36 +158,36 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
                           }
                         },
                         itemBuilder: (context) => [
-                          const PopupMenuItem(
+                          PopupMenuItem(
                             value: 'edit',
                             child: Row(
                               children: [
-                                Icon(
+                                const Icon(
                                   Icons.edit,
                                   color: Color(0xFF39FF14),
                                   size: 20,
                                 ),
-                                SizedBox(width: 12),
+                                const SizedBox(width: 12),
                                 Text(
-                                  "Rename",
-                                  style: TextStyle(color: Colors.white),
+                                  AppLocalizations.of(context)?.renameLabel ?? "Rename",
+                                  style: const TextStyle(color: Colors.white),
                                 ),
                               ],
                             ),
                           ),
-                          const PopupMenuItem(
+                          PopupMenuItem(
                             value: 'delete',
                             child: Row(
                               children: [
-                                Icon(
+                                const Icon(
                                   Icons.delete_forever,
                                   color: Colors.redAccent,
                                   size: 20,
                                 ),
-                                SizedBox(width: 12),
+                                const SizedBox(width: 12),
                                 Text(
-                                  "Delete",
-                                  style: TextStyle(color: Colors.redAccent),
+                                  AppLocalizations.of(context)?.deleteLabel ?? "Delete",
+                                  style: const TextStyle(color: Colors.redAccent),
                                 ),
                               ],
                             ),
@@ -223,9 +223,9 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
       builder: (context) {
         return AlertDialog(
           backgroundColor: const Color(0xFF1C1C1E),
-          title: const Text(
-            "Add New Exercise",
-            style: TextStyle(color: Colors.white),
+          title: Text(
+            AppLocalizations.of(context)?.addExerciseBtn ?? "Add New Exercise",
+            style: const TextStyle(color: Colors.white),
           ),
           content: SingleChildScrollView(
             child: Column(
@@ -236,10 +236,10 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
                   autofocus: true,
                   style: const TextStyle(color: Colors.white),
                   cursorColor: const Color(0xFF39FF14),
-                  decoration: const InputDecoration(
-                    labelText: "Exercise Name",
-                    hintText: "e.g. Bench Press",
-                    labelStyle: TextStyle(color: Colors.grey),
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)?.exerciseNameLabel ?? "Exercise Name",
+                    hintText: AppLocalizations.of(context)?.egBenchPress ?? "e.g. Bench Press",
+                    labelStyle: const TextStyle(color: Colors.grey),
                     enabledBorder: UnderlineInputBorder(
                       borderSide: BorderSide(color: Colors.grey),
                     ),
@@ -254,10 +254,10 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
                   keyboardType: TextInputType.number,
                   style: const TextStyle(color: Colors.white),
                   cursorColor: const Color(0xFF39FF14),
-                  decoration: const InputDecoration(
-                    labelText: "Target Sets",
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)?.targetSetsLabel ?? "Target Sets",
                     hintText: "3",
-                    labelStyle: TextStyle(color: Colors.grey),
+                    labelStyle: const TextStyle(color: Colors.grey),
                     enabledBorder: UnderlineInputBorder(
                       borderSide: BorderSide(color: Colors.grey),
                     ),
@@ -274,10 +274,10 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
                   maxLines: null,
                   keyboardType: TextInputType.multiline,
                   textInputAction: TextInputAction.newline,
-                  decoration: const InputDecoration(
-                    labelText: "Setup Note (Optional)",
-                    hintText: "e.g. Seat 4, Pin 3",
-                    labelStyle: TextStyle(color: Colors.grey),
+                  decoration: InputDecoration(
+                    labelText: AppLocalizations.of(context)?.setupNoteOptionalLabel ?? "Setup Note (Optional)",
+                    hintText: AppLocalizations.of(context)?.egSeatPin ?? "e.g. Seat 4, Pin 3",
+                    labelStyle: const TextStyle(color: Colors.grey),
                     enabledBorder: UnderlineInputBorder(
                       borderSide: BorderSide(color: Colors.grey),
                     ),
@@ -346,7 +346,7 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
                 backgroundColor: const Color(0xFF39FF14),
                 foregroundColor: Colors.black,
               ),
-              child: const Text("Add"),
+              child: Text(AppLocalizations.of(context)?.addExerciseBtn ?? "Add"),
             ),
           ],
         );
@@ -380,22 +380,22 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
       builder: (context) {
         return AlertDialog(
           backgroundColor: const Color(0xFF1C1C1E),
-          title: const Text(
-            "Rename Exercise",
-            style: TextStyle(color: Colors.white),
+          title: Text(
+            AppLocalizations.of(context)?.renameExercise ?? "Rename Exercise",
+            style: const TextStyle(color: Colors.white),
           ),
           content: TextField(
             controller: controller,
             autofocus: true,
             style: const TextStyle(color: Colors.white),
             cursorColor: const Color(0xFF39FF14),
-            decoration: const InputDecoration(
-              labelText: "New Name",
-              labelStyle: TextStyle(color: Colors.grey),
-              enabledBorder: UnderlineInputBorder(
+            decoration: InputDecoration(
+              labelText: AppLocalizations.of(context)?.newName ?? "New Name",
+              labelStyle: const TextStyle(color: Colors.grey),
+              enabledBorder: const UnderlineInputBorder(
                 borderSide: BorderSide(color: Colors.grey),
               ),
-              focusedBorder: UnderlineInputBorder(
+              focusedBorder: const UnderlineInputBorder(
                 borderSide: BorderSide(color: Color(0xFF39FF14)),
               ),
             ),
@@ -448,20 +448,20 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
       builder: (context) {
         return AlertDialog(
           backgroundColor: const Color(0xFF1C1C1E),
-          title: const Row(
+          title: Row(
             children: [
-              Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
-              SizedBox(width: 12),
+              const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  "Delete Exercise?",
-                  style: TextStyle(color: Colors.white),
+                  AppLocalizations.of(context)?.deleteExercise ?? "Delete Exercise?",
+                  style: const TextStyle(color: Colors.white),
                 ),
               ),
             ],
           ),
           content: Text(
-            "What would you like to delete for '${exercise.name}'?",
+            AppLocalizations.of(context)?.deleteExerciseMsg(exercise.name) ?? "What would you like to delete for '${exercise.name}'?",
             style: TextStyle(color: Colors.grey[400], height: 1.5),
           ),
           actions: [
@@ -488,9 +488,9 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Colors.orange),
               ),
-              child: const Text(
-                "Hide from List (Keep History)",
-                style: TextStyle(color: Colors.orange, fontSize: 12),
+              child: Text(
+                AppLocalizations.of(context)?.hideFromList ?? "Hide from List (Keep History)",
+                style: const TextStyle(color: Colors.orange, fontSize: 12),
               ),
             ),
             // Option 2: Delete Everything
@@ -513,9 +513,9 @@ class _ExerciseLibraryScreenState extends State<ExerciseLibraryScreen> {
                 backgroundColor: Colors.redAccent,
                 foregroundColor: Colors.white,
               ),
-              child: const Text(
-                "Permanently Delete (Wipe History)",
-                style: TextStyle(fontSize: 12),
+              child: Text(
+                AppLocalizations.of(context)?.permanentlyDelete ?? "Permanently Delete (Wipe History)",
+                style: const TextStyle(fontSize: 12),
               ),
             ),
           ],

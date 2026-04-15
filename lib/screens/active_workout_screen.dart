@@ -928,7 +928,7 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
                                         ? (l10n?.lbLabel ?? 'lb')
                                         : (l10n?.kgLabel ?? 'kg');
                                     return Text(
-                                      "${l10n?.lastPer ?? 'Last:'} ${perf.weight}$localizedUnit x ${perf.reps} ($localizedRpe)",
+                                      "${l10n?.lastPer ?? 'Last:'} \u200E${perf.weight} $localizedUnit \u00D7 ${perf.reps}\u200E ($localizedRpe)",
                                       style: TextStyle(
                                         color: Colors.grey[600],
                                         fontSize: 13,

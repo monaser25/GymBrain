@@ -655,19 +655,34 @@ class _DashboardView extends StatelessWidget {
                                 "${routine.exerciseIds.length} ${AppLocalizations.of(context)!.exercises}",
                                 style: TextStyle(color: Colors.grey[500]),
                               ),
-                              trailing: Container(
-                                width: 32,
-                                height: 32,
-                                decoration: BoxDecoration(
-                                  color: const Color(
-                                    0xFF39FF14,
-                                  ).withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Icon(
-                                  Icons.play_arrow,
-                                  color: Color(0xFF39FF14),
-                                  size: 18,
+                              trailing: GestureDetector(
+                                onTap: () async {
+                                  if (await checkActiveWorkout(context)) {
+                                    if (context.mounted) {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              ActiveWorkoutScreen(routine: routine),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                                child: Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: BoxDecoration(
+                                    color: const Color(
+                                      0xFF39FF14,
+                                    ).withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(
+                                    Icons.play_arrow,
+                                    color: Color(0xFF39FF14),
+                                    size: 18,
+                                  ),
                                 ),
                               ),
                               onTap: () {

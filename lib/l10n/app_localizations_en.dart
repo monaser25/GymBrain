@@ -653,4 +653,112 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get reminderBody =>
       'It\'s been a while! Time to crush your next workout. 💪';
+
+  @override
+  String get gymTools => 'Gym Tools';
+
+  @override
+  String get repsUnit => 'reps';
+
+  @override
+  String get metricKg => 'METRIC (KG)';
+
+  @override
+  String get imperialLb => 'IMPERIAL (LB)';
+
+  @override
+  String get plateCalcTitle => 'Plate Calculator';
+
+  @override
+  String get plateCalcDesc => 'Find out which plates to load on each side';
+
+  @override
+  String get calculatePlates => 'CALCULATE PLATES';
+
+  @override
+  String get barWeight => 'BAR WEIGHT';
+
+  @override
+  String get targetWeight => 'TARGET WEIGHT';
+
+  @override
+  String get unitSystem => 'UNIT SYSTEM';
+
+  @override
+  String get selectFromHistory => 'SELECT FROM HISTORY';
+
+  @override
+  String get chooseExercise => 'Choose an exercise...';
+
+  @override
+  String basedOnLift(String date) {
+    return 'Based on your lift on $date';
+  }
+
+  @override
+  String get estimated1rmLabel => 'ESTIMATED 1RM';
+
+  @override
+  String get barLabel => 'Bar';
+
+  @override
+  String get currentLabel => 'Current';
+
+  @override
+  String get timerAndFeedback => 'Timer & Feedback';
+
+  @override
+  String get searchExercises => 'Search exercises...';
+
+  @override
+  String totalSetsPerformed(int count) {
+    return 'Total Sets Performed: $count';
+  }
+
+  @override
+  String get egBenchPress => 'e.g. Bench Press';
+
+  @override
+  String get egSeatPin => 'e.g. Seat 4, Pin 3';
+
+  @override
+  String get deleteRoutineTitle => 'Delete Routine?';
+
+  @override
+  String deleteRoutineMsg(String name) {
+    return 'Are you sure you want to delete \'$name\'?';
+  }
+
+  @override
+  String get noRoutinesCreate =>
+      'No routines found.\nCreate one to get started!';
+
+  @override
+  String get renameExercise => 'Rename Exercise';
+
+  @override
+  String get newName => 'New Name';
+
+  @override
+  String get deleteExercise => 'Delete Exercise?';
+
+  @override
+  String deleteExerciseMsg(String name) {
+    return 'What would you like to delete for \'$name\'?';
+  }
+
+  @override
+  String get hideFromList => 'Hide from List (Keep History)';
+
+  @override
+  String get permanentlyDelete => 'Permanently Delete (Wipe History)';
+
+  @override
+  String get renameLabel => 'Rename';
+
+  @override
+  String get deleteLabel => 'Delete';
+
+  @override
+  String get loadPerSide => 'LOAD PER SIDE';
 }

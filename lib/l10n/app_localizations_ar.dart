@@ -92,7 +92,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get minimizeWorkoutQuery =>
-      'هل تريد تصغير التمرين (للاستمرار) أم إنهائه (سيفقد الجزء الأخير)؟\nاستخدم زر \'إنهاء\' للحفظ.';
+      'هل تريد تصغير التمرين (للاستمرار) أم إنهائه (سيفقد الجزء الأخير)؟\nاستخدم زر \'إنهاء\' لحذف الجلسة.';
 
   @override
   String get minimize => 'تصغير';
@@ -245,7 +245,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get addExerciseBtn => 'إضافة تمرين';
 
   @override
-  String get timeFeedback => 'تنبيهات الوقت';
+  String get timeFeedback => 'تنبيهات الذكاء الاصطناعي ';
 
   @override
   String get defaultRestTimer => 'مؤقت الراحة الافتراضي';
@@ -651,4 +651,111 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get reminderBody => 'عدى وقت طويل يا بطل! وقت تكسير الأوزان. 💪';
+
+  @override
+  String get gymTools => 'أدوات الجيم';
+
+  @override
+  String get repsUnit => 'عدات';
+
+  @override
+  String get metricKg => 'متري (كجم)';
+
+  @override
+  String get imperialLb => 'إمبراطوري (باوند)';
+
+  @override
+  String get plateCalcTitle => 'حاسبة الأوزان';
+
+  @override
+  String get plateCalcDesc => 'اكتشف الأوزان المطلوبة لكل جانب';
+
+  @override
+  String get calculatePlates => 'احسب الأوزان';
+
+  @override
+  String get barWeight => 'وزن البار';
+
+  @override
+  String get targetWeight => 'الوزن المستهدف';
+
+  @override
+  String get unitSystem => 'نظام الوحدات';
+
+  @override
+  String get selectFromHistory => 'اختر من السجل';
+
+  @override
+  String get chooseExercise => 'اختر تمرين...';
+
+  @override
+  String basedOnLift(String date) {
+    return 'بناءً على رفعتك بتاريخ $date';
+  }
+
+  @override
+  String get estimated1rmLabel => '1RM التقديري';
+
+  @override
+  String get barLabel => 'بار';
+
+  @override
+  String get currentLabel => 'الحالي';
+
+  @override
+  String get timerAndFeedback => 'المؤقت والتنبيهات';
+
+  @override
+  String get searchExercises => 'ابحث عن تمرين...';
+
+  @override
+  String totalSetsPerformed(int count) {
+    return 'إجمالي المجموعات: $count';
+  }
+
+  @override
+  String get egBenchPress => 'مثال: بنش برس';
+
+  @override
+  String get egSeatPin => 'مثال: المقعد ٤، الثقل ٣';
+
+  @override
+  String get deleteRoutineTitle => 'حذف البرنامج؟';
+
+  @override
+  String deleteRoutineMsg(String name) {
+    return 'هل أنت متأكد من حذف \'$name\'؟';
+  }
+
+  @override
+  String get noRoutinesCreate => 'لا يوجد برامج.\nقم بإنشاء واحد للبدء!';
+
+  @override
+  String get renameExercise => 'إعادة تسمية التمرين';
+
+  @override
+  String get newName => 'الاسم الجديد';
+
+  @override
+  String get deleteExercise => 'حذف التمرين؟';
+
+  @override
+  String deleteExerciseMsg(String name) {
+    return 'ماذا تريد حذفه لـ \'$name\'؟';
+  }
+
+  @override
+  String get hideFromList => 'إخفاء من القائمة (الاحتفاظ بالسجل)';
+
+  @override
+  String get permanentlyDelete => 'حذف نهائي (مسح السجل)';
+
+  @override
+  String get renameLabel => 'إعادة تسمية';
+
+  @override
+  String get deleteLabel => 'حذف';
+
+  @override
+  String get loadPerSide => 'الأوزان لكل جانب';
 }

@@ -47,7 +47,7 @@ class RoutinesScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(32.0),
                 child: Text(
-                  "No routines found.\nCreate one to get started!",
+                  AppLocalizations.of(context)?.noRoutinesCreate ?? "No routines found.\nCreate one to get started!",
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Colors.grey[600]),
                 ),
@@ -140,12 +140,12 @@ class RoutinesScreen extends StatelessWidget {
       builder: (context) {
         return AlertDialog(
           backgroundColor: const Color(0xFF1C1C1E),
-          title: const Text(
-            "Delete Routine?",
-            style: TextStyle(color: Colors.white),
+          title: Text(
+            AppLocalizations.of(context)?.deleteRoutineTitle ?? "Delete Routine?",
+            style: const TextStyle(color: Colors.white),
           ),
           content: Text(
-            "Are you sure you want to delete '${routine.name}'?",
+            AppLocalizations.of(context)?.deleteRoutineMsg(routine.name) ?? "Are you sure you want to delete '${routine.name}'?",
             style: const TextStyle(color: Colors.white70),
           ),
           actions: [

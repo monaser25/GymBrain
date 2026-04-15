@@ -24,7 +24,7 @@ class _ToolsScreenState extends State<ToolsScreen>
 
   // Smart 1RM History State
   String? _selectedExercise;
-  String? _historyDateLabel;
+  DateTime? _historyDate;
   List<String> _exerciseNames = [];
 
   // Plate Calculator State
@@ -92,7 +92,7 @@ class _ToolsScreenState extends State<ToolsScreen>
         _inputUnit = bestUnit; // Set unit
         _weightController.text = _formatWeight(bestWeight);
         _repsController.text = bestReps.toString();
-        _historyDateLabel = DateFormat('dd MMM yyyy').format(bestDate!);
+        _historyDate = bestDate;
         _oneRepMax = null; // Reset result until user clicks calculate
       });
     }
@@ -125,17 +125,18 @@ class _ToolsScreenState extends State<ToolsScreen>
 
   // Get bar weight options based on unit system
   List<Map<String, dynamic>> _getBarWeightOptions(BuildContext context) {
+    final barLabel = AppLocalizations.of(context)?.barLabel ?? 'Bar';
     if (_isMetric) {
       return [
         {'value': 20.0, 'label': '20 ${_getUnitLabel(context)} (${AppLocalizations.of(context)?.olympicStandard ?? 'Olympic Standard'})'},
-        {'value': 15.0, 'label': '15 ${_getUnitLabel(context)} (${AppLocalizations.of(context)?.womensPrefix ?? 'Women\'s'} Bar)'},
-        {'value': 10.0, 'label': '10 ${_getUnitLabel(context)} (${AppLocalizations.of(context)?.trainingPrefix ?? 'Training'} Bar)'},
+        {'value': 15.0, 'label': '15 ${_getUnitLabel(context)} (${AppLocalizations.of(context)?.womensPrefix ?? 'Women\'s'} $barLabel)'},
+        {'value': 10.0, 'label': '10 ${_getUnitLabel(context)} (${AppLocalizations.of(context)?.trainingPrefix ?? 'Training'} $barLabel)'},
       ];
     } else {
       return [
         {'value': 45.0, 'label': '45 ${_getUnitLabel(context)} (${AppLocalizations.of(context)?.standardPrefix ?? 'Standard'})'},
         {'value': 35.0, 'label': '35 ${_getUnitLabel(context)} (${AppLocalizations.of(context)?.womensPrefix ?? 'Women\'s'})'},
-        {'value': 15.0, 'label': '15 ${_getUnitLabel(context)} (${AppLocalizations.of(context)?.trainingPrefix ?? 'Training'} Bar)'},
+        {'value': 15.0, 'label': '15 ${_getUnitLabel(context)} (${AppLocalizations.of(context)?.trainingPrefix ?? 'Training'} $barLabel)'},
       ];
     }
   }
@@ -254,9 +255,9 @@ class _ToolsScreenState extends State<ToolsScreen>
                       const SizedBox(height: 20),
 
                       // Metric Plates Section
-                      const Text(
-                        "METRIC (KG)",
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)?.metricKg ?? "METRIC (KG)",
+                        style: const TextStyle(
                           color: Color(0xFF39FF14),
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
@@ -271,7 +272,7 @@ class _ToolsScreenState extends State<ToolsScreen>
                           final isSelected = selectedKg.contains(plate);
                           return FilterChip(
                             label: Text(
-                              "${_formatWeight(plate)} kg",
+                              "${AppLocalizations.of(context)?.kgLabel ?? 'kg'} ${_formatWeight(plate)}",
                               style: TextStyle(
                                 color: isSelected ? Colors.black : Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -297,9 +298,9 @@ class _ToolsScreenState extends State<ToolsScreen>
                       const SizedBox(height: 24),
 
                       // Imperial Plates Section
-                      const Text(
-                        "IMPERIAL (LB)",
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context)?.imperialLb ?? "IMPERIAL (LB)",
+                        style: const TextStyle(
                           color: Color(0xFF39FF14),
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
@@ -314,7 +315,7 @@ class _ToolsScreenState extends State<ToolsScreen>
                           final isSelected = selectedLb.contains(plate);
                           return FilterChip(
                             label: Text(
-                              "${_formatWeight(plate)} lb",
+                              "${AppLocalizations.of(context)?.lbLabel ?? 'lb'} ${_formatWeight(plate)}",
                               style: TextStyle(
                                 color: isSelected ? Colors.black : Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -399,9 +400,9 @@ class _ToolsScreenState extends State<ToolsScreen>
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          "Gym Tools",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        title: Text(
+          AppLocalizations.of(context)?.gymTools ?? "Gym Tools",
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         bottom: TabBar(
           controller: _tabController,
@@ -482,7 +483,7 @@ class _ToolsScreenState extends State<ToolsScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "SELECT FROM HISTORY",
+                  AppLocalizations.of(context)?.selectFromHistory ?? "SELECT FROM HISTORY",
                   style: TextStyle(
                     color: Colors.grey[500],
                     fontSize: 10,
@@ -510,7 +511,7 @@ class _ToolsScreenState extends State<ToolsScreen>
                             value: _selectedExercise,
                             isExpanded: true,
                             hint: Text(
-                              "Choose an exercise...",
+                              AppLocalizations.of(context)?.chooseExercise ?? "Choose an exercise...",
                               style: TextStyle(color: Colors.grey[500]),
                             ),
                             dropdownColor: const Color(0xFF2C2C2E),
@@ -548,7 +549,7 @@ class _ToolsScreenState extends State<ToolsScreen>
                             _repsController.clear();
                             _inputUnit = 'kg'; // Reset to default
                             _oneRepMax = null;
-                            _historyDateLabel = null;
+                            _historyDate = null;
                           });
                         },
                         icon: const Icon(Icons.close, color: Colors.grey),
@@ -558,9 +559,13 @@ class _ToolsScreenState extends State<ToolsScreen>
                   ],
                 ),
                 // History Date Label
-                if (_historyDateLabel != null) ...[
+                if (_historyDate != null) ...[
                   const SizedBox(height: 8),
-                  Container(
+                  Builder(
+                    builder: (context) {
+                      final locale = Localizations.localeOf(context).languageCode;
+                      final formattedDate = DateFormat.yMMMd(locale).format(_historyDate!);
+                      return Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
                       vertical: 8,
@@ -579,7 +584,7 @@ class _ToolsScreenState extends State<ToolsScreen>
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          "Based on your lift on $_historyDateLabel",
+                          AppLocalizations.of(context)?.basedOnLift(formattedDate) ?? "Based on your lift on $formattedDate",
                           style: const TextStyle(
                             color: Color(0xFF39FF14),
                             fontSize: 12,
@@ -588,6 +593,8 @@ class _ToolsScreenState extends State<ToolsScreen>
                         ),
                       ],
                     ),
+                  );
+                    },
                   ),
                 ],
               ],
@@ -603,7 +610,7 @@ class _ToolsScreenState extends State<ToolsScreen>
                   controller: _weightController,
                   label: AppLocalizations.of(context)?.liftedWeight ?? "LIFTED WEIGHT",
                   hint: "0",
-                  suffix: _inputUnit,
+                  suffix: _inputUnit == 'kg' ? (AppLocalizations.of(context)?.kgLabel ?? 'kg') : (AppLocalizations.of(context)?.lbLabel ?? 'lb'),
                   onSuffixTap: () {
                     setState(() {
                       _inputUnit = _inputUnit == 'kg' ? 'lb' : 'kg';
@@ -617,7 +624,7 @@ class _ToolsScreenState extends State<ToolsScreen>
                   controller: _repsController,
                   label: AppLocalizations.of(context)?.repsPerformed ?? "REPS PERFORMED",
                   hint: "0",
-                  suffix: "reps",
+                  suffix: AppLocalizations.of(context)?.repsUnit ?? "reps",
                   isInteger: true,
                 ),
               ),
@@ -674,7 +681,7 @@ class _ToolsScreenState extends State<ToolsScreen>
               child: Column(
                 children: [
                   Text(
-                    "ESTIMATED 1RM",
+                    AppLocalizations.of(context)?.estimated1rmLabel ?? "ESTIMATED 1RM",
                     style: TextStyle(
                       color: Colors.grey[400],
                       fontSize: 12,
@@ -698,7 +705,7 @@ class _ToolsScreenState extends State<ToolsScreen>
                       Padding(
                         padding: const EdgeInsets.only(bottom: 10),
                         child: Text(
-                          " $_inputUnit",
+                          " ${_inputUnit == 'kg' ? (AppLocalizations.of(context)?.kgLabel ?? 'kg') : (AppLocalizations.of(context)?.lbLabel ?? 'lb')}",
                           style: const TextStyle(
                             color: Color(0xFF39FF14),
                             fontSize: 24,
@@ -807,7 +814,7 @@ class _ToolsScreenState extends State<ToolsScreen>
             ),
           ),
           Text(
-            "${_formatWeight(weight)} kg",
+            "${_formatWeight(weight)} ${_inputUnit == 'lb' ? (AppLocalizations.of(context)?.lbLabel ?? 'lb') : (AppLocalizations.of(context)?.kgLabel ?? 'kg')}",
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -855,9 +862,9 @@ class _ToolsScreenState extends State<ToolsScreen>
                   size: 40,
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  "Plate Calculator",
-                  style: TextStyle(
+                Text(
+                  AppLocalizations.of(context)?.plateCalcTitle ?? "Plate Calculator",
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -865,7 +872,7 @@ class _ToolsScreenState extends State<ToolsScreen>
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  "Find out which plates to load on each side",
+                  AppLocalizations.of(context)?.plateCalcDesc ?? "Find out which plates to load on each side",
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Colors.grey[500], fontSize: 13),
                 ),
@@ -880,7 +887,7 @@ class _ToolsScreenState extends State<ToolsScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "UNIT SYSTEM",
+                AppLocalizations.of(context)?.unitSystem ?? "UNIT SYSTEM",
                 style: TextStyle(
                   color: Colors.grey[500],
                   fontSize: 10,
@@ -918,7 +925,7 @@ class _ToolsScreenState extends State<ToolsScreen>
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                "METRIC (KG)",
+                                AppLocalizations.of(context)?.metricKg ?? "METRIC (KG)",
                                 style: TextStyle(
                                   color: _isMetric ? Colors.black : Colors.grey,
                                   fontWeight: FontWeight.bold,
@@ -952,7 +959,7 @@ class _ToolsScreenState extends State<ToolsScreen>
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                "IMPERIAL (LB)",
+                                AppLocalizations.of(context)?.imperialLb ?? "IMPERIAL (LB)",
                                 style: TextStyle(
                                   color: !_isMetric
                                       ? Colors.black
@@ -977,7 +984,7 @@ class _ToolsScreenState extends State<ToolsScreen>
           // Target Weight Input with Settings Icon
           _buildInputField(
             controller: _targetWeightController,
-            label: "TARGET WEIGHT",
+            label: AppLocalizations.of(context)?.targetWeight ?? "TARGET WEIGHT",
             hint: _isMetric ? "100" : "225",
             suffix: _getUnitLabel(context),
             actionIcon: IconButton(
@@ -994,7 +1001,7 @@ class _ToolsScreenState extends State<ToolsScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "BAR WEIGHT",
+                AppLocalizations.of(context)?.barWeight ?? "BAR WEIGHT",
                 style: TextStyle(
                   color: Colors.grey[500],
                   fontSize: 10,
@@ -1055,9 +1062,9 @@ class _ToolsScreenState extends State<ToolsScreen>
                 ),
                 elevation: 0,
               ),
-              child: const Text(
-                "CALCULATE PLATES",
-                style: TextStyle(
+              child: Text(
+                AppLocalizations.of(context)?.calculatePlates ?? "CALCULATE PLATES",
+                style: const TextStyle(
                   fontWeight: FontWeight.w900,
                   fontSize: 16,
                   letterSpacing: 1.0,
@@ -1119,7 +1126,7 @@ class _ToolsScreenState extends State<ToolsScreen>
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        "LOAD PER SIDE",
+                        AppLocalizations.of(context)?.loadPerSide ?? "LOAD PER SIDE",
                         style: TextStyle(
                           color: Colors.grey[400],
                           fontSize: 12,

@@ -260,5 +260,58 @@
   "workoutReminders": "Workout Reminders",
   "workoutRemindersDesc": "Get a reminder if you haven't trained in a while",
   "reminderTitle": "GymBrain",
-  "reminderBody": "It's been a while! Time to crush your next workout. 💪"
+  "reminderBody": "It's been a while! Time to crush your next workout. 💪",
+  "gymTools": "Gym Tools",
+  "repsUnit": "reps",
+  "metricKg": "METRIC (KG)",
+  "imperialLb": "IMPERIAL (LB)",
+  "plateCalcTitle": "Plate Calculator",
+  "plateCalcDesc": "Find out which plates to load on each side",
+  "calculatePlates": "CALCULATE PLATES",
+  "barWeight": "BAR WEIGHT",
+  "targetWeight": "TARGET WEIGHT",
+  "unitSystem": "UNIT SYSTEM",
+  "selectFromHistory": "SELECT FROM HISTORY",
+  "chooseExercise": "Choose an exercise...",
+  "basedOnLift": "Based on your lift on {date}",
+  "@basedOnLift": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "estimated1rmLabel": "ESTIMATED 1RM",
+  "barLabel": "Bar",
+  "currentLabel": "Current",
+  "timerAndFeedback": "Timer & Feedback",
+  "searchExercises": "Search exercises...",
+  "totalSetsPerformed": "Total Sets Performed: {count}",
+  "@totalSetsPerformed": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "egBenchPress": "e.g. Bench Press",
+  "egSeatPin": "e.g. Seat 4, Pin 3",
+  "deleteRoutineTitle": "Delete Routine?",
+  "deleteRoutineMsg": "Are you sure you want to delete '{name}'?",
+  "@deleteRoutineMsg": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "noRoutinesCreate": "No routines found.\nCreate one to get started!",
+  "renameExercise": "Rename Exercise",
+  "newName": "New Name",
+  "deleteExercise": "Delete Exercise?",
+  "deleteExerciseMsg": "What would you like to delete for '{name}'?",
+  "@deleteExerciseMsg": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "hideFromList": "Hide from List (Keep History)",
+  "permanentlyDelete": "Permanently Delete (Wipe History)",
+  "renameLabel": "Rename",
+  "deleteLabel": "Delete",
+  "loadPerSide": "LOAD PER SIDE"
 }
