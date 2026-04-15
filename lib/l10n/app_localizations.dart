@@ -1237,6 +1237,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Session Breakdown'**
   String get sessionBreakdown;
+
+  /// No description provided for @rpeDesc1.
+  ///
+  /// In en, this message translates to:
+  /// **'Very easy - could do 9+ more reps'**
+  String get rpeDesc1;
+
+  /// No description provided for @rpeDesc2.
+  ///
+  /// In en, this message translates to:
+  /// **'Easy - could do 8+ more reps'**
+  String get rpeDesc2;
+
+  /// No description provided for @rpeDesc3.
+  ///
+  /// In en, this message translates to:
+  /// **'Light - could do 7+ more reps'**
+  String get rpeDesc3;
+
+  /// No description provided for @rpeDesc4.
+  ///
+  /// In en, this message translates to:
+  /// **'Light-moderate - could do 6+ more reps'**
+  String get rpeDesc4;
+
+  /// No description provided for @rpeDesc5.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderate - could do 5+ more reps'**
+  String get rpeDesc5;
+
+  /// No description provided for @rpeDesc6.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderate - could do 4+ more reps'**
+  String get rpeDesc6;
+
+  /// No description provided for @rpeDesc7.
+  ///
+  /// In en, this message translates to:
+  /// **'Somewhat hard - could do 3 more reps'**
+  String get rpeDesc7;
+
+  /// No description provided for @rpeDesc8.
+  ///
+  /// In en, this message translates to:
+  /// **'Hard - could do 2 more reps'**
+  String get rpeDesc8;
+
+  /// No description provided for @rpeDesc9.
+  ///
+  /// In en, this message translates to:
+  /// **'Very hard - could do 1 more rep'**
+  String get rpeDesc9;
+
+  /// No description provided for @rpeDesc10.
+  ///
+  /// In en, this message translates to:
+  /// **'Max effort - couldn\'t do more'**
+  String get rpeDesc10;
+
+  /// No description provided for @rpeRateEffort.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate your effort'**
+  String get rpeRateEffort;
+
+  /// No description provided for @rpeEasy.
+  ///
+  /// In en, this message translates to:
+  /// **'Easy'**
+  String get rpeEasy;
+
+  /// No description provided for @rpeGood.
+  ///
+  /// In en, this message translates to:
+  /// **'Good'**
+  String get rpeGood;
+
+  /// No description provided for @rpeHard.
+  ///
+  /// In en, this message translates to:
+  /// **'Hard'**
+  String get rpeHard;
+
+  /// No description provided for @workoutReminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout Reminders'**
+  String get workoutReminders;
+
+  /// No description provided for @workoutRemindersDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Get a reminder if you haven\'t trained in a while'**
+  String get workoutRemindersDesc;
+
+  /// No description provided for @reminderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'GymBrain'**
+  String get reminderTitle;
+
+  /// No description provided for @reminderBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It\'s been a while! Time to crush your next workout. 💪'**
+  String get reminderBody;
 }
 
 class _AppLocalizationsDelegate

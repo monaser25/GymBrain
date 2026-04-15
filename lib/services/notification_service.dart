@@ -19,7 +19,7 @@ class NotificationService {
     tz.initializeTimeZones();
 
     const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('ic_notification');
 
     const DarwinInitializationSettings initializationSettingsDarwin =
         DarwinInitializationSettings(
@@ -72,8 +72,19 @@ class NotificationService {
             enableVibration: true,
           );
 
+      // Channel 3: Workout Reminders
+      const AndroidNotificationChannel reminderChannel =
+          AndroidNotificationChannel(
+            'gym_brain_reminder',
+            'Workout Reminders',
+            description: 'Reminders to get back to the gym',
+            importance: Importance.high,
+            playSound: true,
+          );
+
       await androidImplementation.createNotificationChannel(soundChannel);
       await androidImplementation.createNotificationChannel(silentChannel);
+      await androidImplementation.createNotificationChannel(reminderChannel);
     }
   }
 
@@ -102,7 +113,7 @@ class NotificationService {
           priority: Priority.high,
           ticker: 'ticker',
           playSound: playSound,
-          icon: '@mipmap/ic_launcher',
+          icon: '@drawable/ic_notification',
           // Vibration pattern for both (optional, but good for silent)
           vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
         ),
@@ -118,5 +129,37 @@ class NotificationService {
 
   Future<void> cancelAll() async {
     await flutterLocalNotificationsPlugin.cancelAll();
+  }
+
+  // === Workout Reminder ===
+  static const int _reminderId = 9999;
+
+  Future<void> scheduleReminderNotification({
+    required String title,
+    required String body,
+    int days = 3,
+  }) async {
+    await flutterLocalNotificationsPlugin.zonedSchedule(
+      id: _reminderId,
+      title: title,
+      body: body,
+      scheduledDate: tz.TZDateTime.now(tz.local).add(Duration(days: days)),
+      notificationDetails: const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'gym_brain_reminder',
+          'Workout Reminders',
+          channelDescription: 'Reminders to get back to the gym',
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@drawable/ic_notification',
+        ),
+        iOS: DarwinNotificationDetails(presentSound: true),
+      ),
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+    );
+  }
+
+  Future<void> cancelReminderNotification() async {
+    await flutterLocalNotificationsPlugin.cancel(id: _reminderId);
   }
 }

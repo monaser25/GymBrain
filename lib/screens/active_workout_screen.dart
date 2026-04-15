@@ -908,14 +908,34 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
                               ),
                             )
                           : (widget.lastPerformance != null
-                                ? Text(
-                                    "${AppLocalizations.of(context)!.lastPer} ${widget.lastPerformance!.weight}${widget.lastPerformance!.unit} x ${widget.lastPerformance!.reps} (${widget.lastPerformance!.rpe})",
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: 13,
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                  )
+                                ? Builder(builder: (context) {
+                                    final l10n = AppLocalizations.of(context);
+                                    final perf = widget.lastPerformance!;
+                                    // Localize the RPE string label
+                                    String localizedRpe;
+                                    switch (perf.rpe) {
+                                      case 'Easy':
+                                        localizedRpe = l10n?.rpeEasy ?? 'Easy';
+                                        break;
+                                      case 'Hard':
+                                        localizedRpe = l10n?.rpeHard ?? 'Hard';
+                                        break;
+                                      default:
+                                        localizedRpe = l10n?.rpeGood ?? 'Good';
+                                    }
+                                    // Localize unit
+                                    final localizedUnit = perf.unit == 'lb'
+                                        ? (l10n?.lbLabel ?? 'lb')
+                                        : (l10n?.kgLabel ?? 'kg');
+                                    return Text(
+                                      "${l10n?.lastPer ?? 'Last:'} ${perf.weight}$localizedUnit x ${perf.reps} ($localizedRpe)",
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 13,
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                    );
+                                  })
                                 : Text(
                                     AppLocalizations.of(context)!.noHistory,
                                     style: TextStyle(
@@ -1404,29 +1424,30 @@ class _ExerciseInputCardState extends State<_ExerciseInputCard> {
 
   // Description for numeric RPE
   String _getRpeDescription(int rpe) {
+    final l10n = AppLocalizations.of(context);
     switch (rpe) {
       case 1:
-        return "Very easy - could do 9+ more reps";
+        return l10n?.rpeDesc1 ?? "Very easy - could do 9+ more reps";
       case 2:
-        return "Easy - could do 8+ more reps";
+        return l10n?.rpeDesc2 ?? "Easy - could do 8+ more reps";
       case 3:
-        return "Light - could do 7+ more reps";
+        return l10n?.rpeDesc3 ?? "Light - could do 7+ more reps";
       case 4:
-        return "Light-moderate - could do 6+ more reps";
+        return l10n?.rpeDesc4 ?? "Light-moderate - could do 6+ more reps";
       case 5:
-        return "Moderate - could do 5+ more reps";
+        return l10n?.rpeDesc5 ?? "Moderate - could do 5+ more reps";
       case 6:
-        return "Moderate - could do 4+ more reps";
+        return l10n?.rpeDesc6 ?? "Moderate - could do 4+ more reps";
       case 7:
-        return "Somewhat hard - could do 3 more reps";
+        return l10n?.rpeDesc7 ?? "Somewhat hard - could do 3 more reps";
       case 8:
-        return "Hard - could do 2 more reps";
+        return l10n?.rpeDesc8 ?? "Hard - could do 2 more reps";
       case 9:
-        return "Very hard - could do 1 more rep";
+        return l10n?.rpeDesc9 ?? "Very hard - could do 1 more rep";
       case 10:
-        return "Max effort - couldn't do more";
+        return l10n?.rpeDesc10 ?? "Max effort - couldn't do more";
       default:
-        return "Rate your effort";
+        return l10n?.rpeRateEffort ?? "Rate your effort";
     }
   }
 

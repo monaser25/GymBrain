@@ -597,4 +597,58 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get sessionBreakdown => 'تفاصيل المجموعة';
+
+  @override
+  String get rpeDesc1 => 'سهل جداً - يمكنك أداء ٩+ عدات إضافية';
+
+  @override
+  String get rpeDesc2 => 'سهل - يمكنك أداء ٨+ عدات إضافية';
+
+  @override
+  String get rpeDesc3 => 'خفيف - يمكنك أداء ٧+ عدات إضافية';
+
+  @override
+  String get rpeDesc4 => 'خفيف-متوسط - يمكنك أداء ٦+ عدات إضافية';
+
+  @override
+  String get rpeDesc5 => 'متوسط - يمكنك أداء ٥+ عدات إضافية';
+
+  @override
+  String get rpeDesc6 => 'متوسط - يمكنك أداء ٤+ عدات إضافية';
+
+  @override
+  String get rpeDesc7 => 'صعب نوعاً ما - يمكنك أداء ٣ عدات إضافية';
+
+  @override
+  String get rpeDesc8 => 'صعب - يمكنك أداء عدتين إضافيتين';
+
+  @override
+  String get rpeDesc9 => 'صعب جداً - يمكنك أداء عدة واحدة إضافية';
+
+  @override
+  String get rpeDesc10 => 'أقصى مجهود - لا يمكنك المزيد';
+
+  @override
+  String get rpeRateEffort => 'قيّم مجهودك';
+
+  @override
+  String get rpeEasy => 'سهل';
+
+  @override
+  String get rpeGood => 'جيد';
+
+  @override
+  String get rpeHard => 'صعب';
+
+  @override
+  String get workoutReminders => 'تذكير التمارين';
+
+  @override
+  String get workoutRemindersDesc => 'تلقي تذكير إذا لم تتمرن منذ فترة';
+
+  @override
+  String get reminderTitle => 'جيم برين';
+
+  @override
+  String get reminderBody => 'عدى وقت طويل يا بطل! وقت تكسير الأوزان. 💪';
 }

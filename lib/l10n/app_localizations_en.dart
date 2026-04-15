@@ -597,4 +597,60 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sessionBreakdown => 'Session Breakdown';
+
+  @override
+  String get rpeDesc1 => 'Very easy - could do 9+ more reps';
+
+  @override
+  String get rpeDesc2 => 'Easy - could do 8+ more reps';
+
+  @override
+  String get rpeDesc3 => 'Light - could do 7+ more reps';
+
+  @override
+  String get rpeDesc4 => 'Light-moderate - could do 6+ more reps';
+
+  @override
+  String get rpeDesc5 => 'Moderate - could do 5+ more reps';
+
+  @override
+  String get rpeDesc6 => 'Moderate - could do 4+ more reps';
+
+  @override
+  String get rpeDesc7 => 'Somewhat hard - could do 3 more reps';
+
+  @override
+  String get rpeDesc8 => 'Hard - could do 2 more reps';
+
+  @override
+  String get rpeDesc9 => 'Very hard - could do 1 more rep';
+
+  @override
+  String get rpeDesc10 => 'Max effort - couldn\'t do more';
+
+  @override
+  String get rpeRateEffort => 'Rate your effort';
+
+  @override
+  String get rpeEasy => 'Easy';
+
+  @override
+  String get rpeGood => 'Good';
+
+  @override
+  String get rpeHard => 'Hard';
+
+  @override
+  String get workoutReminders => 'Workout Reminders';
+
+  @override
+  String get workoutRemindersDesc =>
+      'Get a reminder if you haven\'t trained in a while';
+
+  @override
+  String get reminderTitle => 'GymBrain';
+
+  @override
+  String get reminderBody =>
+      'It\'s been a while! Time to crush your next workout. 💪';
 }

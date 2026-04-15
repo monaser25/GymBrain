@@ -87,6 +87,12 @@ class GymDatabase extends ChangeNotifier {
   Future<void> setDefaultIsKg(bool isKg) async =>
       _settingsBox.put('default_is_kg', isKg);
 
+  // Workout Reminder Setting
+  bool get enableWorkoutReminder =>
+      _settingsBox.get('enable_workout_reminder', defaultValue: true);
+  Future<void> setEnableWorkoutReminder(bool enable) async =>
+      _settingsBox.put('enable_workout_reminder', enable);
+
   // Plate Calculator Inventory Settings
   static const List<double> defaultPlatesKg = [
     25.0,

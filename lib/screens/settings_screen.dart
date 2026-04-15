@@ -23,6 +23,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late bool _aiFeedbackEnabled;
   late bool _defaultIsKg;
   late String _languageCode;
+  late bool _reminderEnabled;
 
   bool _isBackingUp = false;
   bool _isRestoring = false;
@@ -37,6 +38,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _aiFeedbackEnabled = _db.enableAiFeedback;
     _defaultIsKg = _db.defaultIsKg;
     _languageCode = _db.languageCode;
+    _reminderEnabled = _db.enableWorkoutReminder;
   }
 
   String _formatDuration(int seconds) {
@@ -388,6 +390,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onChanged: (val) {
               setState(() => _aiFeedbackEnabled = val);
               _db.setEnableAiFeedback(val);
+            },
+          ),
+
+          const SizedBox(height: 12),
+
+          // Workout Reminder Toggle
+          SwitchListTile(
+            title: Text(
+              AppLocalizations.of(context)?.workoutReminders ?? "Workout Reminders",
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            subtitle: Text(
+              AppLocalizations.of(context)?.workoutRemindersDesc ?? "Get a reminder if you haven't trained in a while",
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+            value: _reminderEnabled,
+            activeThumbColor: const Color(0xFF39FF14),
+            contentPadding: EdgeInsets.zero,
+            onChanged: (val) {
+              setState(() => _reminderEnabled = val);
+              _db.setEnableWorkoutReminder(val);
             },
           ),
 

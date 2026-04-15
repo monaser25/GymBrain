@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/gym_models.dart';
 import '../services/database_service.dart';
+import '../services/notification_service.dart';
 import 'package:uuid/uuid.dart';
 
 class ActiveWorkoutProvider extends ChangeNotifier {
@@ -118,6 +119,24 @@ class ActiveWorkoutProvider extends ChangeNotifier {
     );
 
     await _db.saveSession(session);
+
+    // Workout Reminder Logic
+    final notificationService = NotificationService();
+    await notificationService.cancelReminderNotification();
+
+    if (_db.enableWorkoutReminder) {
+      final lang = _db.languageCode;
+      final title = lang == 'ar' ? 'جيم برين' : 'GymBrain';
+      final body = lang == 'ar'
+          ? 'عدى وقت طويل يا بطل! وقت تكسير الأوزان. 💪'
+          : "It's been a while! Time to crush your next workout. 💪";
+      await notificationService.scheduleReminderNotification(
+        title: title,
+        body: body,
+        days: 3,
+      );
+    }
+
     await clearData();
   }
 
