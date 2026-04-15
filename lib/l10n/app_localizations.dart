@@ -751,6 +751,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Setup Note (Optional)'**
   String get setupNoteOptionalLabel;
+
+  /// No description provided for @secUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'sec'**
+  String get secUnit;
+
+  /// No description provided for @minUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'min'**
+  String get minUnit;
+
+  /// No description provided for @exportBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Export Backup'**
+  String get exportBackup;
+
+  /// No description provided for @exportBackupDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Save all data as a JSON file'**
+  String get exportBackupDesc;
+
+  /// No description provided for @restoreBackup.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore Backup'**
+  String get restoreBackup;
+
+  /// No description provided for @restoreBackupDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Import data from a backup file'**
+  String get restoreBackupDesc;
+
+  /// No description provided for @defaultWeightUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Default Weight Unit'**
+  String get defaultWeightUnit;
+
+  /// No description provided for @starterPackDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Includes basic exercises & Push/Pull/Legs routine.'**
+  String get starterPackDesc;
+
+  /// No description provided for @factoryResetApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Factory Reset App'**
+  String get factoryResetApp;
+
+  /// No description provided for @factoryResetAppDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Wipe all data and restart fresh'**
+  String get factoryResetAppDesc;
+
+  /// No description provided for @factoryResetConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Factory Reset?'**
+  String get factoryResetConfirmTitle;
+
+  /// No description provided for @factoryResetConfirmDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'This will PERMANENTLY DELETE all data:\n\n• All Exercises\n• All Routines\n• Entire Workout History\n• InBody Records\n• All Settings\n\nThis action CANNOT be undone!'**
+  String get factoryResetConfirmDesc;
+
+  /// No description provided for @factoryResetBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Everything'**
+  String get factoryResetBtn;
+
+  /// No description provided for @restoreConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore Backup?'**
+  String get restoreConfirmTitle;
+
+  /// No description provided for @restoreConfirmDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'This will REPLACE all current data:\n\n• Exercises\n• Routines\n• Workout History\n• InBody Records\n• Settings\n\nThis action CANNOT be undone!'**
+  String get restoreConfirmDesc;
+
+  /// No description provided for @editExerciseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Exercise'**
+  String get editExerciseTitle;
+
+  /// No description provided for @addNewExerciseTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add New Exercise'**
+  String get addNewExerciseTitle;
 }
 
 class _AppLocalizationsDelegate

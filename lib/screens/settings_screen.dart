@@ -40,11 +40,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   String _formatDuration(int seconds) {
-    if (seconds < 60) return "$seconds sec";
+    final secStr = AppLocalizations.of(context)?.secUnit ?? "sec";
+    final minStr = AppLocalizations.of(context)?.minUnit ?? "min";
+    if (seconds < 60) return "$seconds $secStr";
     final mins = seconds ~/ 60;
     final secs = seconds % 60;
-    if (secs == 0) return "$mins min";
-    return "$mins min $secs sec";
+    if (secs == 0) return "$mins $minStr";
+    return "$mins $minStr $secs $secStr";
   }
 
   Future<void> _handleBackup() async {
@@ -74,19 +76,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1C1C1E),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
-            SizedBox(width: 12),
+            const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 28),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
-                "Restore Backup?",
-                style: TextStyle(color: Colors.white),
+                AppLocalizations.of(context)?.restoreConfirmTitle ?? "Restore Backup?",
+                style: const TextStyle(color: Colors.white),
               ),
             ),
           ],
         ),
         content: Text(
+          AppLocalizations.of(context)?.restoreConfirmDesc ?? 
           "This will REPLACE all current data:\n\n"
           "• Exercises\n"
           "• Routines\n"
@@ -99,7 +102,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+            child: Text(AppLocalizations.of(context)?.cancelBtn ?? "Cancel", style: const TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
@@ -236,9 +239,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           // Default Weight Unit Toggle
           SwitchListTile(
-            title: const Text(
-              "Default Weight Unit",
-              style: TextStyle(
+            title: Text(
+              AppLocalizations.of(context)?.defaultWeightUnit ?? "Default Weight Unit",
+              style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
@@ -411,8 +414,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           // Export Backup Button
           _buildActionButton(
             icon: Icons.upload_file,
-            label: "Export Backup",
-            description: "Save all data as a JSON file",
+            label: AppLocalizations.of(context)?.exportBackup ?? "Export Backup",
+            description: AppLocalizations.of(context)?.exportBackupDesc ?? "Save all data as a JSON file",
             isLoading: _isBackingUp,
             color: const Color(0xFF39FF14),
             onTap: _handleBackup,
@@ -423,8 +426,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           // Restore Backup Button
           _buildActionButton(
             icon: Icons.download,
-            label: "Restore Backup",
-            description: "Import data from a backup file",
+            label: AppLocalizations.of(context)?.restoreBackup ?? "Restore Backup",
+            description: AppLocalizations.of(context)?.restoreBackupDesc ?? "Import data from a backup file",
             isLoading: _isRestoring,
             color: Colors.orange,
             onTap: _handleRestore,
@@ -449,8 +452,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           _buildActionButton(
             icon: Icons.delete_forever,
-            label: "Factory Reset App",
-            description: "Wipe all data and restart fresh",
+            label: AppLocalizations.of(context)?.factoryResetApp ?? "Factory Reset App",
+            description: AppLocalizations.of(context)?.factoryResetAppDesc ?? "Wipe all data and restart fresh",
             isLoading: false,
             color: Colors.red,
             onTap: () => _showResetConfirmationDialog(context),
@@ -467,19 +470,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1C1C1E),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
-            SizedBox(width: 12),
+            const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
-                "Factory Reset?",
-                style: TextStyle(color: Colors.white),
+                AppLocalizations.of(context)?.factoryResetConfirmTitle ?? "Factory Reset?",
+                style: const TextStyle(color: Colors.white),
               ),
             ),
           ],
         ),
         content: Text(
+          AppLocalizations.of(context)?.factoryResetConfirmDesc ?? 
           "This will PERMANENTLY DELETE all data:\n\n"
           "• All Exercises\n"
           "• All Routines\n"
@@ -492,7 +496,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+            child: Text(AppLocalizations.of(context)?.cancelBtn ?? "Cancel", style: const TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
@@ -500,7 +504,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text("Reset Everything"),
+            child: Text(AppLocalizations.of(context)?.factoryResetBtn ?? "Reset Everything"),
           ),
         ],
       ),

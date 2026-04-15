@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../services/database_service.dart';
 import '../l10n/app_localizations.dart';
+import 'progress_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -191,14 +192,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ? "${_currentWeight!.toStringAsFixed(1)} kg"
                   : "Add in Stats tab",
               onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Update your weight in the Stats tab"),
-                    backgroundColor: Colors.orange,
-                  ),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ProgressScreen()),
                 );
               },
-              isReadOnly: true,
+              isReadOnly: false,
             ),
           ],
         ),

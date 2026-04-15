@@ -297,11 +297,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: Column(
-            children: [
-              const SizedBox(height: 60),
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Column(
+                children: [
+                  const SizedBox(height: 60),
 
               // Logo
               Hero(
@@ -418,7 +420,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   subtitle: Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(
-                      'Includes basic exercises & Push/Pull/Legs routine.',
+                      AppLocalizations.of(context)?.starterPackDesc ?? 'Includes basic exercises & Push/Pull/Legs routine.',
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.5),
                         fontSize: 13,
@@ -469,6 +471,46 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               const SizedBox(height: 32),
             ],
           ),
+        ),
+        Positioned(
+          top: 16,
+          right: 16,
+          child: _buildLanguageToggle(),
+        ),
+      ],
+    ),
+  ),
+);
+  }
+
+  Widget _buildLanguageToggle() {
+    final db = GymDatabase();
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E1E),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white24),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: db.languageCode,
+          dropdownColor: const Color(0xFF1E1E1E),
+          icon: const Padding(
+            padding: EdgeInsets.only(left: 4.0),
+            child: Icon(Icons.language, color: Color(0xFF39FF14), size: 18),
+          ),
+          style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+          items: const [
+            DropdownMenuItem(value: 'en', child: Text("EN")),
+            DropdownMenuItem(value: 'ar', child: Text("AR")),
+          ],
+          onChanged: (String? val) {
+            if (val != null) {
+              setState(() {});
+              db.setLanguageCode(val);
+            }
+          },
         ),
       ),
     );

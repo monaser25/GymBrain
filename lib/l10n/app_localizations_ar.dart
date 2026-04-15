@@ -336,4 +336,58 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get setupNoteOptionalLabel => 'ملاحظات الإعداد (اختياري)';
+
+  @override
+  String get secUnit => 'ثانية';
+
+  @override
+  String get minUnit => 'دقيقة';
+
+  @override
+  String get exportBackup => 'تصدير نسخة احتياطية';
+
+  @override
+  String get exportBackupDesc => 'حفظ جميع البيانات كملف';
+
+  @override
+  String get restoreBackup => 'استعادة نسخة احتياطية';
+
+  @override
+  String get restoreBackupDesc => 'استيراد البيانات من ملف';
+
+  @override
+  String get defaultWeightUnit => 'وحدة الوزن الافتراضية';
+
+  @override
+  String get starterPackDesc =>
+      'يشمل التمارين الأساسية وبرنامج الدفع/السحب/الأرجل.';
+
+  @override
+  String get factoryResetApp => 'إعادة ضبط المصنع';
+
+  @override
+  String get factoryResetAppDesc => 'مسح جميع البيانات والبدء من جديد';
+
+  @override
+  String get factoryResetConfirmTitle => 'إعادة ضبط المصنع؟';
+
+  @override
+  String get factoryResetConfirmDesc =>
+      'هذا سيقوم بمسح جميع البيانات نهائياً:\n\n• جميع التمارين\n• جميع البرامج\n• سجل التمارين بالكامل\n• بيانات InBody\n• جميع الإعدادات\n\nهذا الإجراء لا يمكن التراجع عنه!';
+
+  @override
+  String get factoryResetBtn => 'مسح كل شيء';
+
+  @override
+  String get restoreConfirmTitle => 'استعادة النسخة الاحتياطية؟';
+
+  @override
+  String get restoreConfirmDesc =>
+      'هذا سيستبدل جميع البيانات الحالية:\n\n• التمارين\n• البرامج\n• سجل التمارين\n• بيانات InBody\n• الإعدادات\n\nهذا الإجراء لا يمكن التراجع عنه!';
+
+  @override
+  String get editExerciseTitle => 'تعديل التمرين';
+
+  @override
+  String get addNewExerciseTitle => 'إضافة تمرين جديد';
 }

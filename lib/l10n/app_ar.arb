@@ -108,5 +108,22 @@
   "repsPerformed": "العدات",
   "exerciseNameLabel": "اسم التمرين",
   "targetSetsLabel": "مجموعات الهدف",
-  "setupNoteOptionalLabel": "ملاحظات الإعداد (اختياري)"
+  "setupNoteOptionalLabel": "ملاحظات الإعداد (اختياري)",
+  "secUnit": "ثانية",
+  "minUnit": "دقيقة",
+  "exportBackup": "تصدير نسخة احتياطية",
+  "exportBackupDesc": "حفظ جميع البيانات كملف",
+  "restoreBackup": "استعادة نسخة احتياطية",
+  "restoreBackupDesc": "استيراد البيانات من ملف",
+  "defaultWeightUnit": "وحدة الوزن الافتراضية",
+  "starterPackDesc": "يشمل التمارين الأساسية وبرنامج الدفع/السحب/الأرجل.",
+  "factoryResetApp": "إعادة ضبط المصنع",
+  "factoryResetAppDesc": "مسح جميع البيانات والبدء من جديد",
+  "factoryResetConfirmTitle": "إعادة ضبط المصنع؟",
+  "factoryResetConfirmDesc": "هذا سيقوم بمسح جميع البيانات نهائياً:\n\n• جميع التمارين\n• جميع البرامج\n• سجل التمارين بالكامل\n• بيانات InBody\n• جميع الإعدادات\n\nهذا الإجراء لا يمكن التراجع عنه!",
+  "factoryResetBtn": "مسح كل شيء",
+  "restoreConfirmTitle": "استعادة النسخة الاحتياطية؟",
+  "restoreConfirmDesc": "هذا سيستبدل جميع البيانات الحالية:\n\n• التمارين\n• البرامج\n• سجل التمارين\n• بيانات InBody\n• الإعدادات\n\nهذا الإجراء لا يمكن التراجع عنه!",
+  "editExerciseTitle": "تعديل التمرين",
+  "addNewExerciseTitle": "إضافة تمرين جديد"
 }

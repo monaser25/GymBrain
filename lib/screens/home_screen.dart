@@ -14,6 +14,7 @@ import 'settings_screen.dart';
 import 'history_screen.dart';
 import 'profile_screen.dart';
 import 'tools_screen.dart';
+import 'routine_editor_screen.dart';
 import '../l10n/app_localizations.dart';
 // Note: RoutineEditorScreen import might be needed if we link directly,
 // but RoutinesScreen handles that.
@@ -382,52 +383,61 @@ class _DashboardView extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          // Menu Button for Drawer
-                          GestureDetector(
-                            onTap: () {
-                              Scaffold.of(context).openDrawer();
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1C1C1E),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(
-                                Icons.menu,
-                                color: Color(0xFF39FF14),
-                                size: 22,
+                      Expanded(
+                        child: Row(
+                          children: [
+                            // Menu Button for Drawer
+                            GestureDetector(
+                              onTap: () {
+                                Scaffold.of(context).openDrawer();
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1C1C1E),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Icon(
+                                  Icons.menu,
+                                  color: Color(0xFF39FF14),
+                                  size: 22,
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 14),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                AppLocalizations.of(context)!.appName,
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  letterSpacing: 1.0,
-                                ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    AppLocalizations.of(context)!.appName,
+                                    style: const TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      letterSpacing: 1.0,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      dateString,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 26,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                dateString,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                            ),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       GestureDetector(
                         onTap: () {
                           Navigator.push(
@@ -660,19 +670,15 @@ class _DashboardView extends StatelessWidget {
                                   size: 18,
                                 ),
                               ),
-                              onTap: () async {
-                                if (await checkActiveWorkout(context)) {
-                                  if (context.mounted) {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => ActiveWorkoutScreen(
-                                          routine: routine,
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                }
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => RoutineEditorScreen(
+                                      routineId: routine.id,
+                                    ),
+                                  ),
+                                );
                               },
                             ),
                           );

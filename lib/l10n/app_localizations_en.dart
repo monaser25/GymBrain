@@ -336,4 +336,58 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get setupNoteOptionalLabel => 'Setup Note (Optional)';
+
+  @override
+  String get secUnit => 'sec';
+
+  @override
+  String get minUnit => 'min';
+
+  @override
+  String get exportBackup => 'Export Backup';
+
+  @override
+  String get exportBackupDesc => 'Save all data as a JSON file';
+
+  @override
+  String get restoreBackup => 'Restore Backup';
+
+  @override
+  String get restoreBackupDesc => 'Import data from a backup file';
+
+  @override
+  String get defaultWeightUnit => 'Default Weight Unit';
+
+  @override
+  String get starterPackDesc =>
+      'Includes basic exercises & Push/Pull/Legs routine.';
+
+  @override
+  String get factoryResetApp => 'Factory Reset App';
+
+  @override
+  String get factoryResetAppDesc => 'Wipe all data and restart fresh';
+
+  @override
+  String get factoryResetConfirmTitle => 'Factory Reset?';
+
+  @override
+  String get factoryResetConfirmDesc =>
+      'This will PERMANENTLY DELETE all data:\n\n• All Exercises\n• All Routines\n• Entire Workout History\n• InBody Records\n• All Settings\n\nThis action CANNOT be undone!';
+
+  @override
+  String get factoryResetBtn => 'Reset Everything';
+
+  @override
+  String get restoreConfirmTitle => 'Restore Backup?';
+
+  @override
+  String get restoreConfirmDesc =>
+      'This will REPLACE all current data:\n\n• Exercises\n• Routines\n• Workout History\n• InBody Records\n• Settings\n\nThis action CANNOT be undone!';
+
+  @override
+  String get editExerciseTitle => 'Edit Exercise';
+
+  @override
+  String get addNewExerciseTitle => 'Add New Exercise';
 }

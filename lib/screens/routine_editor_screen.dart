@@ -140,7 +140,7 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
                   Padding(
                     padding: const EdgeInsets.only(top: 4.0),
                     child: Text(
-                      "Setup: ${exercise.setupNote}",
+                      "Setup: ${getLocalizedExerciseNote(context, exercise.setupNote)}",
                       style: TextStyle(color: Colors.grey[400], fontSize: 13),
                     ),
                   ),
@@ -290,9 +290,9 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
             return AlertDialog(
               backgroundColor: const Color(0xFF1C1C1E),
               title: isEditing
-                  ? const Text(
-                      "Edit Exercise",
-                      style: TextStyle(color: Colors.white),
+                  ? Text(
+                      AppLocalizations.of(context)?.editExerciseTitle ?? "Edit Exercise",
+                      style: const TextStyle(color: Colors.white),
                     )
                   : Column(
                       children: [
@@ -507,9 +507,9 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
                       children: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),
-                          child: const Text(
-                            "Cancel",
-                            style: TextStyle(color: Colors.grey),
+                          child: Text(
+                            AppLocalizations.of(context)?.cancelBtn ?? "Cancel",
+                            style: const TextStyle(color: Colors.grey),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -625,7 +625,7 @@ class _RoutineEditorScreenState extends State<RoutineEditorScreen> {
                             foregroundColor: Colors.black,
                           ),
                           child: Text(isEditing 
-                              ? "Save" 
+                              ? (AppLocalizations.of(context)?.save ?? "Save") 
                               : (selectedTabIndex == 1 && selectedLibraryNames.isNotEmpty
                                   ? "Add (${selectedLibraryNames.length})"
                                   : "Add")),
